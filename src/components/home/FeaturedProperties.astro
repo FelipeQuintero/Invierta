@@ -1,6 +1,6 @@
 ---
 import type { Property } from '../../lib/types';
-import PropertyCard from '../properties/PropertyCard.astro';
+import AnimatedPropertyGrid from '../properties/AnimatedPropertyGrid.tsx';
 
 interface Props {
   properties: Property[];
@@ -21,25 +21,16 @@ const { properties } = Astro.props;
       </p>
     </div>
 
-    {/* Property grid */}
+    {/* Property grid with stagger animation */}
     {properties.length > 0 ? (
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {properties.map((property) => (
-          <PropertyCard
-            id={property.id}
-            title={property.title}
-            image={property.images[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800'}
-            price={property.price}
-            priceType={property.priceType}
-            location={property.location}
-            area={property.area}
-            bedrooms={property.bedrooms}
-            bathrooms={property.bathrooms}
-            tags={property.tags}
-            propertyType={property.propertyType}
-          />
-        ))}
-      </div>
+      <AnimatedPropertyGrid
+        client:visible
+        properties={properties}
+        columns={{ default: 1, md: 2, lg: 3 }}
+        staggerDelay={100}
+        gap={1.5}
+        showEmptyState={false}
+      />
     ) : (
       <p class="text-center text-text-muted py-12">No hay propiedades destacadas disponibles en este momento.</p>
     )}

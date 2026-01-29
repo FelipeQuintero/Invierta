@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { PROPERTY_TYPES, CITIES, BEDROOM_OPTIONS } from '../../lib/constants';
+import LoadingSpinner from '../ui/LoadingSpinner';
 
 interface CurrentFilters {
   propertyType?: string;
@@ -12,18 +13,28 @@ interface CurrentFilters {
 interface Props {
   operation: string;
   currentFilters?: CurrentFilters;
+  /** Callback when loading state changes (for parent components) */
+  onLoadingChange?: (isLoading: boolean) => void;
 }
 
-export default function PropertyFilters({ operation, currentFilters = {} }: Props) {
+export default function PropertyFilters({ operation, currentFilters = {}, onLoadingChange }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [propertyType, setPropertyType] = useState(currentFilters.propertyType || '');
   const [city, setCity] = useState(currentFilters.city || '');
   const [minPrice, setMinPrice] = useState(currentFilters.minPrice?.toString() || '');
   const [maxPrice, setMaxPrice] = useState(currentFilters.maxPrice?.toString() || '');
   const [bedrooms, setBedrooms] = useState(currentFilters.bedrooms?.toString() || '');
 
+  const setLoadingState = useCallback((loading: boolean) => {
+    setIsLoading(loading);
+    onLoadingChange?.(loading);
+  }, [onLoadingChange]);
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setLoadingState(true);
+
     const params = new URLSearchParams();
 
     if (propertyType) params.set('propertyType', propertyType);
@@ -38,6 +49,7 @@ export default function PropertyFilters({ operation, currentFilters = {} }: Prop
   }
 
   function handleClear() {
+    setLoadingState(true);
     setPropertyType('');
     setCity('');
     setMinPrice('');
@@ -210,27 +222,38 @@ export default function PropertyFilters({ operation, currentFilters = {} }: Prop
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--color-primary-light)] active:bg-[var(--color-primary-dark)] transition-colors cursor-pointer"
+                disabled={isLoading}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--color-primary-light)] active:bg-[var(--color-primary-dark)] transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <svg
-                  className="w-4 h-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.3-4.3" />
-                </svg>
-                Buscar
+                {isLoading ? (
+                  <>
+                    <LoadingSpinner size="sm" color="white" />
+                    <span>Buscando...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.3-4.3" />
+                    </svg>
+                    <span>Buscar</span>
+                  </>
+                )}
               </button>
               {hasActiveFilters && (
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="inline-flex items-center justify-center px-3 py-2.5 bg-transparent text-[var(--color-text-secondary)] text-sm font-medium rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors cursor-pointer"
+                  disabled={isLoading}
+                  className="inline-flex items-center justify-center px-3 py-2.5 bg-transparent text-[var(--color-text-secondary)] text-sm font-medium rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Limpiar filtros"
                 >
                   <svg

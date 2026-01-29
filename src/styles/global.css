@@ -241,4 +241,311 @@
     background: var(--gradient-brand);
     width: 100%;
   }
+
+  /* ===========================================
+     LOADING SKELETONS
+     =========================================== */
+
+  /* Base skeleton styles */
+  .skeleton {
+    background-color: var(--color-surface-alt);
+    border-radius: 0.375rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Shimmer animation overlay */
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skeleton-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.5) 25%,
+      rgba(255, 255, 255, 0.8) 50%,
+      rgba(255, 255, 255, 0.5) 75%,
+      transparent 100%
+    );
+    transform: translateX(-100%);
+    animation: shimmer 1.8s infinite ease-in-out;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Skeleton pulse alternative (simpler animation) */
+  .skeleton-pulse {
+    animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes skeleton-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  /* Skeleton wave effect (more subtle) */
+  .skeleton-wave::after {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      transparent 100%
+    );
+    animation: shimmer 2s infinite ease-in-out;
+  }
+
+  /* Skeleton size variants */
+  .skeleton-image {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .skeleton-title {
+    height: 1.25rem;
+    width: 80%;
+  }
+
+  .skeleton-text {
+    height: 0.875rem;
+    width: 60%;
+  }
+
+  .skeleton-text-sm {
+    height: 0.75rem;
+    width: 40%;
+  }
+
+  .skeleton-text-lg {
+    height: 1.5rem;
+    width: 70%;
+  }
+
+  .skeleton-badge {
+    height: 1.5rem;
+    width: 4rem;
+    border-radius: 9999px;
+  }
+
+  .skeleton-icon {
+    height: 1rem;
+    width: 1rem;
+    border-radius: 0.25rem;
+  }
+
+  .skeleton-icon-lg {
+    height: 1.5rem;
+    width: 1.5rem;
+    border-radius: 0.375rem;
+  }
+
+  .skeleton-circle {
+    border-radius: 50%;
+  }
+
+  .skeleton-button {
+    height: 2.5rem;
+    width: 8rem;
+    border-radius: 0.5rem;
+  }
+
+  .skeleton-card {
+    border-radius: 0.75rem;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  /* Accessibility: Respect user's reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-shimmer::after,
+    .skeleton-wave::after {
+      animation: none;
+    }
+
+    .skeleton-pulse {
+      animation: none;
+    }
+  }
+
+  /* ===========================================
+     ANIMACIONES DE SCROLL
+     Fade-in y slide animations on viewport entry
+     =========================================== */
+
+  /* Estado base para todas las animaciones de scroll */
+  .animate-on-scroll {
+    --animation-delay: 0ms;
+    --animation-duration: 600ms;
+    will-change: opacity, transform;
+  }
+
+  /* Fade animation */
+  .animate-fade {
+    opacity: 0;
+    transition:
+      opacity var(--animation-duration) ease-out;
+    transition-delay: var(--animation-delay);
+  }
+
+  .animate-fade.visible {
+    opacity: 1;
+  }
+
+  /* Slide up animation */
+  .animate-slide-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition:
+      opacity var(--animation-duration) ease-out,
+      transform var(--animation-duration) ease-out;
+    transition-delay: var(--animation-delay);
+  }
+
+  .animate-slide-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Slide down animation */
+  .animate-slide-down {
+    opacity: 0;
+    transform: translateY(-30px);
+    transition:
+      opacity var(--animation-duration) ease-out,
+      transform var(--animation-duration) ease-out;
+    transition-delay: var(--animation-delay);
+  }
+
+  .animate-slide-down.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Slide left animation (from right to left) */
+  .animate-slide-left {
+    opacity: 0;
+    transform: translateX(30px);
+    transition:
+      opacity var(--animation-duration) ease-out,
+      transform var(--animation-duration) ease-out;
+    transition-delay: var(--animation-delay);
+  }
+
+  .animate-slide-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Slide right animation (from left to right) */
+  .animate-slide-right {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition:
+      opacity var(--animation-duration) ease-out,
+      transform var(--animation-duration) ease-out;
+    transition-delay: var(--animation-delay);
+  }
+
+  .animate-slide-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Zoom in animation */
+  .animate-zoom-in {
+    opacity: 0;
+    transform: scale(0.95);
+    transition:
+      opacity var(--animation-duration) ease-out,
+      transform var(--animation-duration) ease-out;
+    transition-delay: var(--animation-delay);
+  }
+
+  .animate-zoom-in.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Zoom out animation */
+  .animate-zoom-out {
+    opacity: 0;
+    transform: scale(1.05);
+    transition:
+      opacity var(--animation-duration) ease-out,
+      transform var(--animation-duration) ease-out;
+    transition-delay: var(--animation-delay);
+  }
+
+  .animate-zoom-out.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Accessibility: Respect user's reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-on-scroll,
+    .animate-fade,
+    .animate-slide-up,
+    .animate-slide-down,
+    .animate-slide-left,
+    .animate-slide-right,
+    .animate-zoom-in,
+    .animate-zoom-out {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* ===========================================
+     STAGGER ANIMATION
+     Animación escalonada para grids de propiedades
+     =========================================== */
+
+  .stagger-item {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    transition:
+      opacity 500ms ease-out,
+      transform 500ms ease-out;
+    transition-delay: var(--stagger-delay, 0ms);
+  }
+
+  .stagger-item.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  /* Respeta prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    .stagger-item {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .stagger-item.visible {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }

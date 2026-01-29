@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import PropertyGrid from '../components/properties/PropertyGrid.astro';
+import AnimatedPropertyGrid from '../components/properties/AnimatedPropertyGrid.tsx';
 import PropertyFilters from '../components/properties/PropertyFilters.tsx';
 import Breadcrumb from '../components/ui/Breadcrumb.astro';
 import { getProperties } from '../lib/simi';
@@ -54,7 +54,13 @@ const breadcrumbItems = [
             </select>
           </div>
 
-          <PropertyGrid properties={properties} />
+          <AnimatedPropertyGrid
+            client:load
+            properties={properties}
+            columns={{ default: 1, sm: 2, lg: 3 }}
+            staggerDelay={100}
+            gap={1.5}
+          />
 
           {properties.length >= 12 && (
             <div class="mt-8 flex justify-center">
