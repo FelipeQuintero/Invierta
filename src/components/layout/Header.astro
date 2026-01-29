@@ -69,15 +69,18 @@ import MobileMenu from './MobileMenu.tsx';
   <div class="container-custom">
     <div class="flex h-16 items-center justify-between gap-4 lg:h-[4.5rem]">
       <!-- Logo -->
-      <a href="/" class="flex items-center gap-2.5 shrink-0" aria-label={`${SITE_CONFIG.name} - Inicio`}>
+      <a href="/" class="flex items-center gap-2 shrink-0" aria-label={`${SITE_CONFIG.name} - Inicio`}>
         <img
           src={SITE_CONFIG.logo}
           alt={`${SITE_CONFIG.name} Logo`}
-          class="h-9 w-auto lg:h-10"
-          width="160"
-          height="40"
+          class="h-8 w-auto lg:h-9"
+          width="36"
+          height="36"
           loading="eager"
         />
+        <span class="font-[family-name:var(--font-family-heading)] text-xl lg:text-2xl font-bold tracking-tight text-[var(--color-navy)]">
+          INVI<span class="text-[var(--color-accent)]">E</span>RTA
+        </span>
       </a>
 
       <!-- Desktop Navigation -->
