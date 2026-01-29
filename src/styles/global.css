@@ -1,39 +1,60 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colores principales - Azul navy de Invierta */
-  --color-primary: #1E3A5F;
-  --color-primary-light: #2D5A8A;
-  --color-primary-dark: #132840;
+  /* ===========================================
+     PALETA DE COLORES INVIERTA
+     Extraídos de la identidad visual de marca
+     =========================================== */
 
-  /* Colores secundarios - Verde corporativo */
-  --color-secondary: #2B9E6B;
-  --color-secondary-light: #3CB47E;
-  --color-secondary-dark: #238A5A;
+  /* Colores principales - Navy oscuro (fondos hero/header) */
+  --color-primary: #1a2332;
+  --color-primary-light: #2a3548;
+  --color-primary-dark: #0f1520;
 
-  /* Color de acento - Naranja del logo */
-  --color-accent: #E67E22;
-  --color-accent-light: #F39C12;
-  --color-accent-dark: #D35400;
+  /* Azul navy (iconos, cards, elementos UI) */
+  --color-navy: #1e3a5f;
+  --color-navy-light: #2d5a8a;
+  --color-navy-dark: #132840;
 
-  /* Púrpura del gradiente del logo */
-  --color-brand-purple: #6B3FA0;
-  --color-brand-orange: #E67E22;
+  /* Naranja - CTA primario */
+  --color-accent: #f97316;
+  --color-accent-light: #fb923c;
+  --color-accent-dark: #ea580c;
+
+  /* Verde - CTA secundario */
+  --color-secondary: #10b981;
+  --color-secondary-light: #34d399;
+  --color-secondary-dark: #059669;
+
+  /* Púrpura/Magenta - Acentos y gradientes */
+  --color-brand-purple: #a855f7;
+  --color-brand-purple-light: #c084fc;
+  --color-brand-purple-dark: #9333ea;
+
+  /* Naranja de marca (gradiente logo) */
+  --color-brand-orange: #f97316;
 
   /* Superficies y fondos */
-  --color-surface: #F8F9FA;
-  --color-surface-alt: #EFF1F3;
+  --color-surface: #f8f9fa;
+  --color-surface-alt: #eff1f3;
+  --color-surface-dark: #1a2332;
 
   /* Textos */
-  --color-text-primary: #1A1A2E;
-  --color-text-secondary: #4A5568;
-  --color-text-muted: #9CA3AF;
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #4a5568;
+  --color-text-muted: #9ca3af;
+  --color-text-light: #ffffff;
 
   /* Utilidades */
-  --color-border: #E2E8F0;
-  --color-success: #10B981;
-  --color-error: #EF4444;
-  --color-warning: #F59E0B;
+  --color-border: #e2e8f0;
+  --color-border-purple: #a855f7;
+  --color-success: #10b981;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+
+  /* Gradientes de marca */
+  --gradient-brand: linear-gradient(135deg, #a855f7 0%, #f97316 100%);
+  --gradient-hero: linear-gradient(135deg, #1a2332 0%, #2a3548 100%);
 
   --font-family-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
   --font-family-heading: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
@@ -79,27 +100,32 @@
     }
   }
 
+  /* Botón primario - Naranja (CTA principal) */
   .btn-primary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    background-color: var(--color-primary);
+    background-color: var(--color-accent);
     color: #ffffff;
     font-weight: 600;
-    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    border-radius: 0.375rem;
     transition: all 0.2s ease;
     cursor: pointer;
     border: none;
   }
 
   .btn-primary:hover {
-    background-color: var(--color-primary-light);
+    background-color: var(--color-accent-dark);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(27, 58, 75, 0.3);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
   }
 
+  /* Botón secundario - Verde */
   .btn-secondary {
     display: inline-flex;
     align-items: center;
@@ -109,7 +135,10 @@
     background-color: var(--color-secondary);
     color: #ffffff;
     font-weight: 600;
-    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    border-radius: 0.375rem;
     transition: all 0.2s ease;
     cursor: pointer;
     border: none;
@@ -117,8 +146,11 @@
 
   .btn-secondary:hover {
     background-color: var(--color-secondary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
   }
 
+  /* Botón outline - Borde naranja/claro */
   .btn-outline {
     display: inline-flex;
     align-items: center;
@@ -126,16 +158,87 @@
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
     background-color: transparent;
-    color: var(--color-primary);
+    color: var(--color-accent);
     font-weight: 600;
-    border-radius: 0.5rem;
-    border: 2px solid var(--color-primary);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    border-radius: 0.375rem;
+    border: 2px solid var(--color-accent);
     transition: all 0.2s ease;
     cursor: pointer;
   }
 
   .btn-outline:hover {
-    background-color: var(--color-primary);
+    background-color: var(--color-accent);
     color: #ffffff;
+  }
+
+  /* Botón outline claro (para fondos oscuros) */
+  .btn-outline-light {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: transparent;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    border-radius: 0.375rem;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: #ffffff;
+  }
+
+  /* Botón navy (para uso en cards claras) */
+  .btn-navy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--color-navy);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-navy:hover {
+    background-color: var(--color-navy-light);
+  }
+
+  /* Cards con borde púrpura (bonificaciones) */
+  .card-bonus {
+    background-color: var(--color-primary);
+    border: 1px solid var(--color-brand-purple);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    text-align: center;
+    color: #ffffff;
+  }
+
+  /* Hero section con fondo oscuro */
+  .hero-dark {
+    background: var(--gradient-hero);
+    color: #ffffff;
+  }
+
+  /* Línea decorativa de gradiente (como en las imágenes) */
+  .gradient-line {
+    height: 3px;
+    background: var(--gradient-brand);
+    width: 100%;
   }
 }

@@ -39,7 +39,7 @@ export default function HeroSearch() {
         }}
       />
       {/* Dark gradient overlay - usando colores de la marca Invierta */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#132840]/85 via-[#1E3A5F]/75 to-[#132840]/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#1a2332]/90 via-[#2a3548]/80 to-[#1a2332]/95" />
 
       {/* Content */}
       <div className="relative z-10 w-full container-custom py-20 md:py-28">
