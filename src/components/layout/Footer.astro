@@ -4,21 +4,24 @@ import { SITE_CONFIG, NAV_LINKS, SERVICES } from '../../lib/constants';
 const currentYear = new Date().getFullYear();
 ---
 
-<footer class="bg-primary-dark text-white" role="contentinfo">
+<footer class="bg-primary text-white" role="contentinfo">
   <!-- Main Footer Content -->
   <div class="container-custom py-12 lg:py-16">
     <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
       <!-- Column 1: Company Info -->
       <div class="sm:col-span-2 lg:col-span-1">
-        <a href="/" class="inline-block mb-4" aria-label={`${SITE_CONFIG.name} - Inicio`}>
+        <a href="/" class="inline-flex items-center gap-2.5 mb-4" aria-label={`${SITE_CONFIG.name} - Inicio`}>
           <img
             src={SITE_CONFIG.logo}
             alt={`${SITE_CONFIG.name} Logo`}
-            class="h-10 w-auto"
-            width="160"
-            height="40"
+            class="h-9 w-auto"
+            width="36"
+            height="36"
             loading="lazy"
           />
+          <span class="font-[family-name:var(--font-family-heading)] text-xl font-bold tracking-tight text-white">
+            INVI<span class="bg-gradient-to-r from-[var(--color-brand-purple)] to-[var(--color-brand-orange)] bg-clip-text text-transparent">E</span>RTA
+          </span>
         </a>
         <p class="text-sm leading-relaxed text-white/70 max-w-xs mb-5">
           Tu aliado inmobiliario de confianza en Colombia. Venta, arriendo y servicios inmobiliarios
