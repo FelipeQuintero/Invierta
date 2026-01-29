@@ -2,7 +2,7 @@ import type { SiteConfig, ServiceInfo } from './types';
 
 export const SITE_CONFIG: SiteConfig = {
   name: import.meta.env.SITE_NAME || 'Invierta Inmobiliaria',
-  logo: '/logo.png',
+  logo: '/logo.webp',
   phone: '+57 300 123 4567',
   whatsapp: import.meta.env.WHATSAPP_NUMBER || '573001234567',
   email: 'contacto@inviertainmobiliaria.com',

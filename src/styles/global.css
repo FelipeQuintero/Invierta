@@ -1,18 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #1B3A4B;
-  --color-primary-light: #2D5F7A;
-  --color-primary-dark: #0F2533;
-  --color-secondary: #C4953A;
-  --color-secondary-light: #D4AD5C;
-  --color-secondary-dark: #A67B2A;
-  --color-accent: #E8B84B;
+  /* Colores principales - Azul navy de Invierta */
+  --color-primary: #1E3A5F;
+  --color-primary-light: #2D5A8A;
+  --color-primary-dark: #132840;
+
+  /* Colores secundarios - Verde corporativo */
+  --color-secondary: #2B9E6B;
+  --color-secondary-light: #3CB47E;
+  --color-secondary-dark: #238A5A;
+
+  /* Color de acento - Naranja del logo */
+  --color-accent: #E67E22;
+  --color-accent-light: #F39C12;
+  --color-accent-dark: #D35400;
+
+  /* Púrpura del gradiente del logo */
+  --color-brand-purple: #6B3FA0;
+  --color-brand-orange: #E67E22;
+
+  /* Superficies y fondos */
   --color-surface: #F8F9FA;
   --color-surface-alt: #EFF1F3;
+
+  /* Textos */
   --color-text-primary: #1A1A2E;
   --color-text-secondary: #4A5568;
   --color-text-muted: #9CA3AF;
+
+  /* Utilidades */
   --color-border: #E2E8F0;
   --color-success: #10B981;
   --color-error: #EF4444;

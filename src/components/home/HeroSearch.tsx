@@ -38,8 +38,8 @@ export default function HeroSearch() {
             'url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600)',
         }}
       />
-      {/* Dark gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0F2533]/80 via-[#1B3A4B]/70 to-[#0F2533]/90" />
+      {/* Dark gradient overlay - usando colores de la marca Invierta */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#132840]/85 via-[#1E3A5F]/75 to-[#132840]/90" />
 
       {/* Content */}
       <div className="relative z-10 w-full container-custom py-20 md:py-28">
