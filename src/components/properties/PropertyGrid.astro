@@ -1,0 +1,52 @@
+---
+import type { Property } from '../../lib/types';
+import PropertyCard from './PropertyCard.astro';
+
+interface Props {
+  properties: Property[];
+}
+
+const { properties } = Astro.props;
+---
+
+{properties.length > 0 ? (
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {properties.map((property) => (
+      <PropertyCard
+        id={property.id}
+        title={property.title}
+        image={property.images[0] || '/images/placeholder.jpg'}
+        price={property.price}
+        priceType={property.priceType}
+        location={property.location}
+        area={property.area}
+        bedrooms={property.bedrooms}
+        bathrooms={property.bathrooms}
+        tags={property.tags}
+        propertyType={property.propertyType}
+      />
+    ))}
+  </div>
+) : (
+  <div class="flex flex-col items-center justify-center py-16 px-4 text-center">
+    <svg
+      class="w-16 h-16 text-text-muted mb-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+      <path d="M8 11h6" />
+    </svg>
+    <h3 class="font-heading text-lg font-semibold text-text-primary mb-2">
+      No se encontraron propiedades
+    </h3>
+    <p class="text-text-secondary text-sm max-w-md">
+      Intenta ajustar los filtros de busqueda o explorar otras categorias para encontrar lo que buscas.
+    </p>
+  </div>
+)}

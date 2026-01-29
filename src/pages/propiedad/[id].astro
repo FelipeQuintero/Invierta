@@ -1,0 +1,252 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/ui/Breadcrumb.astro';
+import ImageGallery from '../../components/property-detail/ImageGallery.tsx';
+import PropertyMap from '../../components/property-detail/PropertyMap.tsx';
+import StreetView from '../../components/property-detail/StreetView.tsx';
+import View360 from '../../components/property-detail/View360.tsx';
+import ContactForm from '../../components/property-detail/ContactForm.tsx';
+import { getPropertyById, getProperties } from '../../lib/simi';
+import { formatPrice, formatArea } from '../../lib/utils';
+import { SITE_CONFIG } from '../../lib/constants';
+
+export async function getStaticPaths() {
+  const properties = await getProperties({});
+  return properties.map((property) => ({
+    params: { id: property.id },
+    props: { property },
+  }));
+}
+
+const { property } = Astro.props;
+
+if (!property) {
+  return Astro.redirect('/404');
+}
+
+const breadcrumbItems = [
+  { label: 'Inicio', href: '/' },
+  { label: property.operationType === 'venta' ? 'Ventas' : property.operationType === 'arriendo' ? 'Arriendos' : 'Proyectos', href: `/${property.operationType === 'venta' ? 'ventas' : property.operationType === 'arriendo' ? 'arriendos' : 'proyectos'}` },
+  { label: property.title },
+];
+
+const whatsappMessage = `Hola, estoy interesado en la propiedad: ${property.title} (Ref: ${property.id}). ¿Podrian darme mas informacion?`;
+const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent(whatsappMessage)}`;
+---
+
+<Layout
+  title={`${property.title} | Invierta Inmobiliaria`}
+  description={property.description.slice(0, 160)}
+>
+  <section class="bg-surface py-4">
+    <div class="container-custom">
+      <Breadcrumb items={breadcrumbItems} />
+    </div>
+  </section>
+
+  <section class="py-6 lg:py-10">
+    <div class="container-custom">
+      <div class="lg:flex lg:gap-8">
+        <div class="flex-1">
+          <ImageGallery images={property.images} title={property.title} client:load />
+
+          <div class="mt-6">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <span class="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+                  {property.operationType === 'venta' ? 'En Venta' : property.operationType === 'arriendo' ? 'En Arriendo' : 'Proyecto Nuevo'}
+                </span>
+                <h1 class="mt-2 font-heading text-2xl font-bold text-text-primary lg:text-3xl">
+                  {property.title}
+                </h1>
+                <p class="mt-1 flex items-center gap-1.5 text-text-secondary">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  {property.neighborhood}, {property.city}
+                </p>
+              </div>
+              <div class="text-right">
+                <p class="font-heading text-2xl font-bold text-secondary lg:text-3xl">
+                  {formatPrice(property.price)}
+                </p>
+                {property.operationType === 'arriendo' && (
+                  <p class="text-sm text-text-muted">/mes</p>
+                )}
+                {property.adminFee && (
+                  <p class="text-sm text-text-secondary">
+                    Admin: {formatPrice(property.adminFee)}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div class="rounded-lg bg-surface p-4 text-center">
+                <p class="text-2xl font-bold text-primary">{formatArea(property.area)}</p>
+                <p class="text-xs text-text-muted">Area</p>
+              </div>
+              <div class="rounded-lg bg-surface p-4 text-center">
+                <p class="text-2xl font-bold text-primary">{property.bedrooms}</p>
+                <p class="text-xs text-text-muted">Habitaciones</p>
+              </div>
+              <div class="rounded-lg bg-surface p-4 text-center">
+                <p class="text-2xl font-bold text-primary">{property.bathrooms}</p>
+                <p class="text-xs text-text-muted">Banos</p>
+              </div>
+              <div class="rounded-lg bg-surface p-4 text-center">
+                <p class="text-2xl font-bold text-primary">{property.parking}</p>
+                <p class="text-xs text-text-muted">Parqueaderos</p>
+              </div>
+            </div>
+
+            <div class="mt-8">
+              <h2 class="font-heading text-xl font-semibold text-text-primary">Descripcion</h2>
+              <p class="mt-3 whitespace-pre-line text-text-secondary leading-relaxed">
+                {property.description}
+              </p>
+            </div>
+
+            {property.features.length > 0 && (
+              <div class="mt-8">
+                <h2 class="font-heading text-xl font-semibold text-text-primary">Caracteristicas</h2>
+                <ul class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {property.features.map((feature) => (
+                    <li class="flex items-center gap-2 text-sm text-text-secondary">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div class="mt-8">
+              <h2 class="font-heading text-xl font-semibold text-text-primary">Detalles adicionales</h2>
+              <dl class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                <div>
+                  <dt class="text-xs text-text-muted">Tipo de inmueble</dt>
+                  <dd class="font-medium text-text-primary capitalize">{property.propertyType}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-text-muted">Estrato</dt>
+                  <dd class="font-medium text-text-primary">{property.stratum}</dd>
+                </div>
+                {property.yearBuilt && (
+                  <div>
+                    <dt class="text-xs text-text-muted">Ano de construccion</dt>
+                    <dd class="font-medium text-text-primary">{property.yearBuilt}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt class="text-xs text-text-muted">Codigo</dt>
+                  <dd class="font-medium text-text-primary">{property.id}</dd>
+                </div>
+              </dl>
+            </div>
+
+            {property.coordinates && (
+              <div class="mt-8">
+                <h2 class="font-heading text-xl font-semibold text-text-primary">Ubicacion</h2>
+                <div class="mt-4 overflow-hidden rounded-lg">
+                  <PropertyMap
+                    lat={property.coordinates.lat}
+                    lng={property.coordinates.lng}
+                    title={property.title}
+                    client:visible
+                  />
+                </div>
+              </div>
+            )}
+
+            {property.coordinates && (
+              <div class="mt-8">
+                <h2 class="font-heading text-xl font-semibold text-text-primary">Street View</h2>
+                <div class="mt-4 overflow-hidden rounded-lg">
+                  <StreetView
+                    lat={property.coordinates.lat}
+                    lng={property.coordinates.lng}
+                    client:visible
+                  />
+                </div>
+              </div>
+            )}
+
+            {property.view360Url && (
+              <div class="mt-8">
+                <h2 class="font-heading text-xl font-semibold text-text-primary">Tour Virtual 360</h2>
+                <div class="mt-4 overflow-hidden rounded-lg">
+                  <View360 url={property.view360Url} client:visible />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <aside class="mt-8 lg:mt-0 lg:w-80 lg:shrink-0">
+          <div class="sticky top-24 space-y-6">
+            <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+              <h3 class="font-heading text-lg font-semibold text-text-primary">
+                Contactar asesor
+              </h3>
+              {property.agent && (
+                <div class="mt-4 flex items-center gap-3">
+                  {property.agent.photo ? (
+                    <img
+                      src={property.agent.photo}
+                      alt={property.agent.name}
+                      class="h-12 w-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                      </svg>
+                    </div>
+                  )}
+                  <div>
+                    <p class="font-medium text-text-primary">{property.agent.name}</p>
+                    <p class="text-sm text-text-muted">Asesor inmobiliario</p>
+                  </div>
+                </div>
+              )}
+              <div class="mt-6 space-y-3">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 font-semibold text-white transition-colors hover:bg-[#20bd5a]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                  </svg>
+                  WhatsApp
+                </a>
+                <a
+                  href={`tel:${SITE_CONFIG.phone}`}
+                  class="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                  Llamar
+                </a>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+              <h3 class="font-heading text-lg font-semibold text-text-primary mb-4">
+                Solicitar informacion
+              </h3>
+              <ContactForm propertyId={property.id} propertyTitle={property.title} client:visible />
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</Layout>

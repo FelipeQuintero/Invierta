@@ -1,0 +1,70 @@
+---
+import type { Property } from '../../lib/types';
+import PropertyCard from '../properties/PropertyCard.astro';
+
+interface Props {
+  properties: Property[];
+}
+
+const { properties } = Astro.props;
+---
+
+<section class="py-16 md:py-20 lg:py-24">
+  <div class="container-custom">
+    {/* Section header */}
+    <div class="text-center mb-10 md:mb-14">
+      <h2 class="font-heading text-3xl md:text-4xl font-bold text-text-primary mb-3">
+        Propiedades Destacadas
+      </h2>
+      <p class="text-text-secondary text-base md:text-lg max-w-2xl mx-auto">
+        Descubre las mejores oportunidades de inversion y vivienda seleccionadas por nuestros expertos
+      </p>
+    </div>
+
+    {/* Property grid */}
+    {properties.length > 0 ? (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        {properties.map((property) => (
+          <PropertyCard
+            id={property.id}
+            title={property.title}
+            image={property.images[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800'}
+            price={property.price}
+            priceType={property.priceType}
+            location={property.location}
+            area={property.area}
+            bedrooms={property.bedrooms}
+            bathrooms={property.bathrooms}
+            tags={property.tags}
+            propertyType={property.propertyType}
+          />
+        ))}
+      </div>
+    ) : (
+      <p class="text-center text-text-muted py-12">No hay propiedades destacadas disponibles en este momento.</p>
+    )}
+
+    {/* CTA link */}
+    <div class="text-center mt-10 md:mt-14">
+      <a
+        href="/ventas"
+        class="btn-outline text-sm md:text-base"
+      >
+        Ver todas las propiedades
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>

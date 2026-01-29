@@ -1,0 +1,85 @@
+---
+import { SERVICES } from '../../lib/constants';
+
+/*
+  Icon SVG map: Since we cannot dynamically import lucide-react icons in an
+  Astro component, we define minimal inline SVG paths keyed by the icon name
+  used in the SERVICES constant. Each SVG follows the lucide 24x24 viewBox
+  with stroke-based rendering.
+*/
+const iconPaths: Record<string, string> = {
+  Users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  Landmark: '<line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/>',
+  HandCoins: '<path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/>',
+  TrendingDown: '<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/>',
+  FileCheck: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/>',
+  Globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+};
+---
+
+<section class="py-16 md:py-20 lg:py-24 bg-surface">
+  <div class="container-custom">
+    {/* Section header */}
+    <div class="text-center mb-10 md:mb-14">
+      <h2 class="font-heading text-3xl md:text-4xl font-bold text-text-primary mb-3">
+        Nuestros Servicios
+      </h2>
+      <p class="text-text-secondary text-base md:text-lg max-w-2xl mx-auto">
+        Soluciones integrales para todas tus necesidades inmobiliarias
+      </p>
+    </div>
+
+    {/* Services grid */}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+      {SERVICES.map((service) => (
+        <a
+          href={`/servicios/${service.slug}`}
+          class="group bg-white rounded-xl border border-border p-6 md:p-7 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+        >
+          {/* Icon */}
+          <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6 text-primary group-hover:text-white transition-colors duration-300"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              set:html={iconPaths[service.icon] || iconPaths['Globe']}
+            />
+          </div>
+
+          {/* Title */}
+          <h3 class="font-heading text-lg font-bold text-text-primary mb-2 group-hover:text-primary transition-colors">
+            {service.title}
+          </h3>
+
+          {/* Description */}
+          <p class="text-text-secondary text-sm leading-relaxed mb-4">
+            {service.shortDescription}
+          </p>
+
+          {/* "Learn more" indicator */}
+          <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            Conocer mas
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+          </span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>

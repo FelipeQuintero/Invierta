@@ -1,0 +1,70 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PropertyGrid from '../components/properties/PropertyGrid.astro';
+import PropertyFilters from '../components/properties/PropertyFilters.tsx';
+import Breadcrumb from '../components/ui/Breadcrumb.astro';
+import { getProperties } from '../lib/simi';
+
+const properties = await getProperties({ operation: 'venta', limit: 12 });
+
+const breadcrumbItems = [
+  { label: 'Inicio', href: '/' },
+  { label: 'Propiedades en Venta' },
+];
+---
+
+<Layout
+  title="Propiedades en Venta | Invierta Inmobiliaria"
+  description="Encuentra apartamentos, casas, locales y mas propiedades en venta en Colombia. Amplio catalogo con los mejores precios."
+>
+  <section class="bg-surface py-6">
+    <div class="container-custom">
+      <Breadcrumb items={breadcrumbItems} />
+    </div>
+  </section>
+
+  <section class="py-8 lg:py-12">
+    <div class="container-custom">
+      <div class="mb-8">
+        <h1 class="font-heading text-3xl font-bold text-text-primary lg:text-4xl">
+          Propiedades en Venta
+        </h1>
+        <p class="mt-2 text-text-secondary">
+          Explora nuestro catalogo de propiedades disponibles para compra en toda Colombia.
+        </p>
+      </div>
+
+      <div class="lg:flex lg:gap-8">
+        <aside class="mb-6 lg:mb-0 lg:w-72 lg:shrink-0">
+          <PropertyFilters client:load operation="venta" />
+        </aside>
+
+        <div class="flex-1">
+          <div class="mb-4 flex items-center justify-between">
+            <p class="text-sm text-text-secondary">
+              <span class="font-semibold text-text-primary">{properties.length}</span> propiedades encontradas
+            </p>
+            <select
+              class="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="recent">Mas recientes</option>
+              <option value="price-asc">Menor precio</option>
+              <option value="price-desc">Mayor precio</option>
+              <option value="area-desc">Mayor area</option>
+            </select>
+          </div>
+
+          <PropertyGrid properties={properties} />
+
+          {properties.length >= 12 && (
+            <div class="mt-8 flex justify-center">
+              <button class="btn-outline">
+                Cargar mas propiedades
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
