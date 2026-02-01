@@ -5,7 +5,10 @@ import PropertyFilters from '../components/properties/PropertyFilters.tsx';
 import Breadcrumb from '../components/ui/Breadcrumb.astro';
 import { getProperties } from '../lib/simi';
 
-const properties = await getProperties({ operation: 'arriendo', limit: 12 });
+// Disable prerendering - fetch fresh data on each request
+export const prerender = false;
+
+const properties = await getProperties({ operation: 'arriendo', limit: 20 });
 
 const breadcrumbItems = [
   { label: 'Inicio', href: '/' },

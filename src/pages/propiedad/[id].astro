@@ -6,19 +6,15 @@ import PropertyMap from '../../components/property-detail/PropertyMap.tsx';
 import StreetView from '../../components/property-detail/StreetView.tsx';
 import View360 from '../../components/property-detail/View360.tsx';
 import ContactForm from '../../components/property-detail/ContactForm.tsx';
-import { getPropertyById, getProperties } from '../../lib/simi';
+import { getPropertyById } from '../../lib/simi';
 import { formatPrice, formatArea } from '../../lib/utils';
 import { SITE_CONFIG } from '../../lib/constants';
 
-export async function getStaticPaths() {
-  const properties = await getProperties({});
-  return properties.map((property) => ({
-    params: { id: property.id },
-    props: { property },
-  }));
-}
+// Disable prerendering - fetch fresh data on each request
+export const prerender = false;
 
-const { property } = Astro.props;
+const { id } = Astro.params;
+const property = await getPropertyById(id!);
 
 if (!property) {
   return Astro.redirect('/404');
@@ -104,7 +100,7 @@ const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURICompo
             <div class="mt-8">
               <h2 class="font-heading text-xl font-semibold text-text-primary">Descripcion</h2>
               <p class="mt-3 whitespace-pre-line text-text-secondary leading-relaxed">
-                {property.description}
+                {property.description || 'No hay descripción disponible para esta propiedad.'}
               </p>
             </div>
 

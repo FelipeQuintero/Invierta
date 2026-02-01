@@ -4,10 +4,13 @@ import HeroSearch from '../components/home/HeroSearch.tsx';
 import FeaturedProperties from '../components/home/FeaturedProperties.astro';
 import ServicesPreview from '../components/home/ServicesPreview.astro';
 import AnimateOnScroll from '../components/ui/AnimateOnScroll.tsx';
-import { getProperties } from '../lib/simi';
+import { getProperties, getFeaturedProperties } from '../lib/simi';
 import { SITE_CONFIG } from '../lib/constants';
 
-const featuredProperties = await getProperties({ featured: true, limit: 6 });
+// Disable prerendering - fetch fresh data on each request
+export const prerender = false;
+
+const featuredProperties = await getFeaturedProperties(8);
 ---
 
 <Layout>
