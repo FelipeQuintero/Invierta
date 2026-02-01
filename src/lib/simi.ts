@@ -7,72 +7,64 @@ const SIMI_API_KEY = import.meta.env.SIMI_API_KEY;
 const useMock = !SIMI_API_KEY;
 
 // ============================================================================
-// SIMI API Response Types
+// SIMI API Response Types (Real structure from API)
 // ============================================================================
 
+interface SimiFilterResponse {
+  Inmuebles: SimiInmueble[];
+  datosGrales: {
+    inicio: number;
+    fin: number;
+    pagina_actual: string;
+    totalInmuebles: number;
+    totalPagina: number;
+  };
+}
+
 interface SimiInmueble {
-  // Identificación
-  codigo: string;
-  codInmueble: number;
-  consecutivo: number;
+  Codigo_Inmueble: string;
+  IdInmobiliaria: string;
+  Tipo_Inmueble: string;
+  idTipoInmueble: string;
+  Gestion: string;
+  idGestion: string;
+  estadoInmueble: string;
   
-  // Clasificación
-  nombreTipoInmueble: string;
-  tipoInmueble?: string;
-  idTipoInmueble: number;
-  gestion: string;
-  idGestion: number;
-  estado: string;
+  // Prices (come as formatted strings like "1,900,000,000")
+  Venta: string;
+  Canon: string;
+  Administracion: string;
   
-  // Precios
-  canon: number;
-  venta: number;
-  administracion: number;
+  // Location
+  Departamento: string;
+  Ciudad: string;
+  Zona: string;
+  Barrio: string;
+  latitud: string;
+  longitud: string;
   
-  // Ubicación
-  departamento: string;
-  ciudad: string;
-  zona: string;
-  barrio: string;
-  direccion: string;
-  latitud: number;
-  longitud: number;
+  // Characteristics
+  Estrato: string;
+  AreaConstruida: string;
+  AreaLote: string;
+  Alcobas: string;
+  banios: string;
+  garaje: string;
   
-  // Características físicas
-  estrato: number;
-  areaLote: number;
-  areaConstruida: number;
-  habitaciones: number;
-  banos: number;
-  parqueaderos: number;
+  // Description
+  descripcionlarga: string;
   
-  // Características adicionales
-  caracteristicasInternas: string[];
-  caracteristicasExternas: string[];
-  descripcion: string;
+  // Media
+  foto1: string;
+  foto360: number;
+  video360: string | null;
   
   // Metadata
-  fechaConsignacion: string;
-  destacado: boolean;
+  fingreso: string;
+  destacado: string | null;
   
-  // Multimedia
-  fotos: SimiFoto[];
-  video360?: string;
-  
-  // Asesor
-  promotor?: SimiAsesor;
-}
-
-interface SimiFoto {
-  url: string;
-  principal: boolean;
-}
-
-interface SimiAsesor {
-  nombre: string;
-  telefono: string;
-  email: string;
-  foto?: string;
+  // Other
+  codInterno: string;
 }
 
 interface SimiDepartamento {
@@ -95,9 +87,7 @@ interface SimiTipoInmueble {
 // ============================================================================
 
 function getAuthHeader(): string {
-  // SIMI uses Basic Auth with format: Authorization:TOKEN
   const credentials = `Authorization:${SIMI_API_KEY}`;
-  // btoa equivalent for Node.js
   const base64 = typeof btoa !== 'undefined' 
     ? btoa(credentials)
     : Buffer.from(credentials).toString('base64');
@@ -106,6 +96,8 @@ function getAuthHeader(): string {
 
 async function simiRequest<T>(endpoint: string): Promise<T> {
   const url = `${SIMI_API_URL}${endpoint}`;
+  
+  console.log('[SIMI] Requesting:', url);
   
   const response = await fetch(url, {
     headers: {
@@ -119,16 +111,6 @@ async function simiRequest<T>(endpoint: string): Promise<T> {
   }
 
   const data = await response.json();
-  
-  // SIMI returns array directly for most endpoints
-  // Some endpoints return {code, response} format
-  if (data && typeof data === 'object' && 'code' in data) {
-    if (data.code !== 0) {
-      throw new Error(`SIMI API Error: code ${data.code}`);
-    }
-    return data.response as T;
-  }
-  
   return data as T;
 }
 
@@ -139,17 +121,13 @@ async function simiRequest<T>(endpoint: string): Promise<T> {
 const OPERATION_MAP: Record<OperationType, number> = {
   arriendo: 1,
   venta: 5,
-  proyecto: 5, // Proyectos son tipo venta
+  proyecto: 5,
 };
 
 const PROPERTY_TYPE_MAP: Record<string, PropertyType> = {
   'apartamento': 'apartamento',
   'apartaestudio': 'apartamento',
   'casa': 'casa',
-  'casa campestre': 'casa',
-  'casa comercial': 'casa',
-  'casa lote': 'casa',
-  'casa residencial': 'casa',
   'local': 'local',
   'locales': 'local',
   'oficina': 'oficina',
@@ -165,94 +143,83 @@ const PROPERTY_TYPE_MAP: Record<string, PropertyType> = {
 };
 
 const PROPERTY_TYPE_ID_MAP: Record<PropertyType, number[]> = {
-  apartamento: [1, 11], // Apartamento, Apartaestudio
-  casa: [2, 19, 20, 21, 22], // Casa y variantes
-  local: [5], // Locales
-  oficina: [3, 4], // Consultorios, Oficinas
-  lote: [7], // Lotes
-  bodega: [6], // Bodega
-  finca: [8], // Fincas
+  apartamento: [1, 11],
+  casa: [2, 19, 20, 21, 22],
+  local: [5],
+  oficina: [3, 4],
+  lote: [7],
+  bodega: [6],
+  finca: [8],
 };
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+function parsePrice(priceStr: string): number {
+  if (!priceStr || priceStr === '0') return 0;
+  // Remove commas and parse
+  return parseInt(priceStr.replace(/,/g, ''), 10) || 0;
+}
+
+function parseNumber(str: string): number {
+  if (!str) return 0;
+  return parseInt(str.replace(/,/g, ''), 10) || 0;
+}
 
 // ============================================================================
 // Transformers
 // ============================================================================
 
 function transformSimiProperty(simi: SimiInmueble): Property {
-  const isArriendo = simi.idGestion === 1 || simi.gestion?.toLowerCase().includes('arriendo');
-  const price = isArriendo ? simi.canon : simi.venta;
+  const isArriendo = simi.idGestion === '1' || simi.Gestion?.toLowerCase().includes('arriendo');
+  const ventaPrice = parsePrice(simi.Venta);
+  const canonPrice = parsePrice(simi.Canon);
+  const price = isArriendo ? canonPrice : ventaPrice;
   
   const tags: PropertyTag[] = [];
-  if (simi.destacado) tags.push('destacado');
+  if (simi.destacado === '1') tags.push('destacado');
   
-  const tipoNombre = (simi.nombreTipoInmueble || simi.tipoInmueble || '').toLowerCase();
+  const tipoNombre = (simi.Tipo_Inmueble || '').toLowerCase();
   const propertyType: PropertyType = PROPERTY_TYPE_MAP[tipoNombre] || 'apartamento';
   
   const operationType: OperationType = isArriendo ? 'arriendo' : 'venta';
   
-  // Handle fotos - can be array of objects or array of strings
-  let images: string[] = [];
-  if (simi.fotos && Array.isArray(simi.fotos)) {
-    images = simi.fotos.map(f => {
-      if (typeof f === 'string') return f;
-      return f.url;
-    }).filter(Boolean);
-    
-    // Sort to put principal photo first if we have objects
-    if (simi.fotos.length > 0 && typeof simi.fotos[0] === 'object') {
-      const fotosObjs = simi.fotos as SimiFoto[];
-      images = fotosObjs
-        .sort((a, b) => (b.principal ? 1 : 0) - (a.principal ? 1 : 0))
-        .map(f => f.url)
-        .filter(Boolean);
-    }
+  // Images - SIMI returns foto1 as main image URL
+  const images: string[] = [];
+  if (simi.foto1) {
+    images.push(simi.foto1);
   }
   
-  const features = [
-    ...(simi.caracteristicasInternas || []),
-    ...(simi.caracteristicasExternas || []),
-  ];
+  const lat = parseFloat(simi.latitud) || 0;
+  const lng = parseFloat(simi.longitud) || 0;
   
-  let agent: Agent | undefined;
-  if (simi.promotor) {
-    agent = {
-      name: simi.promotor.nombre,
-      phone: simi.promotor.telefono,
-      email: simi.promotor.email,
-      photo: simi.promotor.foto,
-    };
-  }
-  
-  const locationParts = [simi.barrio, simi.zona, simi.ciudad].filter(Boolean);
-  const title = `${simi.nombreTipoInmueble || simi.tipoInmueble || 'Inmueble'} en ${locationParts[0] || 'Colombia'}`;
+  const title = `${simi.Tipo_Inmueble || 'Inmueble'} en ${simi.Barrio || simi.Ciudad || 'Colombia'}`;
   
   return {
-    id: simi.codigo || String(simi.codInmueble),
+    id: simi.Codigo_Inmueble,
     title,
-    description: simi.descripcion || '',
+    description: simi.descripcionlarga || '',
     price: price || 0,
     priceType: isArriendo ? 'arriendo' : 'venta',
-    location: simi.direccion || locationParts.join(', '),
-    city: simi.ciudad || '',
-    neighborhood: simi.barrio || simi.zona || '',
-    area: simi.areaConstruida || simi.areaLote || 0,
-    bedrooms: simi.habitaciones || 0,
-    bathrooms: simi.banos || 0,
-    parking: simi.parqueaderos || 0,
-    stratum: simi.estrato || 0,
+    location: `${simi.Barrio}, ${simi.Ciudad}`,
+    city: simi.Ciudad || '',
+    neighborhood: simi.Barrio || simi.Zona || '',
+    area: parseNumber(simi.AreaConstruida) || parseNumber(simi.AreaLote) || 0,
+    bedrooms: parseNumber(simi.Alcobas),
+    bathrooms: parseNumber(simi.banios),
+    parking: parseNumber(simi.garaje),
+    stratum: parseNumber(simi.Estrato),
     images,
     tags,
     propertyType,
     operationType,
-    coordinates: simi.latitud && simi.longitud ? {
-      lat: Number(simi.latitud),
-      lng: Number(simi.longitud),
-    } : undefined,
-    view360Url: simi.video360,
-    features,
-    adminFee: simi.administracion,
-    agent,
-    createdAt: simi.fechaConsignacion || new Date().toISOString(),
+    coordinates: lat && lng ? { lat, lng } : undefined,
+    view360Url: simi.video360 || undefined,
+    features: [],
+    adminFee: parsePrice(simi.Administracion),
+    agent: undefined,
+    createdAt: simi.fingreso || new Date().toISOString(),
   };
 }
 
@@ -267,20 +234,20 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
   }
 
   try {
-    // Build URL path with parameters (SIMI uses path params, not query strings)
+    // Build URL path with parameters
     let endpoint = '/v2.1.1/filtroInmueble';
     
-    // Paginación (SIMI usa limite como página, no offset)
+    // Pagination
     const page = filters?.offset ? Math.floor(filters.offset / (filters.limit || 20)) + 1 : 1;
     endpoint += `/limite/${page}`;
     endpoint += `/cantidad/${filters?.limit || 20}`;
     
-    // Tipo de operación
+    // Operation type
     if (filters?.operation) {
       endpoint += `/tipOper/${OPERATION_MAP[filters.operation]}`;
     }
     
-    // Tipo de inmueble
+    // Property type
     if (filters?.propertyType) {
       const typeIds = PROPERTY_TYPE_ID_MAP[filters.propertyType];
       if (typeIds && typeIds.length > 0) {
@@ -288,26 +255,26 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
       }
     }
     
-    // Rango de precio
+    // Price range
     if (filters?.minPrice) endpoint += `/valmin/${filters.minPrice}`;
     if (filters?.maxPrice) endpoint += `/valmax/${filters.maxPrice}`;
     
-    // Características
+    // Bedrooms/bathrooms
     if (filters?.bedrooms) endpoint += `/alcobas/${filters.bedrooms}`;
     if (filters?.bathrooms) endpoint += `/banios/${filters.bathrooms}`;
 
-    console.log('[SIMI] Fetching:', endpoint);
-    const data = await simiRequest<SimiInmueble[]>(endpoint);
+    const data = await simiRequest<SimiFilterResponse>(endpoint);
     
-    if (!Array.isArray(data)) {
+    if (!data.Inmuebles || !Array.isArray(data.Inmuebles)) {
       console.warn('[SIMI] Unexpected response format:', data);
       return getMockProperties(filters);
     }
     
-    return data.map(transformSimiProperty);
+    console.log(`[SIMI] Found ${data.Inmuebles.length} properties (total: ${data.datosGrales?.totalInmuebles})`);
+    
+    return data.Inmuebles.map(transformSimiProperty);
   } catch (error) {
     console.error('[SIMI] Error fetching properties:', error);
-    // Fallback to mock data on error
     return getMockProperties(filters);
   }
 }
@@ -320,18 +287,26 @@ export async function getFeaturedProperties(cantidad: number = 10): Promise<Prop
 
   try {
     const endpoint = `/v21/inmueblesDestacados/limite/1/cantidad/${cantidad}`;
-    console.log('[SIMI] Fetching featured:', endpoint);
-    const data = await simiRequest<SimiInmueble[]>(endpoint);
+    const data = await simiRequest<SimiFilterResponse | SimiInmueble[]>(endpoint);
     
-    if (!Array.isArray(data)) {
-      console.warn('[SIMI] Unexpected response format:', data);
+    // Handle both possible response formats
+    let inmuebles: SimiInmueble[];
+    if (Array.isArray(data)) {
+      inmuebles = data;
+    } else if (data && 'Inmuebles' in data) {
+      inmuebles = data.Inmuebles;
+    } else {
+      console.warn('[SIMI] Unexpected featured response format:', data);
       return getMockProperties({ featured: true, limit: cantidad });
     }
     
-    return data.map(transformSimiProperty);
+    console.log(`[SIMI] Found ${inmuebles.length} featured properties`);
+    
+    return inmuebles.map(transformSimiProperty);
   } catch (error) {
     console.error('[SIMI] Error fetching featured properties:', error);
-    return getMockProperties({ featured: true, limit: cantidad });
+    // Fallback: get recent properties instead
+    return getProperties({ limit: cantidad });
   }
 }
 
@@ -344,11 +319,17 @@ export async function getPropertyById(id: string): Promise<Property | undefined>
   try {
     const endpoint = `/v2/inmueble/codInmueble/${id}`;
     console.log('[SIMI] Fetching property:', endpoint);
-    const data = await simiRequest<SimiInmueble>(endpoint);
+    const data = await simiRequest<SimiInmueble | SimiInmueble[]>(endpoint);
     
-    if (!data) return undefined;
+    // Handle both single object and array responses
+    const inmueble = Array.isArray(data) ? data[0] : data;
     
-    return transformSimiProperty(data);
+    if (!inmueble || !inmueble.Codigo_Inmueble) {
+      console.warn('[SIMI] Property not found:', id);
+      return undefined;
+    }
+    
+    return transformSimiProperty(inmueble);
   } catch (error) {
     console.error('[SIMI] Error fetching property:', error);
     return getMockPropertyById(id);
