@@ -196,6 +196,11 @@ function transformSimiProperty(simi: SimiInmueble): Property {
   
   // Images - SIMI returns foto1-foto10 as image URLs
   const images: string[] = [];
+  // Debug: log all foto fields from SIMI response
+  const fotoFields = Object.keys(simi).filter(k => k.toLowerCase().includes('foto'));
+  console.log('[SIMI] Photo fields in response:', fotoFields);
+  console.log('[SIMI] foto1:', simi.foto1 ? 'present' : 'missing');
+  console.log('[SIMI] foto2:', simi.foto2 ? 'present' : 'missing');
   // Collect all available photos (foto1 through foto10)
   for (let i = 1; i <= 10; i++) {
     const fotoKey = `foto${i}` as keyof SimiInmueble;
@@ -204,6 +209,7 @@ function transformSimiProperty(simi: SimiInmueble): Property {
       images.push(foto);
     }
   }
+  console.log('[SIMI] Total images collected:', images.length);
   
   const lat = parseFloat(simi.latitud) || 0;
   const lng = parseFloat(simi.longitud) || 0;
