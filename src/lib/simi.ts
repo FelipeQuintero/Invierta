@@ -318,20 +318,28 @@ export async function getPropertyById(id: string): Promise<Property | undefined>
 
   try {
     const endpoint = `/v2/inmueble/codInmueble/${id}`;
-    console.log('[SIMI] Fetching property:', endpoint);
+    console.log('[SIMI] Fetching property with ID:', id);
+    console.log('[SIMI] Full endpoint:', endpoint);
+    console.log('[SIMI] Full URL:', `${SIMI_API_URL}${endpoint}`);
+
     const data = await simiRequest<SimiInmueble | SimiInmueble[]>(endpoint);
-    
+
+    console.log('[SIMI] Raw response:', JSON.stringify(data, null, 2));
+
     // Handle both single object and array responses
     const inmueble = Array.isArray(data) ? data[0] : data;
-    
+
     if (!inmueble || !inmueble.Codigo_Inmueble) {
       console.warn('[SIMI] Property not found:', id);
+      console.warn('[SIMI] Response was:', data);
       return undefined;
     }
-    
+
+    console.log('[SIMI] Found property:', inmueble.Codigo_Inmueble);
     return transformSimiProperty(inmueble);
   } catch (error) {
-    console.error('[SIMI] Error fetching property:', error);
+    console.error('[SIMI] Error fetching property by ID:', id);
+    console.error('[SIMI] Error details:', error);
     return getMockPropertyById(id);
   }
 }
