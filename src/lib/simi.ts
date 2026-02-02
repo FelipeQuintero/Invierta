@@ -21,6 +21,33 @@ interface SimiFilterResponse {
   };
 }
 
+// Response from individual property endpoint (/v2/inmueble/codInmueble/:id)
+interface SimiInmuebleDetalle {
+  idInm: string;
+  codinm: string;
+  IdInmobiliaria: string;
+  IdGestion: string;
+  IdTpInm: string;
+  banos: string;
+  alcobas: string;
+  garaje: string;
+  ValorVenta: string;
+  ValorCanon: string;
+  AreaConstruida: string;
+  AreaLote: string;
+  descripcionlarga: string;
+  latitud: string;
+  longitud: string;
+  Estrato: string;
+  Tipo_Inmueble: string;
+  ciudad: string;
+  barrio: string;
+  zona: string;
+  Gestion: string;
+  fotos?: Array<{ foto: string; posi: string }>;
+  video360?: string | null;
+}
+
 interface SimiInmueble {
   Codigo_Inmueble: string;
   IdInmobiliaria: string;
@@ -194,14 +221,8 @@ function transformSimiProperty(simi: SimiInmueble): Property {
   
   const operationType: OperationType = isArriendo ? 'arriendo' : 'venta';
   
-  // Images - SIMI returns foto1-foto10 as image URLs
+  // Images - SIMI filter endpoint returns foto1-foto10 as image URLs
   const images: string[] = [];
-  // Debug: log all foto fields from SIMI response
-  const fotoFields = Object.keys(simi).filter(k => k.toLowerCase().includes('foto'));
-  console.log('[SIMI] Photo fields in response:', fotoFields);
-  console.log('[SIMI] foto1:', simi.foto1 ? 'present' : 'missing');
-  console.log('[SIMI] foto2:', simi.foto2 ? 'present' : 'missing');
-  // Collect all available photos (foto1 through foto10)
   for (let i = 1; i <= 10; i++) {
     const fotoKey = `foto${i}` as keyof SimiInmueble;
     const foto = simi[fotoKey];
@@ -209,7 +230,6 @@ function transformSimiProperty(simi: SimiInmueble): Property {
       images.push(foto);
     }
   }
-  console.log('[SIMI] Total images collected:', images.length);
   
   const lat = parseFloat(simi.latitud) || 0;
   const lng = parseFloat(simi.longitud) || 0;
@@ -330,55 +350,102 @@ export async function getFeaturedProperties(cantidad: number = 10): Promise<Prop
   }
 }
 
+// Transform detailed property response (from /v2/inmueble/codInmueble endpoint)
+function transformSimiInmuebleDetalle(data: SimiInmuebleDetalle): Property {
+  const isArriendo = data.Gestion?.toLowerCase().includes('arriendo') || data.IdGestion === '1';
+  const price = parsePrice(isArriendo ? data.ValorCanon : data.ValorVenta);
+  
+  // Collect all photos from the fotos array
+  const images: string[] = [];
+  if (data.fotos && Array.isArray(data.fotos)) {
+    data.fotos
+      .sort((a, b) => parseInt(a.posi) - parseInt(b.posi))
+      .forEach(f => {
+        if (f.foto && f.foto.trim()) {
+          images.push(f.foto);
+        }
+      });
+  }
+  console.log('[SIMI] Detalle endpoint - photos found:', images.length);
+
+  const title = `${data.Tipo_Inmueble || 'Inmueble'} en ${data.barrio || data.ciudad || 'Colombia'}`;
+  const tipoNombre = (data.Tipo_Inmueble || '').toLowerCase().trim();
+  const propertyType: PropertyType = PROPERTY_TYPE_MAP[tipoNombre] || 'apartamento';
+  const operationType: OperationType = isArriendo ? 'arriendo' : 'venta';
+
+  return {
+    id: data.idInm,
+    title,
+    description: data.descripcionlarga || '',
+    price: price || 0,
+    priceType: isArriendo ? 'arriendo' : 'venta',
+    location: `${data.barrio}, ${data.ciudad}`,
+    city: data.ciudad || '',
+    neighborhood: data.barrio || data.zona || '',
+    area: parseNumber(data.AreaConstruida) || parseNumber(data.AreaLote) || 0,
+    bedrooms: parseNumber(data.alcobas),
+    bathrooms: parseNumber(data.banos),
+    parking: parseNumber(data.garaje),
+    stratum: parseNumber(data.Estrato),
+    images,
+    tags: [],
+    propertyType,
+    operationType,
+    coordinates: parseFloat(data.latitud) && parseFloat(data.longitud) 
+      ? { lat: parseFloat(data.latitud), lng: parseFloat(data.longitud) } 
+      : undefined,
+    view360Url: data.video360 || undefined,
+    features: [],
+    adminFee: 0,
+    agent: undefined,
+    createdAt: new Date().toISOString(),
+  };
+}
+
 export async function getPropertyById(id: string): Promise<Property | undefined> {
   if (useMock) {
     console.log('[SIMI] Using mock data - no API key configured');
     return getMockPropertyById(id);
   }
 
-  // Try multiple endpoint versions - SIMI API is inconsistent
-  const endpoints = [
-    `/v2.1.1/inmueble/codInmueble/${id}`,
-    `/v2.1/inmueble/codInmueble/${id}`,
+  // Extract internal ID - format is "188-2470" where 188 is inmobiliaria and 2470 is property
+  const internalId = id.includes('-') ? id.split('-')[1] : id;
+
+  // Try the detailed property endpoint first (returns fotos array)
+  const detailEndpoints = [
     `/v2/inmueble/codInmueble/${id}`,
+    `/v2/inmueble/codInmueble/${internalId}`,
   ];
 
-  for (const endpoint of endpoints) {
+  for (const endpoint of detailEndpoints) {
     try {
-      console.log('[SIMI] Trying endpoint:', endpoint);
-      const data = await simiRequest<SimiInmueble | SimiInmueble[]>(endpoint);
+      console.log('[SIMI] Trying detail endpoint:', endpoint);
+      const data = await simiRequest<SimiInmuebleDetalle>(endpoint);
       
-      // Handle both single object and array responses
-      const inmueble = Array.isArray(data) ? data[0] : data;
-
-      if (inmueble && inmueble.Codigo_Inmueble) {
-        console.log('[SIMI] Found property via', endpoint);
-        return transformSimiProperty(inmueble);
+      // Check if we got a valid response with the fotos array
+      if (data && (data.idInm || data.codinm)) {
+        console.log('[SIMI] Found property via detail endpoint:', endpoint);
+        console.log('[SIMI] Photos in response:', data.fotos?.length || 0);
+        return transformSimiInmuebleDetalle(data);
       }
     } catch (error) {
-      console.log('[SIMI] Endpoint failed:', endpoint);
-      // Continue to next endpoint
+      console.log('[SIMI] Detail endpoint failed:', endpoint);
     }
   }
 
-  // Fallback: search via filter endpoint with property code
+  // Fallback: search via filter endpoint (only returns foto1)
   try {
     console.log('[SIMI] Trying filter fallback for:', id);
-    // Extract the internal ID (after the dash) if format is "188-2470"
-    const internalId = id.includes('-') ? id.split('-')[1] : id;
-
-    // Use filter endpoint to find by code - search recent properties only
-    const endpoint = `/v2.1.1/filtroInmueble/limite/1/cantidad/10`;
+    const endpoint = `/v2.1.1/filtroInmueble/limite/1/cantidad/20`;
     const data = await simiRequest<SimiFilterResponse>(endpoint);
 
     if (data.Inmuebles && Array.isArray(data.Inmuebles)) {
-      // Find the property with matching code
       const inmueble = data.Inmuebles.find(
         (p) => p.Codigo_Inmueble === id || p.codInterno === internalId
       );
 
       if (inmueble) {
-        console.log('[SIMI] Found property via filter fallback');
+        console.log('[SIMI] Found property via filter fallback (limited photos)');
         return transformSimiProperty(inmueble);
       }
     }
