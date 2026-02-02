@@ -59,6 +59,8 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
           alt={`${title} - Imagen ${currentIndex + 1}`}
           className={`w-full h-full object-cover transition-opacity duration-300 ${mainLoaded ? 'opacity-100' : 'opacity-0'}`}
           onLoad={() => setMainLoaded(true)}
+          referrerPolicy="no-referrer"
+          crossOrigin="anonymous"
         />
 
         {/* Navigation arrows */}
@@ -106,6 +108,8 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
                 alt={`${title} - Miniatura ${index + 1}`}
                 className="w-full h-full object-cover"
                 loading="lazy"
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
               />
             </button>
           ))}

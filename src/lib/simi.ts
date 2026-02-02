@@ -346,17 +346,17 @@ export async function getPropertyById(id: string): Promise<Property | undefined>
     console.log('[SIMI] Trying filter fallback for:', id);
     // Extract the internal ID (after the dash) if format is "188-2470"
     const internalId = id.includes('-') ? id.split('-')[1] : id;
-    
-    // Use filter endpoint to find by code - search all operations
-    const endpoint = `/v2.1.1/filtroInmueble/limite/1/cantidad/50`;
+
+    // Use filter endpoint to find by code - search recent properties only
+    const endpoint = `/v2.1.1/filtroInmueble/limite/1/cantidad/10`;
     const data = await simiRequest<SimiFilterResponse>(endpoint);
-    
+
     if (data.Inmuebles && Array.isArray(data.Inmuebles)) {
       // Find the property with matching code
       const inmueble = data.Inmuebles.find(
         (p) => p.Codigo_Inmueble === id || p.codInterno === internalId
       );
-      
+
       if (inmueble) {
         console.log('[SIMI] Found property via filter fallback');
         return transformSimiProperty(inmueble);

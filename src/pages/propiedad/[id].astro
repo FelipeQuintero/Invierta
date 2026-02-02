@@ -70,7 +70,7 @@ const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURICompo
                 {property.operationType === 'arriendo' && (
                   <p class="text-sm text-text-muted">/mes</p>
                 )}
-                {property.adminFee && (
+                {property.adminFee > 0 && (
                   <p class="text-sm text-text-secondary">
                     Admin: {formatPrice(property.adminFee)}
                   </p>
@@ -158,7 +158,7 @@ const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURICompo
               </div>
             )}
 
-            {property.coordinates && (
+            {property.coordinates && import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY && (
               <div class="mt-8">
                 <h2 class="font-heading text-xl font-semibold text-text-primary">Street View</h2>
                 <div class="mt-4 overflow-hidden rounded-lg">
