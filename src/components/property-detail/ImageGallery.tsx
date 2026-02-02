@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ImageGalleryProps {
@@ -9,6 +9,14 @@ interface ImageGalleryProps {
 export default function ImageGallery({ images, title }: ImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [mainLoaded, setMainLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // Handle already-loaded images (cached or fast load)
+  useEffect(() => {
+    if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
+      setMainLoaded(true);
+    }
+  }, [currentIndex, images]);
 
   const goToPrevious = useCallback(() => {
     setMainLoaded(false);
@@ -55,12 +63,13 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
           </div>
         )}
         <img
+          ref={imgRef}
           src={images[currentIndex]}
           alt={`${title} - Imagen ${currentIndex + 1}`}
           className={`w-full h-full object-cover transition-opacity duration-300 ${mainLoaded ? 'opacity-100' : 'opacity-0'}`}
           onLoad={() => setMainLoaded(true)}
+          onError={() => setMainLoaded(true)}
           referrerPolicy="no-referrer"
-          crossOrigin="anonymous"
         />
 
         {/* Navigation arrows */}
