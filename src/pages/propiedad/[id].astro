@@ -231,12 +231,7 @@ const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURICompo
               </div>
             </div>
 
-            <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
-              <h3 class="font-heading text-lg font-semibold text-text-primary mb-4">
-                Solicitar informacion
-              </h3>
-              <ContactForm propertyId={property.id} propertyTitle={property.title} client:visible />
-            </div>
+            <ContactForm propertyId={property.id} propertyTitle={property.title} client:visible />
           </div>
         </aside>
       </div>

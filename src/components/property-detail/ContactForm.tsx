@@ -127,7 +127,7 @@ export default function ContactForm({ propertyTitle, agentName, agentPhone }: Co
   return (
     <div className="bg-white rounded-xl border border-[var(--color-border)] p-6 shadow-sm">
       <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4 font-[var(--font-family-heading)]">
-        Contactar
+        Solicitar información
       </h3>
 
       {/* Agent info */}
