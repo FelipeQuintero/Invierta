@@ -44,7 +44,7 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
   return (
     <div className="w-full">
       {/* Main image */}
-      <div className="relative w-full aspect-[16/10] md:aspect-[16/9] rounded-xl overflow-hidden bg-gray-200 group">
+      <div className="relative w-full aspect-[16/9] max-h-[500px] rounded-xl overflow-hidden bg-gray-200 group">
         {!mainLoaded && (
           <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
             <svg
