@@ -42,8 +42,8 @@ const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURICompo
 
   <section class="py-6 lg:py-10">
     <div class="container-custom">
-      <div class="lg:flex lg:gap-8 xl:gap-10">
-        <div class="flex-1 min-w-0 lg:max-w-4xl">
+      <div class="lg:grid lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_380px] lg:gap-8">
+        <div class="min-w-0">
           <ImageGallery images={property.images} title={property.title} client:load />
 
           <div class="mt-6">
@@ -179,7 +179,7 @@ const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURICompo
           </div>
         </div>
 
-        <aside class="mt-8 lg:mt-0 lg:w-80 xl:w-96 lg:shrink-0">
+        <aside class="mt-8 lg:mt-0">
           <div class="sticky top-24 space-y-6">
             <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
               <h3 class="font-heading text-lg font-semibold text-text-primary">
