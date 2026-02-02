@@ -146,15 +146,12 @@ const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURICompo
 
             {property.coordinates && (
               <div class="mt-8">
-                <h2 class="font-heading text-xl font-semibold text-text-primary">Ubicacion</h2>
-                <div class="mt-4 overflow-hidden rounded-lg">
-                  <PropertyMap
-                    lat={property.coordinates.lat}
-                    lng={property.coordinates.lng}
-                    title={property.title}
-                    client:visible
-                  />
-                </div>
+                <PropertyMap
+                  lat={property.coordinates.lat}
+                  lng={property.coordinates.lng}
+                  title={property.title}
+                  client:visible
+                />
               </div>
             )}
 

@@ -56,6 +56,15 @@ interface SimiInmueble {
   
   // Media
   foto1: string;
+  foto2?: string;
+  foto3?: string;
+  foto4?: string;
+  foto5?: string;
+  foto6?: string;
+  foto7?: string;
+  foto8?: string;
+  foto9?: string;
+  foto10?: string;
   foto360: number;
   video360: string | null;
   
@@ -185,10 +194,15 @@ function transformSimiProperty(simi: SimiInmueble): Property {
   
   const operationType: OperationType = isArriendo ? 'arriendo' : 'venta';
   
-  // Images - SIMI returns foto1 as main image URL
+  // Images - SIMI returns foto1-foto10 as image URLs
   const images: string[] = [];
-  if (simi.foto1) {
-    images.push(simi.foto1);
+  // Collect all available photos (foto1 through foto10)
+  for (let i = 1; i <= 10; i++) {
+    const fotoKey = `foto${i}` as keyof SimiInmueble;
+    const foto = simi[fotoKey];
+    if (foto && typeof foto === 'string' && foto.trim() !== '') {
+      images.push(foto);
+    }
   }
   
   const lat = parseFloat(simi.latitud) || 0;
