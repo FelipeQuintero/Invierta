@@ -316,32 +316,58 @@ export async function getPropertyById(id: string): Promise<Property | undefined>
     return getMockPropertyById(id);
   }
 
-  try {
-    const endpoint = `/v2/inmueble/codInmueble/${id}`;
-    console.log('[SIMI] Fetching property with ID:', id);
-    console.log('[SIMI] Full endpoint:', endpoint);
-    console.log('[SIMI] Full URL:', `${SIMI_API_URL}${endpoint}`);
+  // Try multiple endpoint versions - SIMI API is inconsistent
+  const endpoints = [
+    `/v2.1.1/inmueble/codInmueble/${id}`,
+    `/v2.1/inmueble/codInmueble/${id}`,
+    `/v2/inmueble/codInmueble/${id}`,
+  ];
 
-    const data = await simiRequest<SimiInmueble | SimiInmueble[]>(endpoint);
+  for (const endpoint of endpoints) {
+    try {
+      console.log('[SIMI] Trying endpoint:', endpoint);
+      const data = await simiRequest<SimiInmueble | SimiInmueble[]>(endpoint);
+      
+      // Handle both single object and array responses
+      const inmueble = Array.isArray(data) ? data[0] : data;
 
-    console.log('[SIMI] Raw response:', JSON.stringify(data, null, 2));
-
-    // Handle both single object and array responses
-    const inmueble = Array.isArray(data) ? data[0] : data;
-
-    if (!inmueble || !inmueble.Codigo_Inmueble) {
-      console.warn('[SIMI] Property not found:', id);
-      console.warn('[SIMI] Response was:', data);
-      return undefined;
+      if (inmueble && inmueble.Codigo_Inmueble) {
+        console.log('[SIMI] Found property via', endpoint);
+        return transformSimiProperty(inmueble);
+      }
+    } catch (error) {
+      console.log('[SIMI] Endpoint failed:', endpoint);
+      // Continue to next endpoint
     }
-
-    console.log('[SIMI] Found property:', inmueble.Codigo_Inmueble);
-    return transformSimiProperty(inmueble);
-  } catch (error) {
-    console.error('[SIMI] Error fetching property by ID:', id);
-    console.error('[SIMI] Error details:', error);
-    return getMockPropertyById(id);
   }
+
+  // Fallback: search via filter endpoint with property code
+  try {
+    console.log('[SIMI] Trying filter fallback for:', id);
+    // Extract the internal ID (after the dash) if format is "188-2470"
+    const internalId = id.includes('-') ? id.split('-')[1] : id;
+    
+    // Use filter endpoint to find by code - search all operations
+    const endpoint = `/v2.1.1/filtroInmueble/limite/1/cantidad/50`;
+    const data = await simiRequest<SimiFilterResponse>(endpoint);
+    
+    if (data.Inmuebles && Array.isArray(data.Inmuebles)) {
+      // Find the property with matching code
+      const inmueble = data.Inmuebles.find(
+        (p) => p.Codigo_Inmueble === id || p.codInterno === internalId
+      );
+      
+      if (inmueble) {
+        console.log('[SIMI] Found property via filter fallback');
+        return transformSimiProperty(inmueble);
+      }
+    }
+  } catch (error) {
+    console.error('[SIMI] Filter fallback failed:', error);
+  }
+
+  console.warn('[SIMI] Property not found after all attempts:', id);
+  return getMockPropertyById(id);
 }
 
 // ============================================================================
