@@ -9,14 +9,16 @@ interface ContactFormProps {
 }
 
 interface FormData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   message: string;
 }
 
 interface FormErrors {
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   phone?: string;
   message?: string;
@@ -24,7 +26,8 @@ interface FormErrors {
 
 export default function ContactForm({ propertyTitle, agentName, agentPhone }: ContactFormProps) {
   const [formData, setFormData] = useState<FormData>({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     message: `Me interesa la propiedad: ${propertyTitle}`,
@@ -32,12 +35,17 @@ export default function ContactForm({ propertyTitle, agentName, agentPhone }: Co
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function validate(): FormErrors {
     const newErrors: FormErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'El nombre es obligatorio';
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'El nombre es obligatorio';
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'El apellido es obligatorio';
     }
 
     if (!formData.email.trim()) {
@@ -74,12 +82,39 @@ export default function ContactForm({ propertyTitle, agentName, agentPhone }: Co
     }
 
     setSending(true);
+    setError(null);
 
-    // Simulate sending (no backend yet)
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+    try {
+      const webhookUrl = import.meta.env.PUBLIC_GHL_WEBHOOK_URL;
 
-    setSending(false);
-    setSubmitted(true);
+      if (!webhookUrl) {
+        throw new Error('Webhook URL no configurada');
+      }
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          message: formData.message.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al enviar el formulario');
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al enviar el formulario. Intenta nuevamente.');
+    } finally {
+      setSending(false);
+    }
   }
 
   const whatsappNumber = agentPhone
@@ -109,7 +144,8 @@ export default function ContactForm({ propertyTitle, agentName, agentPhone }: Co
             onClick={() => {
               setSubmitted(false);
               setFormData({
-                name: '',
+                firstName: '',
+                lastName: '',
                 email: '',
                 phone: '',
                 message: `Me interesa la propiedad: ${propertyTitle}`,
@@ -146,28 +182,60 @@ export default function ContactForm({ propertyTitle, agentName, agentPhone }: Co
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-        {/* Name */}
+        {/* Error message */}
+        {error && (
+          <div className="p-3 bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 rounded-lg">
+            <p className="text-sm text-[var(--color-error)]">{error}</p>
+          </div>
+        )}
+
+        {/* First Name */}
         <div>
-          <label htmlFor="contact-name" className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-            Nombre completo
+          <label htmlFor="contact-firstName" className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
+            Nombre
           </label>
           <div className="relative">
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]">
               <User className="w-4 h-4" />
             </div>
             <input
-              id="contact-name"
+              id="contact-firstName"
               type="text"
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
+              value={formData.firstName}
+              onChange={(e) => handleChange('firstName', e.target.value)}
               placeholder="Tu nombre"
               className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/30 focus:border-[var(--color-secondary)] ${
-                errors.name ? 'border-[var(--color-error)]' : 'border-[var(--color-border)]'
+                errors.firstName ? 'border-[var(--color-error)]' : 'border-[var(--color-border)]'
               }`}
             />
           </div>
-          {errors.name && (
-            <p className="mt-1 text-xs text-[var(--color-error)]">{errors.name}</p>
+          {errors.firstName && (
+            <p className="mt-1 text-xs text-[var(--color-error)]">{errors.firstName}</p>
+          )}
+        </div>
+
+        {/* Last Name */}
+        <div>
+          <label htmlFor="contact-lastName" className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
+            Apellido
+          </label>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]">
+              <User className="w-4 h-4" />
+            </div>
+            <input
+              id="contact-lastName"
+              type="text"
+              value={formData.lastName}
+              onChange={(e) => handleChange('lastName', e.target.value)}
+              placeholder="Tu apellido"
+              className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/30 focus:border-[var(--color-secondary)] ${
+                errors.lastName ? 'border-[var(--color-error)]' : 'border-[var(--color-border)]'
+              }`}
+            />
+          </div>
+          {errors.lastName && (
+            <p className="mt-1 text-xs text-[var(--color-error)]">{errors.lastName}</p>
           )}
         </div>
 
