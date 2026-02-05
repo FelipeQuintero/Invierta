@@ -294,25 +294,41 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
         endpoint += `/tipoInm/${typeIds[0]}`;
       }
     }
-    
+
+    // City filter
+    if (filters?.city) {
+      endpoint += `/ciudad/${encodeURIComponent(filters.city)}`;
+    }
+
     // Price range
     if (filters?.minPrice) endpoint += `/valmin/${filters.minPrice}`;
     if (filters?.maxPrice) endpoint += `/valmax/${filters.maxPrice}`;
-    
+
     // Bedrooms/bathrooms
     if (filters?.bedrooms) endpoint += `/alcobas/${filters.bedrooms}`;
     if (filters?.bathrooms) endpoint += `/banios/${filters.bathrooms}`;
 
     const data = await simiRequest<SimiFilterResponse>(endpoint);
-    
+
     if (!data.Inmuebles || !Array.isArray(data.Inmuebles)) {
       console.warn('[SIMI] Unexpected response format:', data);
       return getMockProperties(filters);
     }
-    
+
     console.log(`[SIMI] Found ${data.Inmuebles.length} properties (total: ${data.datosGrales?.totalInmuebles})`);
-    
-    return data.Inmuebles.map(transformSimiProperty);
+
+    let properties = data.Inmuebles.map(transformSimiProperty);
+
+    // Client-side filtering for city if API doesn't support it
+    // This ensures the filter works even if the /ciudad/{city} parameter is not supported by SIMI API
+    if (filters?.city) {
+      properties = properties.filter((p) =>
+        p.city.toLowerCase() === filters.city!.toLowerCase()
+      );
+      console.log(`[SIMI] Filtered by city "${filters.city}": ${properties.length} properties`);
+    }
+
+    return properties;
   } catch (error) {
     console.error('[SIMI] Error fetching properties:', error);
     return getMockProperties(filters);
