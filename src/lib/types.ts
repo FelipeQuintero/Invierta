@@ -30,8 +30,10 @@ export type PropertyTag = 'destacado' | 'negociable' | 'bajo_precio' | 'nuevo';
 export type PropertyType =
   | 'apartamento'
   | 'casa'
+  | 'casa_campestre'
   | 'local'
   | 'oficina'
+  | 'consultorio'
   | 'lote'
   | 'bodega'
   | 'finca';
@@ -59,6 +61,12 @@ export interface PropertyFilters {
   bathrooms?: number;
   city?: string;
   query?: string;
+  code?: string;
+  locationQuery?: string;
+  minArea?: number;
+  maxArea?: number;
+  parking?: number;
+  stratum?: number;
   featured?: boolean;
   limit?: number;
   offset?: number;
@@ -90,4 +98,11 @@ export interface ServiceInfo {
   title: string;
   shortDescription: string;
   icon: string;
+}
+
+export interface TopBarLink {
+  href: string;
+  label: string;
+  icon: string;
+  external: boolean;
 }

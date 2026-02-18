@@ -26,9 +26,9 @@ const { properties } = Astro.props;
       <AnimatedPropertyGrid
         client:visible
         properties={properties}
-        columns={{ default: 1, md: 2, lg: 3 }}
+        columns={{ default: 1, sm: 2, lg: 3 }}
         staggerDelay={100}
-        gap={1.5}
+        gap={1.25}
         showEmptyState={false}
       />
     ) : (

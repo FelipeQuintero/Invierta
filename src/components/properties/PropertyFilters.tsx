@@ -1,22 +1,49 @@
 import { useState, useCallback, useEffect } from 'react';
-import { PROPERTY_TYPES, CITIES, BEDROOM_OPTIONS } from '../../lib/constants';
+import {
+  PROPERTY_TYPES,
+  CITIES,
+  BEDROOM_OPTIONS,
+  BATHROOM_OPTIONS,
+  PARKING_OPTIONS,
+  STRATUM_OPTIONS,
+  PRICE_RANGES_VENTA,
+  PRICE_RANGES_ARRIENDO,
+} from '../../lib/constants';
 import LoadingSpinner from '../ui/LoadingSpinner';
-
-interface CurrentFilters {
-  propertyType?: string;
-  city?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  bedrooms?: number;
-}
 
 interface Props {
   operation: string;
-  currentFilters?: CurrentFilters;
   onLoadingChange?: (isLoading: boolean) => void;
 }
 
-// Icon components
+const SearchIcon = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.3-4.3" />
+  </svg>
+);
+
+const ClearIcon = ({ className = 'w-3.5 h-3.5' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </svg>
+);
+
+const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
+  <svg
+    className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+
 const FilterIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="4" x2="4" y1="21" y2="14" />
@@ -31,69 +58,118 @@ const FilterIcon = () => (
   </svg>
 );
 
-const SearchIcon = () => (
+const CodeIcon = () => (
   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8" />
-    <path d="m21 21-4.3-4.3" />
+    <path d="m7 7 10 10" />
+    <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
   </svg>
 );
 
-const ClearIcon = () => (
+const LocationIcon = () => (
   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 6 6 18" />
-    <path d="m6 6 12 12" />
+    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+    <circle cx="12" cy="10" r="3" />
   </svg>
 );
 
-const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
-  <svg
-    className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="m6 9 6 6 6-6" />
-  </svg>
-);
+function FilterSection({
+  title,
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
 
-export default function PropertyFilters({ operation, currentFilters = {}, onLoadingChange }: Props) {
-  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="border-b border-[var(--color-border)] last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between py-3 text-left"
+      >
+        <span className="text-sm font-semibold text-[var(--color-text-primary)]">{title}</span>
+        <ChevronIcon isOpen={open} />
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-200 ease-in-out ${
+          open ? 'max-h-[500px] opacity-100 pb-4' : 'max-h-0 opacity-0 pb-0'
+        }`}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export default function PropertyFilters({ operation, onLoadingChange }: Props) {
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [propertyType, setPropertyType] = useState(currentFilters.propertyType || '');
-  const [city, setCity] = useState(currentFilters.city || '');
-  const [minPrice, setMinPrice] = useState(currentFilters.minPrice?.toString() || '');
-  const [maxPrice, setMaxPrice] = useState(currentFilters.maxPrice?.toString() || '');
-  const [bedrooms, setBedrooms] = useState(currentFilters.bedrooms?.toString() || '');
 
-  // Initialize from URL params on mount
+  const [code, setCode] = useState('');
+  const [locationQuery, setLocationQuery] = useState('');
+  const [city, setCity] = useState('');
+  const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [bedrooms, setBedrooms] = useState('');
+  const [minArea, setMinArea] = useState('');
+  const [maxArea, setMaxArea] = useState('');
+  const [bathrooms, setBathrooms] = useState('');
+  const [parking, setParking] = useState('');
+  const [stratum, setStratum] = useState('');
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('propertyType')) setPropertyType(params.get('propertyType') || '');
+    if (params.get('code')) setCode(params.get('code') || '');
+    if (params.get('locationQuery')) setLocationQuery(params.get('locationQuery') || '');
     if (params.get('city')) setCity(params.get('city') || '');
+    if (params.get('propertyType')) {
+      const val = params.get('propertyType') || '';
+      setPropertyTypes(val.includes(',') ? val.split(',') : val ? [val] : []);
+    }
     if (params.get('minPrice')) setMinPrice(params.get('minPrice') || '');
     if (params.get('maxPrice')) setMaxPrice(params.get('maxPrice') || '');
     if (params.get('bedrooms')) setBedrooms(params.get('bedrooms') || '');
+    if (params.get('minArea')) setMinArea(params.get('minArea') || '');
+    if (params.get('maxArea')) setMaxArea(params.get('maxArea') || '');
+    if (params.get('bathrooms')) setBathrooms(params.get('bathrooms') || '');
+    if (params.get('parking')) setParking(params.get('parking') || '');
+    if (params.get('stratum')) setStratum(params.get('stratum') || '');
   }, []);
 
-  const setLoadingState = useCallback((loading: boolean) => {
-    setIsLoading(loading);
-    onLoadingChange?.(loading);
-  }, [onLoadingChange]);
+  const setLoadingState = useCallback(
+    (loading: boolean) => {
+      setIsLoading(loading);
+      onLoadingChange?.(loading);
+    },
+    [onLoadingChange]
+  );
+
+  function buildParams(): URLSearchParams {
+    const params = new URLSearchParams();
+    if (code) params.set('code', code);
+    if (locationQuery) params.set('locationQuery', locationQuery);
+    if (city) params.set('city', city);
+    if (propertyTypes.length === 1) params.set('propertyType', propertyTypes[0]);
+    if (propertyTypes.length > 1) params.set('propertyType', propertyTypes.join(','));
+    if (minPrice) params.set('minPrice', minPrice);
+    if (maxPrice) params.set('maxPrice', maxPrice);
+    if (bedrooms) params.set('bedrooms', bedrooms);
+    if (minArea) params.set('minArea', minArea);
+    if (maxArea) params.set('maxArea', maxArea);
+    if (bathrooms) params.set('bathrooms', bathrooms);
+    if (parking) params.set('parking', parking);
+    if (stratum) params.set('stratum', stratum);
+    return params;
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoadingState(true);
-
-    const params = new URLSearchParams();
-    if (propertyType) params.set('propertyType', propertyType);
-    if (city) params.set('city', city);
-    if (minPrice) params.set('minPrice', minPrice);
-    if (maxPrice) params.set('maxPrice', maxPrice);
-    if (bedrooms) params.set('bedrooms', bedrooms);
-
+    const params = buildParams();
     const queryString = params.toString();
     const currentPath = window.location.pathname;
     window.location.href = queryString ? `${currentPath}?${queryString}` : currentPath;
@@ -101,464 +177,439 @@ export default function PropertyFilters({ operation, currentFilters = {}, onLoad
 
   function handleClear() {
     setLoadingState(true);
-    setPropertyType('');
+    setCode('');
+    setLocationQuery('');
     setCity('');
+    setPropertyTypes([]);
     setMinPrice('');
     setMaxPrice('');
     setBedrooms('');
+    setMinArea('');
+    setMaxArea('');
+    setBathrooms('');
+    setParking('');
+    setStratum('');
     window.location.href = window.location.pathname;
   }
 
-  const hasActiveFilters = propertyType || city || minPrice || maxPrice || bedrooms;
-  const activeFilterCount = [propertyType, city, minPrice, maxPrice, bedrooms].filter(Boolean).length;
+  function togglePropertyType(value: string) {
+    setPropertyTypes((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  }
 
-  const selectBaseClass = `
-    w-full h-11 px-3
-    bg-white border border-[var(--color-border)] rounded-lg
-    text-sm text-[var(--color-text-primary)]
-    focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20
-    transition-all duration-200
-    cursor-pointer
-    appearance-none
-    bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%234a5568%22%20d%3D%22M6%208L1%203h10z%22%2F%3E%3C%2Fsvg%3E')]
-    bg-[length:12px_12px] bg-[right_12px_center] bg-no-repeat
-    pr-9
-  `;
+  function handlePriceRange(min: number, max: number) {
+    setMinPrice(min.toString());
+    setMaxPrice(max === Infinity ? '' : max.toString());
+  }
 
-  const inputBaseClass = `
-    w-full h-11 px-3
-    bg-white border border-[var(--color-border)] rounded-lg
-    text-sm text-[var(--color-text-primary)]
-    placeholder:text-[var(--color-text-muted)]
-    focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20
-    transition-all duration-200
-  `;
+  function removeFilter(key: string) {
+    switch (key) {
+      case 'code': setCode(''); break;
+      case 'locationQuery': setLocationQuery(''); break;
+      case 'city': setCity(''); break;
+      case 'propertyType': setPropertyTypes([]); break;
+      case 'minPrice': setMinPrice(''); break;
+      case 'maxPrice': setMaxPrice(''); break;
+      case 'bedrooms': setBedrooms(''); break;
+      case 'minArea': setMinArea(''); break;
+      case 'maxArea': setMaxArea(''); break;
+      case 'bathrooms': setBathrooms(''); break;
+      case 'parking': setParking(''); break;
+      case 'stratum': setStratum(''); break;
+    }
+  }
 
-  return (
-    <div className="w-full">
-      {/* Mobile Toggle Button */}
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="
-          w-full md:hidden
-          flex items-center justify-between
-          px-4 py-3
-          bg-white border border-[var(--color-border)] rounded-xl
-          shadow-sm
-          transition-all duration-200
-          hover:border-[var(--color-accent)]/50
-        "
-        aria-expanded={isOpen}
-        aria-controls="filter-panel"
-      >
-        <span className="flex items-center gap-3">
-          <span className="flex items-center justify-center w-10 h-10 bg-[var(--color-accent)]/10 rounded-lg text-[var(--color-accent)]">
-            <FilterIcon />
-          </span>
-          <span className="flex flex-col items-start">
-            <span className="font-semibold text-[var(--color-text-primary)]">Filtros de busqueda</span>
-            <span className="text-xs text-[var(--color-text-muted)]">
-              {hasActiveFilters ? `${activeFilterCount} filtro${activeFilterCount > 1 ? 's' : ''} activo${activeFilterCount > 1 ? 's' : ''}` : 'Toca para filtrar'}
-            </span>
-          </span>
-        </span>
-        <span className="flex items-center gap-2">
-          {hasActiveFilters && (
-            <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-[var(--color-accent)] rounded-full">
-              {activeFilterCount}
-            </span>
-          )}
-          <ChevronIcon isOpen={isOpen} />
-        </span>
-      </button>
+  const activeFilters: { key: string; label: string }[] = [];
+  if (code) activeFilters.push({ key: 'code', label: `Codigo: ${code}` });
+  if (locationQuery) activeFilters.push({ key: 'locationQuery', label: locationQuery });
+  if (city) activeFilters.push({ key: 'city', label: city });
+  if (propertyTypes.length > 0) {
+    const labels = propertyTypes
+      .map((v) => PROPERTY_TYPES.find((pt) => pt.value === v)?.label || v)
+      .join(', ');
+    activeFilters.push({ key: 'propertyType', label: labels });
+  }
+  if (minPrice) activeFilters.push({ key: 'minPrice', label: `Min: $${Number(minPrice).toLocaleString('es-CO')}` });
+  if (maxPrice) activeFilters.push({ key: 'maxPrice', label: `Max: $${Number(maxPrice).toLocaleString('es-CO')}` });
+  if (bedrooms) activeFilters.push({ key: 'bedrooms', label: `${bedrooms}+ hab.` });
+  if (minArea) activeFilters.push({ key: 'minArea', label: `Min: ${minArea} m\u00B2` });
+  if (maxArea) activeFilters.push({ key: 'maxArea', label: `Max: ${maxArea} m\u00B2` });
+  if (bathrooms) activeFilters.push({ key: 'bathrooms', label: `${bathrooms}+ banos` });
+  if (parking) activeFilters.push({ key: 'parking', label: `${parking}+ parq.` });
+  if (stratum) activeFilters.push({ key: 'stratum', label: `Estrato ${stratum}` });
 
-      {/* Filter Form */}
-      <form
-        id="filter-panel"
-        onSubmit={handleSubmit}
-        className={`
-          ${isOpen ? 'max-h-[600px] opacity-100 mt-3' : 'max-h-0 opacity-0 mt-0'}
-          md:max-h-none md:opacity-100 md:mt-0
-          overflow-hidden
-          transition-all duration-300 ease-in-out
-        `}
-      >
-        <div className="
-          bg-white border border-[var(--color-border)] rounded-xl
-          p-4 md:p-5
-          shadow-sm
-        ">
-          {/* Desktop: Horizontal layout */}
-          <div className="hidden md:flex md:flex-wrap md:items-end md:gap-3">
-            {/* Property Type */}
-            <div className="flex-1 min-w-[160px]">
-              <label htmlFor="filter-propertyType" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wide">
-                Tipo de inmueble
-              </label>
-              <select
-                id="filter-propertyType"
-                value={propertyType}
-                onChange={(e) => setPropertyType(e.target.value)}
-                className={selectBaseClass}
+  const hasActiveFilters = activeFilters.length > 0;
+
+  const priceRanges = operation === 'arriendo' ? PRICE_RANGES_ARRIENDO : PRICE_RANGES_VENTA;
+
+  const inputClass =
+    'w-full h-10 px-3 bg-white border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all duration-200';
+
+  const selectClass =
+    "w-full h-10 px-3 bg-white border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all duration-200 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%234a5568%22%20d%3D%22M6%208L1%203h10z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_12px_center] bg-no-repeat pr-9";
+
+  const chipClass = (active: boolean) =>
+    `px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-150 cursor-pointer ${
+      active
+        ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
+        : 'bg-white text-[var(--color-text-secondary)] border-[var(--color-border)] hover:border-[var(--color-accent)]/50'
+    }`;
+
+  const sidebarContent = (
+    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto px-4 lg:px-5">
+        {hasActiveFilters && (
+          <div className="flex flex-wrap gap-1.5 py-3 border-b border-[var(--color-border)]">
+            {activeFilters.map((f) => (
+              <span
+                key={f.key}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-[var(--color-accent)]/10 text-[var(--color-accent)] text-xs font-medium rounded-full"
               >
-                <option value="">Todos los tipos</option>
-                {PROPERTY_TYPES.map((pt) => (
-                  <option key={pt.value} value={pt.value}>{pt.label}</option>
-                ))}
-              </select>
-            </div>
+                {f.label}
+                <button
+                  type="button"
+                  onClick={() => removeFilter(f.key)}
+                  className="hover:text-[var(--color-accent-dark)] ml-0.5"
+                  aria-label={`Quitar filtro: ${f.label}`}
+                >
+                  <ClearIcon className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
 
-            {/* City */}
-            <div className="flex-1 min-w-[160px]">
-              <label htmlFor="filter-city" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wide">
-                Ciudad
-              </label>
-              <select
-                id="filter-city"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className={selectBaseClass}
+        <FilterSection title="Busqueda por Codigo" defaultOpen={!!code}>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]">
+              <CodeIcon />
+            </span>
+            <input
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Codigo SIMI (ej: INV-001)"
+              className={`${inputClass} pl-9 pr-10`}
+              aria-label="Buscar por codigo SIMI"
+            />
+            {code && (
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[var(--color-accent)] hover:text-[var(--color-accent-dark)]"
+                aria-label="Buscar por codigo"
               >
-                <option value="">Todas las ciudades</option>
-                {CITIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
+                <SearchIcon />
+              </button>
+            )}
+          </div>
+        </FilterSection>
 
-            {/* Min Price */}
-            <div className="flex-1 min-w-[140px]">
-              <label htmlFor="filter-minPrice" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wide">
-                Precio minimo
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-muted)]">$</span>
+        <FilterSection title="Ubicacion">
+          <div className="space-y-3">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]">
+                <LocationIcon />
+              </span>
+              <input
+                type="text"
+                value={locationQuery}
+                onChange={(e) => setLocationQuery(e.target.value)}
+                placeholder="Ciudad, zona o barrio"
+                className={`${inputClass} pl-9`}
+                aria-label="Buscar por ubicacion"
+              />
+            </div>
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className={selectClass}
+              aria-label="Filtrar por ciudad"
+            >
+              <option value="">Todas las ciudades</option>
+              {CITIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+        </FilterSection>
+
+        <FilterSection title="Tipo de Inmueble">
+          <div className="space-y-2">
+            {PROPERTY_TYPES.map((pt) => (
+              <label
+                key={pt.value}
+                className="flex items-center gap-2.5 cursor-pointer group"
+              >
                 <input
-                  id="filter-minPrice"
+                  type="checkbox"
+                  checked={propertyTypes.includes(pt.value)}
+                  onChange={() => togglePropertyType(pt.value)}
+                  className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-accent)] focus:ring-[var(--color-accent)]/20 focus:ring-2 cursor-pointer accent-[var(--color-accent)]"
+                />
+                <span className="text-sm text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors">
+                  {pt.label}
+                </span>
+              </label>
+            ))}
+          </div>
+        </FilterSection>
+
+        <FilterSection title="Precio">
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-text-muted)]">$</span>
+                <input
                   type="number"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
-                  placeholder={operation === 'arriendo' ? '500.000' : '100.000.000'}
+                  placeholder="Minimo"
                   min="0"
-                  className={`${inputBaseClass} pl-7`}
+                  className={`${inputClass} pl-6 text-xs`}
+                  aria-label="Precio minimo"
                 />
               </div>
-            </div>
-
-            {/* Max Price */}
-            <div className="flex-1 min-w-[140px]">
-              <label htmlFor="filter-maxPrice" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wide">
-                Precio maximo
-              </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-muted)]">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-text-muted)]">$</span>
                 <input
-                  id="filter-maxPrice"
                   type="number"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
-                  placeholder={operation === 'arriendo' ? '10.000.000' : '2.000.000.000'}
+                  placeholder="Maximo"
                   min="0"
-                  className={`${inputBaseClass} pl-7`}
+                  className={`${inputClass} pl-6 text-xs`}
+                  aria-label="Precio maximo"
                 />
               </div>
             </div>
-
-            {/* Bedrooms */}
-            <div className="flex-1 min-w-[120px]">
-              <label htmlFor="filter-bedrooms" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wide">
-                Habitaciones
-              </label>
-              <select
-                id="filter-bedrooms"
-                value={bedrooms}
-                onChange={(e) => setBedrooms(e.target.value)}
-                className={selectBaseClass}
-              >
-                <option value="">Todas</option>
-                {BEDROOM_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}+</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="
-                  inline-flex items-center justify-center gap-2
-                  h-11 px-6
-                  bg-[var(--color-accent)] text-white
-                  font-semibold text-sm
-                  rounded-lg
-                  hover:bg-[var(--color-accent-dark)]
-                  active:scale-[0.98]
-                  transition-all duration-200
-                  disabled:opacity-70 disabled:cursor-not-allowed
-                  shadow-sm hover:shadow-md
-                "
-              >
-                {isLoading ? (
-                  <>
-                    <LoadingSpinner size="sm" color="white" />
-                    <span>Buscando...</span>
-                  </>
-                ) : (
-                  <>
-                    <SearchIcon />
-                    <span>Buscar</span>
-                  </>
-                )}
-              </button>
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={handleClear}
-                  disabled={isLoading}
-                  className="
-                    inline-flex items-center justify-center
-                    h-11 w-11
-                    bg-[var(--color-surface)] text-[var(--color-text-secondary)]
-                    rounded-lg border border-[var(--color-border)]
-                    hover:bg-[var(--color-surface-alt)] hover:text-[var(--color-text-primary)]
-                    active:scale-[0.98]
-                    transition-all duration-200
-                    disabled:opacity-50 disabled:cursor-not-allowed
-                  "
-                  title="Limpiar filtros"
-                  aria-label="Limpiar filtros"
-                >
-                  <ClearIcon />
-                </button>
-              )}
+            <div className="flex flex-wrap gap-1.5">
+              {priceRanges.map((r, i) => {
+                const isActive =
+                  minPrice === r.min.toString() &&
+                  (r.max === Infinity ? !maxPrice : maxPrice === r.max.toString());
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handlePriceRange(r.min, r.max)}
+                    className={chipClass(isActive)}
+                  >
+                    {r.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
+        </FilterSection>
 
-          {/* Mobile: Grid layout */}
-          <div className="md:hidden space-y-4">
-            {/* Property Type */}
-            <div>
-              <label htmlFor="filter-propertyType-mobile" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wide">
-                Tipo de inmueble
-              </label>
-              <select
-                id="filter-propertyType-mobile"
-                value={propertyType}
-                onChange={(e) => setPropertyType(e.target.value)}
-                className={selectBaseClass}
-              >
-                <option value="">Todos los tipos</option>
-                {PROPERTY_TYPES.map((pt) => (
-                  <option key={pt.value} value={pt.value}>{pt.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* City */}
-            <div>
-              <label htmlFor="filter-city-mobile" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wide">
-                Ciudad
-              </label>
-              <select
-                id="filter-city-mobile"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className={selectBaseClass}
-              >
-                <option value="">Todas las ciudades</option>
-                {CITIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Price Range - 2 columns */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="filter-minPrice-mobile" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wide">
-                  Precio min.
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-muted)]">$</span>
-                  <input
-                    id="filter-minPrice-mobile"
-                    type="number"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
-                    placeholder={operation === 'arriendo' ? '500K' : '100M'}
-                    min="0"
-                    className={`${inputBaseClass} pl-7`}
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="filter-maxPrice-mobile" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wide">
-                  Precio max.
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-muted)]">$</span>
-                  <input
-                    id="filter-maxPrice-mobile"
-                    type="number"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                    placeholder={operation === 'arriendo' ? '10M' : '2.000M'}
-                    min="0"
-                    className={`${inputBaseClass} pl-7`}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Bedrooms */}
-            <div>
-              <label htmlFor="filter-bedrooms-mobile" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wide">
-                Habitaciones
-              </label>
-              <select
-                id="filter-bedrooms-mobile"
-                value={bedrooms}
-                onChange={(e) => setBedrooms(e.target.value)}
-                className={selectBaseClass}
-              >
-                <option value="">Todas</option>
-                {BEDROOM_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}+ habitaciones</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Mobile Action Buttons */}
-            <div className="flex gap-3 pt-2">
+        <FilterSection title="Habitaciones">
+          <div className="flex flex-wrap gap-2">
+            {BEDROOM_OPTIONS.map((opt) => (
               <button
-                type="submit"
-                disabled={isLoading}
-                className="
-                  flex-1
-                  inline-flex items-center justify-center gap-2
-                  h-12 px-6
-                  bg-[var(--color-accent)] text-white
-                  font-semibold text-sm
-                  rounded-lg
-                  hover:bg-[var(--color-accent-dark)]
-                  active:scale-[0.98]
-                  transition-all duration-200
-                  disabled:opacity-70 disabled:cursor-not-allowed
-                  shadow-sm
-                "
+                key={opt.value}
+                type="button"
+                onClick={() => setBedrooms(bedrooms === opt.value.toString() ? '' : opt.value.toString())}
+                className={chipClass(bedrooms === opt.value.toString())}
               >
-                {isLoading ? (
-                  <>
-                    <LoadingSpinner size="sm" color="white" />
-                    <span>Buscando...</span>
-                  </>
-                ) : (
-                  <>
-                    <SearchIcon />
-                    <span>Buscar propiedades</span>
-                  </>
-                )}
+                {opt.label}
               </button>
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={handleClear}
-                  disabled={isLoading}
-                  className="
-                    inline-flex items-center justify-center
-                    h-12 w-12
-                    bg-[var(--color-surface)] text-[var(--color-text-secondary)]
-                    rounded-lg border border-[var(--color-border)]
-                    hover:bg-[var(--color-surface-alt)] hover:text-[var(--color-text-primary)]
-                    active:scale-[0.98]
-                    transition-all duration-200
-                    disabled:opacity-50 disabled:cursor-not-allowed
-                  "
-                  title="Limpiar filtros"
-                  aria-label="Limpiar filtros"
-                >
-                  <ClearIcon />
-                </button>
-              )}
+            ))}
+          </div>
+        </FilterSection>
+
+        <FilterSection title="Area (m&sup2;)">
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="number"
+              value={minArea}
+              onChange={(e) => setMinArea(e.target.value)}
+              placeholder="Min m&sup2;"
+              min="0"
+              className={`${inputClass} text-xs`}
+              aria-label="Area minima"
+            />
+            <input
+              type="number"
+              value={maxArea}
+              onChange={(e) => setMaxArea(e.target.value)}
+              placeholder="Max m&sup2;"
+              min="0"
+              className={`${inputClass} text-xs`}
+              aria-label="Area maxima"
+            />
+          </div>
+        </FilterSection>
+
+        <FilterSection title="Mas filtros" defaultOpen={!!(bathrooms || parking || stratum)}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Banos</label>
+              <div className="flex flex-wrap gap-2">
+                {BATHROOM_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setBathrooms(bathrooms === opt.value.toString() ? '' : opt.value.toString())}
+                    className={chipClass(bathrooms === opt.value.toString())}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Parqueaderos</label>
+              <div className="flex flex-wrap gap-2">
+                {PARKING_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setParking(parking === opt.value.toString() ? '' : opt.value.toString())}
+                    className={chipClass(parking === opt.value.toString())}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Estrato</label>
+              <div className="flex flex-wrap gap-2">
+                {STRATUM_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setStratum(stratum === opt.value.toString() ? '' : opt.value.toString())}
+                    className={chipClass(stratum === opt.value.toString())}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
+        </FilterSection>
+      </div>
 
-          {/* Active Filters Tags (optional display) */}
+      <div className="shrink-0 border-t border-[var(--color-border)] p-4 lg:p-5 space-y-2 bg-white">
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full inline-flex items-center justify-center gap-2 h-11 bg-[var(--color-accent)] text-white font-semibold text-sm rounded-lg hover:bg-[var(--color-accent-dark)] active:scale-[0.98] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+        >
+          {isLoading ? (
+            <>
+              <LoadingSpinner size="sm" color="white" />
+              <span>Buscando...</span>
+            </>
+          ) : (
+            <>
+              <SearchIcon />
+              <span>Aplicar filtros</span>
+            </>
+          )}
+        </button>
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={handleClear}
+            disabled={isLoading}
+            className="w-full inline-flex items-center justify-center gap-2 h-10 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-surface-alt)] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ClearIcon />
+            <span>Limpiar filtros</span>
+          </button>
+        )}
+      </div>
+    </form>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <div className="hidden lg:flex flex-col w-72 xl:w-80 shrink-0 bg-white border-r border-[var(--color-border)] h-[calc(100vh-200px)] sticky top-28 rounded-xl shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-4 border-b border-[var(--color-border)]">
+          <span className="text-[var(--color-accent)]">
+            <FilterIcon />
+          </span>
+          <h2 className="text-base font-semibold text-[var(--color-text-primary)]">Filtros</h2>
           {hasActiveFilters && (
-            <div className="hidden md:flex flex-wrap gap-2 mt-4 pt-4 border-t border-[var(--color-border)]">
-              <span className="text-xs text-[var(--color-text-muted)] py-1">Filtros activos:</span>
-              {propertyType && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--color-accent)]/10 text-[var(--color-accent)] text-xs font-medium rounded-full">
-                  {PROPERTY_TYPES.find(p => p.value === propertyType)?.label || propertyType}
-                  <button
-                    type="button"
-                    onClick={() => setPropertyType('')}
-                    className="hover:text-[var(--color-accent-dark)]"
-                    aria-label="Quitar filtro de tipo"
-                  >
-                    <ClearIcon />
-                  </button>
-                </span>
-              )}
-              {city && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--color-accent)]/10 text-[var(--color-accent)] text-xs font-medium rounded-full">
-                  {city}
-                  <button
-                    type="button"
-                    onClick={() => setCity('')}
-                    className="hover:text-[var(--color-accent-dark)]"
-                    aria-label="Quitar filtro de ciudad"
-                  >
-                    <ClearIcon />
-                  </button>
-                </span>
-              )}
-              {minPrice && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--color-accent)]/10 text-[var(--color-accent)] text-xs font-medium rounded-full">
-                  Min: ${Number(minPrice).toLocaleString('es-CO')}
-                  <button
-                    type="button"
-                    onClick={() => setMinPrice('')}
-                    className="hover:text-[var(--color-accent-dark)]"
-                    aria-label="Quitar filtro de precio minimo"
-                  >
-                    <ClearIcon />
-                  </button>
-                </span>
-              )}
-              {maxPrice && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--color-accent)]/10 text-[var(--color-accent)] text-xs font-medium rounded-full">
-                  Max: ${Number(maxPrice).toLocaleString('es-CO')}
-                  <button
-                    type="button"
-                    onClick={() => setMaxPrice('')}
-                    className="hover:text-[var(--color-accent-dark)]"
-                    aria-label="Quitar filtro de precio maximo"
-                  >
-                    <ClearIcon />
-                  </button>
-                </span>
-              )}
-              {bedrooms && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--color-accent)]/10 text-[var(--color-accent)] text-xs font-medium rounded-full">
-                  {bedrooms}+ hab.
-                  <button
-                    type="button"
-                    onClick={() => setBedrooms('')}
-                    className="hover:text-[var(--color-accent-dark)]"
-                    aria-label="Quitar filtro de habitaciones"
-                  >
-                    <ClearIcon />
-                  </button>
-                </span>
-              )}
-            </div>
+            <span className="ml-auto flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-[var(--color-accent)] rounded-full">
+              {activeFilters.length}
+            </span>
           )}
         </div>
-      </form>
-    </div>
+        {sidebarContent}
+      </div>
+
+      {/* Mobile toggle + overlay */}
+      <div className="lg:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="w-full flex items-center justify-between px-4 py-3 bg-white border border-[var(--color-border)] rounded-xl shadow-sm transition-all duration-200 hover:border-[var(--color-accent)]/50"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-filter-panel"
+        >
+          <span className="flex items-center gap-3">
+            <span className="flex items-center justify-center w-10 h-10 bg-[var(--color-accent)]/10 rounded-lg text-[var(--color-accent)]">
+              <FilterIcon />
+            </span>
+            <span className="flex flex-col items-start">
+              <span className="font-semibold text-[var(--color-text-primary)]">Filtros de busqueda</span>
+              <span className="text-xs text-[var(--color-text-muted)]">
+                {hasActiveFilters
+                  ? `${activeFilters.length} filtro${activeFilters.length > 1 ? 's' : ''} activo${activeFilters.length > 1 ? 's' : ''}`
+                  : 'Toca para filtrar'}
+              </span>
+            </span>
+          </span>
+          <span className="flex items-center gap-2">
+            {hasActiveFilters && (
+              <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-[var(--color-accent)] rounded-full">
+                {activeFilters.length}
+              </span>
+            )}
+            <svg className="w-5 h-5 text-[var(--color-text-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </span>
+        </button>
+
+        {mobileOpen && (
+          <div className="fixed inset-0 z-50 flex">
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setMobileOpen(false)}
+            />
+            <div
+              id="mobile-filter-panel"
+              className="relative w-[85vw] max-w-sm bg-white h-full flex flex-col shadow-2xl animate-slide-in-left"
+            >
+              <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--color-border)]">
+                <div className="flex items-center gap-2">
+                  <span className="text-[var(--color-accent)]">
+                    <FilterIcon />
+                  </span>
+                  <h2 className="text-base font-semibold text-[var(--color-text-primary)]">Filtros</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileOpen(false)}
+                  className="p-2 rounded-lg hover:bg-[var(--color-surface)] transition-colors"
+                  aria-label="Cerrar filtros"
+                >
+                  <ClearIcon className="w-5 h-5" />
+                </button>
+              </div>
+              {sidebarContent}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

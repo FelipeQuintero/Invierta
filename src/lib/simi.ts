@@ -168,8 +168,10 @@ const PROPERTY_TYPE_MAP: Record<string, PropertyType> = {
   'locales': 'local',
   'oficina': 'oficina',
   'oficinas': 'oficina',
-  'consultorio': 'oficina',
-  'consultorios': 'oficina',
+  'consultorio': 'consultorio',
+  'consultorios': 'consultorio',
+  'casa campestre': 'casa_campestre',
+  'casas campestres': 'casa_campestre',
   'lote': 'lote',
   'lotes': 'lote',
   'bodega': 'bodega',
@@ -181,8 +183,10 @@ const PROPERTY_TYPE_MAP: Record<string, PropertyType> = {
 const PROPERTY_TYPE_ID_MAP: Record<PropertyType, number[]> = {
   apartamento: [1, 11],
   casa: [2, 19, 20, 21, 22],
+  casa_campestre: [22],
   local: [5],
-  oficina: [3, 4],
+  oficina: [3],
+  consultorio: [4],
   lote: [7],
   bodega: [6],
   finca: [8],
@@ -273,21 +277,27 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
     return getMockProperties(filters);
   }
 
+  // If searching by code, use the detail endpoint
+  if (filters?.code) {
+    try {
+      const property = await getPropertyById(filters.code);
+      return property ? [property] : [];
+    } catch {
+      return [];
+    }
+  }
+
   try {
-    // Build URL path with parameters
     let endpoint = '/v2.1.1/filtroInmueble';
-    
-    // Pagination
+
     const page = filters?.offset ? Math.floor(filters.offset / (filters.limit || 20)) + 1 : 1;
     endpoint += `/limite/${page}`;
     endpoint += `/cantidad/${filters?.limit || 20}`;
-    
-    // Operation type
+
     if (filters?.operation) {
       endpoint += `/tipOper/${OPERATION_MAP[filters.operation]}`;
     }
-    
-    // Property type
+
     if (filters?.propertyType) {
       const typeIds = PROPERTY_TYPE_ID_MAP[filters.propertyType];
       if (typeIds && typeIds.length > 0) {
@@ -295,16 +305,13 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
       }
     }
 
-    // City filter
     if (filters?.city) {
       endpoint += `/ciudad/${encodeURIComponent(filters.city)}`;
     }
 
-    // Price range
     if (filters?.minPrice) endpoint += `/valmin/${filters.minPrice}`;
     if (filters?.maxPrice) endpoint += `/valmax/${filters.maxPrice}`;
 
-    // Bedrooms/bathrooms
     if (filters?.bedrooms) endpoint += `/alcobas/${filters.bedrooms}`;
     if (filters?.bathrooms) endpoint += `/banios/${filters.bathrooms}`;
 
@@ -319,13 +326,33 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
 
     let properties = data.Inmuebles.map(transformSimiProperty);
 
-    // Client-side filtering for city if API doesn't support it
-    // This ensures the filter works even if the /ciudad/{city} parameter is not supported by SIMI API
     if (filters?.city) {
       properties = properties.filter((p) =>
         p.city.toLowerCase() === filters.city!.toLowerCase()
       );
       console.log(`[SIMI] Filtered by city "${filters.city}": ${properties.length} properties`);
+    }
+
+    // Client-side filtering for fields not supported by SIMI API
+    if (filters?.locationQuery) {
+      const q = filters.locationQuery.toLowerCase();
+      properties = properties.filter((p) =>
+        p.city.toLowerCase().includes(q) ||
+        p.neighborhood.toLowerCase().includes(q) ||
+        p.location.toLowerCase().includes(q)
+      );
+    }
+    if (filters?.minArea) {
+      properties = properties.filter((p) => p.area >= filters.minArea!);
+    }
+    if (filters?.maxArea) {
+      properties = properties.filter((p) => p.area <= filters.maxArea!);
+    }
+    if (filters?.parking) {
+      properties = properties.filter((p) => p.parking >= filters.parking!);
+    }
+    if (filters?.stratum) {
+      properties = properties.filter((p) => p.stratum === filters.stratum!);
     }
 
     return properties;

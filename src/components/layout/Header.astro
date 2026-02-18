@@ -1,8 +1,11 @@
 ---
 import { SITE_CONFIG, NAV_LINKS } from '../../lib/constants';
 import Navbar from './Navbar.astro';
+import TopBar from './TopBar.astro';
 import MobileMenu from './MobileMenu.tsx';
 ---
+
+<TopBar />
 
 <header
   class="sticky top-0 z-50 w-full bg-primary"
@@ -45,7 +48,6 @@ import MobileMenu from './MobileMenu.tsx';
 </header>
 
 <script>
-  // Add shadow on scroll
   const header = document.getElementById('site-header');
   if (header) {
     window.addEventListener('scroll', () => {

@@ -6,10 +6,8 @@ import Breadcrumb from '../components/ui/Breadcrumb.astro';
 import { getProperties } from '../lib/simi';
 import type { PropertyFilters as PropertyFiltersType } from '../lib/types';
 
-// Disable prerendering - fetch fresh data on each request
 export const prerender = false;
 
-// Parse URL search params for filtering
 const url = Astro.url;
 const params = url.searchParams;
 
@@ -18,16 +16,33 @@ const filters: PropertyFiltersType = {
   limit: 20,
 };
 
-// Apply filters from URL params
-if (params.get('propertyType')) filters.propertyType = params.get('propertyType') as PropertyFiltersType['propertyType'];
+if (params.get('code')) filters.code = params.get('code') || undefined;
+if (params.get('locationQuery')) filters.locationQuery = params.get('locationQuery') || undefined;
+if (params.get('propertyType')) {
+  const val = params.get('propertyType') || '';
+  if (!val.includes(',')) {
+    filters.propertyType = val as PropertyFiltersType['propertyType'];
+  }
+}
 if (params.get('city')) filters.city = params.get('city') || undefined;
 if (params.get('minPrice')) filters.minPrice = parseInt(params.get('minPrice') || '0');
 if (params.get('maxPrice')) filters.maxPrice = parseInt(params.get('maxPrice') || '0');
 if (params.get('bedrooms')) filters.bedrooms = parseInt(params.get('bedrooms') || '0');
+if (params.get('bathrooms')) filters.bathrooms = parseInt(params.get('bathrooms') || '0');
+if (params.get('minArea')) filters.minArea = parseInt(params.get('minArea') || '0');
+if (params.get('maxArea')) filters.maxArea = parseInt(params.get('maxArea') || '0');
+if (params.get('parking')) filters.parking = parseInt(params.get('parking') || '0');
+if (params.get('stratum')) filters.stratum = parseInt(params.get('stratum') || '0');
 
-const properties = await getProperties(filters);
+let properties = await getProperties(filters);
 
-const hasActiveFilters = params.get('propertyType') || params.get('city') || params.get('minPrice') || params.get('maxPrice') || params.get('bedrooms');
+const multiType = params.get('propertyType');
+if (multiType && multiType.includes(',')) {
+  const types = multiType.split(',');
+  properties = properties.filter((p) => types.includes(p.propertyType));
+}
+
+const hasActiveFilters = Array.from(params.keys()).some((k) => k !== '');
 
 const breadcrumbItems = [
   { label: 'Inicio', href: '/' },
@@ -45,9 +60,8 @@ const breadcrumbItems = [
     </div>
   </section>
 
-  <section class="py-8 lg:py-12">
+  <section class="py-6 lg:py-8">
     <div class="container-custom">
-      {/* Page Header */}
       <div class="mb-6">
         <h1 class="font-heading text-3xl font-bold text-text-primary lg:text-4xl">
           Propiedades en Arriendo
@@ -57,79 +71,76 @@ const breadcrumbItems = [
         </p>
       </div>
 
-      {/* Filters - Full width horizontal bar */}
-      <div class="mb-8">
+      <div class="flex flex-col lg:flex-row lg:gap-6">
         <PropertyFilters client:load operation="arriendo" />
-      </div>
 
-      {/* Results Header */}
-      <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-3">
-          <p class="text-sm text-text-secondary">
-            {hasActiveFilters ? (
-              <>
-                <span class="font-semibold text-text-primary">{properties.length}</span> resultado{properties.length !== 1 ? 's' : ''} encontrado{properties.length !== 1 ? 's' : ''}
-              </>
-            ) : (
-              <>
-                Mostrando <span class="font-semibold text-text-primary">{properties.length}</span> propiedades
-              </>
-            )}
-          </p>
-        </div>
-        <div class="flex items-center gap-3">
-          <label for="sort-select" class="text-sm text-text-secondary whitespace-nowrap">
-            Ordenar por:
-          </label>
-          <select
-            id="sort-select"
-            class="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition-all cursor-pointer"
-          >
-            <option value="recent">Mas recientes</option>
-            <option value="price-asc">Menor canon</option>
-            <option value="price-desc">Mayor canon</option>
-            <option value="area-desc">Mayor area</option>
-          </select>
-        </div>
-      </div>
+        <div class="flex-1 min-w-0 mt-6 lg:mt-0">
+          <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p class="text-sm text-text-secondary">
+              {hasActiveFilters ? (
+                <>
+                  <span class="font-semibold text-text-primary">{properties.length}</span> resultado{properties.length !== 1 ? 's' : ''} encontrado{properties.length !== 1 ? 's' : ''}
+                </>
+              ) : (
+                <>
+                  Mostrando <span class="font-semibold text-text-primary">{properties.length}</span> propiedades
+                </>
+              )}
+            </p>
+            <div class="flex items-center gap-3">
+              <label for="sort-select" class="text-sm text-text-secondary whitespace-nowrap">
+                Ordenar por:
+              </label>
+              <select
+                id="sort-select"
+                class="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition-all cursor-pointer"
+              >
+                <option value="recent">Mas recientes</option>
+                <option value="price-asc">Menor canon</option>
+                <option value="price-desc">Mayor canon</option>
+                <option value="area-desc">Mayor area</option>
+              </select>
+            </div>
+          </div>
 
-      {/* Property Grid */}
-      {properties.length > 0 ? (
-        <>
-          <AnimatedPropertyGrid
-            client:load
-            properties={properties}
-            columns={{ default: 1, sm: 2, lg: 3, xl: 4 }}
-            staggerDelay={80}
-            gap={1.5}
-          />
+          {properties.length > 0 ? (
+            <>
+              <AnimatedPropertyGrid
+                client:load
+                properties={properties}
+                columns={{ default: 1, sm: 2, lg: 2, xl: 3 }}
+                staggerDelay={80}
+                gap={1.25}
+              />
 
-          {properties.length >= 12 && (
-            <div class="mt-10 flex justify-center">
-              <button class="btn-outline">
-                Cargar mas propiedades
-              </button>
+              {properties.length >= 12 && (
+                <div class="mt-10 flex justify-center">
+                  <button class="btn-outline">
+                    Cargar mas propiedades
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div class="py-16 text-center">
+              <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface">
+                <svg class="h-8 w-8 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold text-text-primary mb-2">
+                No se encontraron propiedades
+              </h3>
+              <p class="text-text-secondary mb-6 max-w-md mx-auto">
+                No hay propiedades que coincidan con los filtros seleccionados. Intenta ajustar los criterios de busqueda.
+              </p>
+              <a href="/arriendos" class="btn-primary inline-flex">
+                Ver todas las propiedades
+              </a>
             </div>
           )}
-        </>
-      ) : (
-        <div class="py-16 text-center">
-          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface">
-            <svg class="h-8 w-8 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-text-primary mb-2">
-            No se encontraron propiedades
-          </h3>
-          <p class="text-text-secondary mb-6 max-w-md mx-auto">
-            No hay propiedades que coincidan con los filtros seleccionados. Intenta ajustar los criterios de busqueda.
-          </p>
-          <a href="/arriendos" class="btn-primary inline-flex">
-            Ver todas las propiedades
-          </a>
         </div>
-      )}
+      </div>
     </div>
   </section>
 </Layout>

@@ -326,6 +326,13 @@ export const mockProperties: Property[] = [
   },
 ];
 
+function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 export function getMockProperties(filters?: {
   operation?: string;
   propertyType?: string;
@@ -333,12 +340,31 @@ export function getMockProperties(filters?: {
   minPrice?: number;
   maxPrice?: number;
   bedrooms?: number;
+  bathrooms?: number;
   query?: string;
+  code?: string;
+  locationQuery?: string;
+  minArea?: number;
+  maxArea?: number;
+  parking?: number;
+  stratum?: number;
   featured?: boolean;
   limit?: number;
   offset?: number;
 }): Property[] {
   let filtered = [...mockProperties];
+
+  if (filters?.code) {
+    const code = normalizeText(filters.code);
+    filtered = filtered.filter(
+      (p) =>
+        normalizeText(p.id).includes(code) ||
+        normalizeText(p.title).includes(code)
+    );
+    const offset = filters?.offset || 0;
+    const limit = filters?.limit || filtered.length;
+    return filtered.slice(offset, offset + limit);
+  }
 
   if (filters?.operation) {
     filtered = filtered.filter((p) => p.operationType === filters.operation);
@@ -348,7 +374,16 @@ export function getMockProperties(filters?: {
   }
   if (filters?.city) {
     filtered = filtered.filter((p) =>
-      p.city.toLowerCase().includes(filters.city!.toLowerCase())
+      normalizeText(p.city).includes(normalizeText(filters.city!))
+    );
+  }
+  if (filters?.locationQuery) {
+    const q = normalizeText(filters.locationQuery);
+    filtered = filtered.filter(
+      (p) =>
+        normalizeText(p.city).includes(q) ||
+        normalizeText(p.neighborhood).includes(q) ||
+        normalizeText(p.location).includes(q)
     );
   }
   if (filters?.minPrice !== undefined) {
@@ -360,13 +395,28 @@ export function getMockProperties(filters?: {
   if (filters?.bedrooms) {
     filtered = filtered.filter((p) => p.bedrooms >= filters.bedrooms!);
   }
+  if (filters?.bathrooms) {
+    filtered = filtered.filter((p) => p.bathrooms >= filters.bathrooms!);
+  }
+  if (filters?.minArea !== undefined) {
+    filtered = filtered.filter((p) => p.area >= filters.minArea!);
+  }
+  if (filters?.maxArea !== undefined) {
+    filtered = filtered.filter((p) => p.area <= filters.maxArea!);
+  }
+  if (filters?.parking) {
+    filtered = filtered.filter((p) => p.parking >= filters.parking!);
+  }
+  if (filters?.stratum) {
+    filtered = filtered.filter((p) => p.stratum === filters.stratum!);
+  }
   if (filters?.query) {
-    const q = filters.query.toLowerCase();
+    const q = normalizeText(filters.query);
     filtered = filtered.filter(
       (p) =>
-        p.title.toLowerCase().includes(q) ||
-        p.location.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q)
+        normalizeText(p.title).includes(q) ||
+        normalizeText(p.location).includes(q) ||
+        normalizeText(p.description).includes(q)
     );
   }
   if (filters?.featured) {

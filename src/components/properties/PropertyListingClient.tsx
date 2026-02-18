@@ -193,29 +193,31 @@ export default function PropertyListingClient({
     );
   }
 
-  // Map columns to grid classes
   const columnClasses = {
     2: 'grid-cols-1 sm:grid-cols-2',
-    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3',
     4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
   };
 
   return (
     <div className={className}>
-      {/* Property grid */}
-      <div className={`grid ${columnClasses[columns]} gap-6`}>
+      <div className={`grid ${columnClasses[columns]} gap-5`}>
         {properties.map((property, index) => (
           <PropertyCardReact
             key={property.id}
             id={property.id}
             title={property.title}
             image={property.images[0] || '/images/placeholder.jpg'}
+            images={property.images}
             price={property.price}
             priceType={property.priceType}
+            operationType={property.operationType}
             location={property.location}
             area={property.area}
             bedrooms={property.bedrooms}
             bathrooms={property.bathrooms}
+            parking={property.parking}
+            adminFee={property.adminFee}
             tags={property.tags}
             propertyType={property.propertyType}
             className="stagger-item visible"

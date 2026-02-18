@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, Phone, MessageCircle } from 'lucide-react';
-import { NAV_LINKS, SITE_CONFIG } from '../../lib/constants';
+import { Menu, X, Phone, MessageCircle, User, UserCheck, CreditCard, Home, Users } from 'lucide-react';
+import { NAV_LINKS, TOP_BAR_LINKS, SITE_CONFIG } from '../../lib/constants';
 
 export default function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -132,6 +132,33 @@ export default function MobileMenu() {
             Contactar
           </a>
         </div>
+
+        {/* Secondary Links */}
+        <div className="mx-5 mt-5 border-t border-border" />
+        <nav className="flex flex-col px-3 py-3" aria-label="Enlaces rapidos">
+          {TOP_BAR_LINKS.map((link) => {
+            const IconComponent = {
+              User,
+              UserCheck,
+              CreditCard,
+              Home,
+              Users,
+            }[link.icon] || User;
+
+            return (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2.5 rounded-lg px-4 py-2 text-xs font-medium text-text-muted transition-colors duration-150 hover:bg-surface hover:text-text-secondary"
+                {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              >
+                <IconComponent size={14} className="shrink-0" />
+                {link.label}
+              </a>
+            );
+          })}
+        </nav>
       </div>
 
       {/* Keyframe for overlay fade-in */}

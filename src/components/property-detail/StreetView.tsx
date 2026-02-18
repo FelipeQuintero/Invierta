@@ -3,16 +3,14 @@ import { useState } from 'react';
 interface StreetViewProps {
   lat: number;
   lng: number;
+  apiKey?: string;
 }
 
-export default function StreetView({ lat, lng }: StreetViewProps) {
+export default function StreetView({ lat, lng, apiKey }: StreetViewProps) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
   const hasCoordinates = lat !== 0 && lng !== 0;
-  // The Google Maps API key would be set via environment variable
-  // For now we show a fallback with a link to Google Maps Street View
-  const apiKey = '';
 
   if (!hasCoordinates || !apiKey) {
     return (
@@ -51,11 +49,20 @@ export default function StreetView({ lat, lng }: StreetViewProps) {
         <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4 font-[var(--font-family-heading)]">
           Street View
         </h3>
-        <div className="w-full h-64 bg-[var(--color-surface)] rounded-xl flex flex-col items-center justify-center gap-2 border border-[var(--color-border)]">
+        <div className="w-full h-64 bg-[var(--color-surface)] rounded-xl flex flex-col items-center justify-center gap-3 border border-[var(--color-border)]">
           <svg className="w-10 h-10 text-[var(--color-text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
           </svg>
           <p className="text-[var(--color-text-secondary)] text-sm">Street View no disponible para esta ubicacion</p>
+          <a
+            href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] text-sm font-medium underline"
+          >
+            Intentar en Google Maps
+          </a>
         </div>
       </div>
     );
@@ -78,7 +85,7 @@ export default function StreetView({ lat, lng }: StreetViewProps) {
         )}
         <iframe
           title="Google Street View"
-          src={`https://www.google.com/maps/embed/v1/streetview?key=${apiKey}&location=${lat},${lng}&heading=210&pitch=10&fov=90`}
+          src={`https://www.google.com/maps/embed/v1/streetview?key=${apiKey}&location=${lat},${lng}&heading=210&pitch=10&fov=90&source=outdoor`}
           className="w-full h-full border-0"
           allowFullScreen
           loading="lazy"

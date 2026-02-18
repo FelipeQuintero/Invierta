@@ -315,7 +315,7 @@
 
   /* Skeleton size variants */
   .skeleton-image {
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 4 / 3;
     width: 100%;
     border-radius: 0;
   }
@@ -546,6 +546,29 @@
     .stagger-item.visible {
       opacity: 1;
       transform: none;
+    }
+  }
+
+  /* ===========================================
+     SIDEBAR FILTER SLIDE-IN (mobile)
+     =========================================== */
+
+  .animate-slide-in-left {
+    animation: slideInLeft 250ms ease-out forwards;
+  }
+
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-slide-in-left {
+      animation: none;
     }
   }
 }

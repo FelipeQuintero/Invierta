@@ -1,4 +1,4 @@
-import type { SiteConfig, ServiceInfo } from './types';
+import type { SiteConfig, ServiceInfo, TopBarLink } from './types';
 
 export const SITE_CONFIG: SiteConfig = {
   name: import.meta.env.SITE_NAME || 'Invierta Inmobiliaria',
@@ -22,8 +22,10 @@ export const SITE_CONFIG: SiteConfig = {
 export const PROPERTY_TYPES = [
   { value: 'apartamento', label: 'Apartamento' },
   { value: 'casa', label: 'Casa' },
+  { value: 'casa_campestre', label: 'Casa Campestre' },
   { value: 'local', label: 'Local' },
   { value: 'oficina', label: 'Oficina' },
+  { value: 'consultorio', label: 'Consultorio' },
   { value: 'lote', label: 'Lote' },
   { value: 'bodega', label: 'Bodega' },
   { value: 'finca', label: 'Finca' },
@@ -55,6 +57,28 @@ export const BEDROOM_OPTIONS = [
   { value: 4, label: '4+' },
 ] as const;
 
+export const BATHROOM_OPTIONS = [
+  { value: 1, label: '1' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+  { value: 4, label: '4+' },
+] as const;
+
+export const PARKING_OPTIONS = [
+  { value: 1, label: '1' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3+' },
+] as const;
+
+export const STRATUM_OPTIONS = [
+  { value: 1, label: '1' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+  { value: 4, label: '4' },
+  { value: 5, label: '5' },
+  { value: 6, label: '6' },
+] as const;
+
 export const PRICE_RANGES_VENTA = [
   { min: 0, max: 200_000_000, label: 'Hasta $200M' },
   { min: 200_000_000, max: 400_000_000, label: '$200M - $400M' },
@@ -78,6 +102,14 @@ export const NAV_LINKS = [
   { href: '/proyectos', label: 'Proyectos' },
   { href: '/servicios', label: 'Servicios' },
 ] as const;
+
+export const TOP_BAR_LINKS: TopBarLink[] = [
+  { href: '#', label: 'Portal Propietarios', icon: 'User', external: true },
+  { href: '#', label: 'Portal Arrendatarios', icon: 'UserCheck', external: true },
+  { href: '#', label: 'Pagos PSE', icon: 'CreditCard', external: true },
+  { href: '/servicios', label: 'Publica tu Inmueble', icon: 'Home', external: false },
+  { href: '/servicios', label: 'Registra un Referido', icon: 'Users', external: false },
+];
 
 export const SERVICES: ServiceInfo[] = [
   {

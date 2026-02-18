@@ -4,7 +4,6 @@ import PropertyCardReact from './PropertyCardReact';
 
 interface AnimatedPropertyGridProps {
   properties: Property[];
-  /** Column configuration for different breakpoints */
   columns?: {
     default: number;
     sm?: number;
@@ -12,23 +11,16 @@ interface AnimatedPropertyGridProps {
     lg?: number;
     xl?: number;
   };
-  /** Delay between each card animation in milliseconds */
   staggerDelay?: number;
-  /** Gap between cards in rem */
   gap?: number;
-  /** Show empty state when no properties */
   showEmptyState?: boolean;
 }
 
-/**
- * AnimatedPropertyGrid - A grid of PropertyCards with staggered animation
- * Uses Intersection Observer to trigger animations when entering viewport
- */
 export default function AnimatedPropertyGrid({
   properties,
-  columns = { default: 1, sm: 1, md: 2, lg: 3 },
+  columns = { default: 1, sm: 2, lg: 2, xl: 3 },
   staggerDelay = 100,
-  gap = 1.5,
+  gap = 1.25,
   showEmptyState = true,
 }: AnimatedPropertyGridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
@@ -36,7 +28,6 @@ export default function AnimatedPropertyGrid({
   const [hasAnimated, setHasAnimated] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  // Check for reduced motion preference
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
@@ -49,10 +40,8 @@ export default function AnimatedPropertyGrid({
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Set up Intersection Observer
   useEffect(() => {
     if (hasAnimated || prefersReducedMotion) {
-      // If already animated or reduced motion, show all items immediately
       setVisibleItems(new Set(properties.map((_, index) => index)));
       return;
     }
@@ -62,7 +51,6 @@ export default function AnimatedPropertyGrid({
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasAnimated) {
             setHasAnimated(true);
-            // Stagger the animation for each card
             properties.forEach((_, index) => {
               setTimeout(() => {
                 setVisibleItems((prev) => new Set([...prev, index]));
@@ -85,19 +73,13 @@ export default function AnimatedPropertyGrid({
     return () => observer.disconnect();
   }, [properties, staggerDelay, hasAnimated, prefersReducedMotion]);
 
-  // Build responsive grid classes
   const getGridClasses = () => {
     const classes = ['grid'];
-
-    // Default columns
     classes.push(`grid-cols-${columns.default}`);
-
-    // Responsive breakpoints
     if (columns.sm) classes.push(`sm:grid-cols-${columns.sm}`);
     if (columns.md) classes.push(`md:grid-cols-${columns.md}`);
     if (columns.lg) classes.push(`lg:grid-cols-${columns.lg}`);
     if (columns.xl) classes.push(`xl:grid-cols-${columns.xl}`);
-
     return classes.join(' ');
   };
 
@@ -145,12 +127,16 @@ export default function AnimatedPropertyGrid({
             id={property.id}
             title={property.title}
             image={property.images[0] || '/images/placeholder.jpg'}
+            images={property.images}
             price={property.price}
             priceType={property.priceType}
+            operationType={property.operationType}
             location={property.location}
             area={property.area}
             bedrooms={property.bedrooms}
             bathrooms={property.bathrooms}
+            parking={property.parking}
+            adminFee={property.adminFee}
             tags={property.tags}
             propertyType={property.propertyType}
           />

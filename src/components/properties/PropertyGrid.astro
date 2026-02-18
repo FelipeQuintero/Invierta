@@ -10,18 +10,22 @@ const { properties } = Astro.props;
 ---
 
 {properties.length > 0 ? (
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5">
     {properties.map((property) => (
       <PropertyCard
         id={property.id}
         title={property.title}
         image={property.images[0] || '/images/placeholder.jpg'}
+        images={property.images}
         price={property.price}
         priceType={property.priceType}
+        operationType={property.operationType}
         location={property.location}
         area={property.area}
         bedrooms={property.bedrooms}
         bathrooms={property.bathrooms}
+        parking={property.parking}
+        adminFee={property.adminFee}
         tags={property.tags}
         propertyType={property.propertyType}
       />

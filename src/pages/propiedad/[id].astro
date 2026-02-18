@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/ui/Breadcrumb.astro';
+import PropertyDetailTabs from '../../components/property-detail/PropertyDetailTabs.tsx';
 import ImageGallery from '../../components/property-detail/ImageGallery.tsx';
 import PropertyMap from '../../components/property-detail/PropertyMap.tsx';
 import StreetView from '../../components/property-detail/StreetView.tsx';
@@ -40,11 +41,15 @@ const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURICompo
     </div>
   </section>
 
+  <PropertyDetailTabs client:load />
+
   <section class="py-6 lg:py-10">
     <div class="container-custom">
       <div class="lg:grid lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_380px] lg:gap-8">
         <div class="min-w-0">
-          <ImageGallery images={property.images} title={property.title} client:load />
+          <div id="fotos">
+            <ImageGallery images={property.images} title={property.title} client:load />
+          </div>
 
           <div class="mt-6">
             <div class="flex flex-wrap items-start justify-between gap-4">
@@ -70,7 +75,7 @@ const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURICompo
                 {property.operationType === 'arriendo' && (
                   <p class="text-sm text-text-muted">/mes</p>
                 )}
-                {property.adminFee > 0 && (
+                {property.adminFee && property.adminFee > 0 && (
                   <p class="text-sm text-text-secondary">
                     Admin: {formatPrice(property.adminFee)}
                   </p>
@@ -144,43 +149,76 @@ const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURICompo
               </dl>
             </div>
 
-            {property.coordinates && (
-              <div class="mt-8">
+            <div id="video" class="mt-8">
+              <h2 class="font-heading text-xl font-semibold text-text-primary">Video</h2>
+              <div class="mt-4 flex h-64 items-center justify-center rounded-xl border border-border bg-surface">
+                <div class="flex flex-col items-center gap-2 text-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+                  </svg>
+                  <p class="text-sm text-text-secondary">Video no disponible para esta propiedad</p>
+                </div>
+              </div>
+            </div>
+
+            <div id="mapa" class="mt-8">
+              {property.coordinates ? (
                 <PropertyMap
                   lat={property.coordinates.lat}
                   lng={property.coordinates.lng}
                   title={property.title}
                   client:visible
                 />
-              </div>
-            )}
+              ) : (
+                <div>
+                  <h2 class="font-heading text-xl font-semibold text-text-primary">Ubicacion</h2>
+                  <div class="mt-4 flex h-64 items-center justify-center rounded-xl border border-border bg-surface">
+                    <div class="flex flex-col items-center gap-2 text-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                      </svg>
+                      <p class="text-sm text-text-secondary">Ubicacion no disponible en el mapa</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {property.coordinates && import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY && (
-              <div class="mt-8">
-                <h2 class="font-heading text-xl font-semibold text-text-primary">Street View</h2>
-                <div class="mt-4 overflow-hidden rounded-lg">
+            <div id="zona" class="mt-8">
+              <h2 class="font-heading text-xl font-semibold text-text-primary">Conocer la zona</h2>
+              <div class="mt-4">
+                {property.coordinates ? (
                   <StreetView
                     lat={property.coordinates.lat}
                     lng={property.coordinates.lng}
                     client:visible
                   />
-                </div>
+                ) : (
+                  <div class="flex h-64 items-center justify-center rounded-xl border border-border bg-surface">
+                    <div class="flex flex-col items-center gap-2 text-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                      </svg>
+                      <p class="text-sm text-text-secondary">Informacion de la zona no disponible</p>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
-            {property.view360Url && (
-              <div class="mt-8">
-                <h2 class="font-heading text-xl font-semibold text-text-primary">Tour Virtual 360</h2>
-                <div class="mt-4 overflow-hidden rounded-lg">
-                  <View360 url={property.view360Url} client:visible />
-                </div>
+            <div id="fotos-360" class="mt-8">
+              <h2 class="font-heading text-xl font-semibold text-text-primary">Tour Virtual 360</h2>
+              <div class="mt-4 overflow-hidden rounded-lg">
+                <View360 url={property.view360Url} client:visible />
               </div>
-            )}
+            </div>
           </div>
         </div>
 
         <aside class="mt-8 lg:mt-0">
-          <div class="sticky top-24 space-y-6">
+          <div class="sticky top-[132px] lg:top-[148px] space-y-6">
             <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
               <h3 class="font-heading text-lg font-semibold text-text-primary">
                 Contactar asesor
