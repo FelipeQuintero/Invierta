@@ -257,7 +257,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
     }`;
 
   const sidebarContent = (
-    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+    <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
       <div className="flex-1 overflow-y-auto px-4 lg:px-5">
         {hasActiveFilters && (
           <div className="flex flex-wrap gap-1.5 py-3 border-b border-[var(--color-border)]">

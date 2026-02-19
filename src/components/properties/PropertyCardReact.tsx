@@ -163,7 +163,7 @@ export default function PropertyCardReact({
               <span className="text-sm font-normal text-[var(--color-text-muted)]">/mes</span>
             )}
           </p>
-          {adminFee && priceType === 'arriendo' && (
+          {adminFee != null && adminFee > 0 && priceType === 'arriendo' && (
             <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
               Admin: {formatPrice(adminFee)}
             </p>

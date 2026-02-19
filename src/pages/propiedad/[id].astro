@@ -75,7 +75,7 @@ const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURICompo
                 {property.operationType === 'arriendo' && (
                   <p class="text-sm text-text-muted">/mes</p>
                 )}
-                {property.adminFee && property.adminFee > 0 && (
+                {property.adminFee != null && property.adminFee > 0 && (
                   <p class="text-sm text-text-secondary">
                     Admin: {formatPrice(property.adminFee)}
                   </p>
