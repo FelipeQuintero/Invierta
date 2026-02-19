@@ -1,17 +1,21 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, ChevronRight, X, Maximize2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Maximize2, ZoomIn } from 'lucide-react';
 
 interface ImageGalleryProps {
   images: string[];
   title: string;
 }
 
+const ZOOM_FACTOR = 2.5;
+
 export default function ImageGallery({ images, title }: ImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [mainLoaded, setMainLoaded] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
@@ -56,6 +60,18 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
     setLightboxOpen(true);
   }, []);
 
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoom({ x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setZoom(null);
+  }, []);
+
   if (!images || images.length === 0) {
     return (
       <div className="w-full aspect-video bg-gray-200 rounded-xl flex items-center justify-center">
@@ -64,9 +80,19 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
     );
   }
 
+  // Lens size relative to container (percentage of container dimensions)
+  const lensW = (1 / ZOOM_FACTOR) * 100;
+  const lensH = (1 / ZOOM_FACTOR) * 100;
+
   return (
-    <div className="w-full">
-      <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[450px] rounded-xl overflow-hidden bg-gray-200 group">
+    <div className="w-full relative">
+      {/* Main image container */}
+      <div
+        ref={containerRef}
+        className="relative w-full h-[300px] sm:h-[400px] lg:h-[450px] rounded-xl overflow-hidden bg-gray-200 group"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
         {!mainLoaded && (
           <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
             <svg
@@ -88,12 +114,25 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
           ref={imgRef}
           src={images[currentIndex]}
           alt={`${title} - Imagen ${currentIndex + 1}`}
-          className={`w-full h-full object-cover transition-opacity duration-300 cursor-pointer ${mainLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full h-full object-cover transition-opacity duration-300 ${mainLoaded ? 'opacity-100' : 'opacity-0'} ${zoom ? 'lg:cursor-crosshair cursor-pointer' : 'cursor-pointer'}`}
           onLoad={() => setMainLoaded(true)}
           onError={() => setMainLoaded(true)}
           onClick={openLightbox}
           referrerPolicy="no-referrer"
         />
+
+        {/* Hover lens indicator (desktop only) */}
+        {zoom && mainLoaded && (
+          <div
+            className="hidden lg:block absolute pointer-events-none border-2 border-white/80 bg-white/15 z-10 shadow-lg"
+            style={{
+              width: `${lensW}%`,
+              height: `${lensH}%`,
+              left: `${Math.max(0, Math.min(100 - lensW, zoom.x - lensW / 2))}%`,
+              top: `${Math.max(0, Math.min(100 - lensH, zoom.y - lensH / 2))}%`,
+            }}
+          />
+        )}
 
         <button
           onClick={openLightbox}
@@ -102,6 +141,14 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
         >
           <Maximize2 className="w-4 h-4 text-white" />
         </button>
+
+        {/* Zoom hint (desktop only) */}
+        {!zoom && mainLoaded && (
+          <div className="hidden lg:flex absolute bottom-3 left-3 items-center gap-1.5 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <ZoomIn className="w-3.5 h-3.5" />
+            <span>Pasa el mouse para zoom</span>
+          </div>
+        )}
 
         {images.length > 1 && (
           <>
@@ -126,6 +173,20 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
           {currentIndex + 1} / {images.length}
         </div>
       </div>
+
+      {/* Zoom panel (desktop only, positioned to the right overlaying sidebar) */}
+      {zoom && mainLoaded && (
+        <div
+          className="hidden lg:block absolute left-full top-0 ml-4 z-50 w-[400px] h-[450px] rounded-xl overflow-hidden border border-[var(--color-border)] shadow-2xl pointer-events-none"
+          style={{
+            backgroundImage: `url(${images[currentIndex]})`,
+            backgroundSize: `${ZOOM_FACTOR * 100}%`,
+            backgroundPosition: `${zoom.x}% ${zoom.y}%`,
+            backgroundRepeat: 'no-repeat',
+            backgroundColor: '#f3f4f6',
+          }}
+        />
+      )}
 
       {images.length > 1 && (
         <div className="mt-3 flex gap-2 overflow-x-auto pb-2 scrollbar-thin">

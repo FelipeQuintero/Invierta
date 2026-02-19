@@ -6,7 +6,7 @@ import type { OperationType } from '../../lib/types';
 export default function HeroSearch() {
   const [operation, setOperation] = useState<OperationType>('venta');
   const [propertyType, setPropertyType] = useState('');
-  const [city, setCity] = useState('');
+  const [query, setQuery] = useState('');
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -22,7 +22,17 @@ export default function HeroSearch() {
 
     if (operation) params.set('operation', operation);
     if (propertyType) params.set('type', propertyType);
-    if (city.trim()) params.set('city', city.trim());
+
+    const trimmedQuery = query.trim();
+    if (trimmedQuery) {
+      // Detect SIMI codes (e.g. "188-2470", "INV-001")
+      const isCode = /^\d{1,4}-\d+$/.test(trimmedQuery) || /^[A-Za-z]{2,5}-\d+$/.test(trimmedQuery);
+      if (isCode) {
+        params.set('code', trimmedQuery);
+      } else {
+        params.set('city', trimmedQuery);
+      }
+    }
 
     const queryString = params.toString();
     window.location.href = queryString ? `${basePath}?${queryString}` : basePath;
@@ -104,20 +114,20 @@ export default function HeroSearch() {
                 </select>
               </div>
 
-              {/* Ciudad o zona */}
+              {/* Ciudad, zona o codigo */}
               <div className="flex flex-col">
                 <label
-                  htmlFor="hero-city"
+                  htmlFor="hero-query"
                   className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide mb-1.5 pl-1"
                 >
-                  Ciudad o zona
+                  Ciudad o codigo
                 </label>
                 <input
-                  id="hero-city"
+                  id="hero-query"
                   type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="Ej: Bogota, Chapinero..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Ej: Bogota, 188-2470..."
                   className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-shadow"
                 />
               </div>

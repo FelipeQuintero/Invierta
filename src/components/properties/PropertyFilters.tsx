@@ -235,7 +235,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
   if (bedrooms) activeFilters.push({ key: 'bedrooms', label: `${bedrooms}+ hab.` });
   if (minArea) activeFilters.push({ key: 'minArea', label: `Min: ${minArea} m\u00B2` });
   if (maxArea) activeFilters.push({ key: 'maxArea', label: `Max: ${maxArea} m\u00B2` });
-  if (bathrooms) activeFilters.push({ key: 'bathrooms', label: `${bathrooms}+ banos` });
+  if (bathrooms) activeFilters.push({ key: 'bathrooms', label: `${bathrooms}+ baños` });
   if (parking) activeFilters.push({ key: 'parking', label: `${parking}+ parq.` });
   if (stratum) activeFilters.push({ key: 'stratum', label: `Estrato ${stratum}` });
 
@@ -446,7 +446,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
         <FilterSection title="Mas filtros" defaultOpen={!!(bathrooms || parking || stratum)}>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Banos</label>
+              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Baños</label>
               <div className="flex flex-wrap gap-2">
                 {BATHROOM_OPTIONS.map((opt) => (
                   <button
