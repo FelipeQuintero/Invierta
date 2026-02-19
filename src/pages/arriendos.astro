@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import AnimatedPropertyGrid from '../components/properties/AnimatedPropertyGrid.tsx';
+import PropertyListingContent from '../components/properties/PropertyListingContent.tsx';
 import PropertyFilters from '../components/properties/PropertyFilters.tsx';
 import Breadcrumb from '../components/ui/Breadcrumb.astro';
 import { getProperties } from '../lib/simi';
@@ -74,72 +74,21 @@ const breadcrumbItems = [
       <div class="flex flex-col lg:flex-row lg:gap-6">
         <PropertyFilters client:load operation="arriendo" />
 
-        <div class="flex-1 min-w-0 mt-6 lg:mt-0">
-          <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p class="text-sm text-text-secondary">
-              {hasActiveFilters ? (
-                <>
-                  <span class="font-semibold text-text-primary">{properties.length}</span> resultado{properties.length !== 1 ? 's' : ''} encontrado{properties.length !== 1 ? 's' : ''}
-                </>
-              ) : (
-                <>
-                  Mostrando <span class="font-semibold text-text-primary">{properties.length}</span> propiedades
-                </>
-              )}
-            </p>
-            <div class="flex items-center gap-3">
-              <label for="sort-select" class="text-sm text-text-secondary whitespace-nowrap">
-                Ordenar por:
-              </label>
-              <select
-                id="sort-select"
-                class="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition-all cursor-pointer"
-              >
-                <option value="recent">Mas recientes</option>
-                <option value="price-asc">Menor canon</option>
-                <option value="price-desc">Mayor canon</option>
-                <option value="area-desc">Mayor area</option>
-              </select>
-            </div>
-          </div>
-
-          {properties.length > 0 ? (
-            <>
-              <AnimatedPropertyGrid
-                client:load
-                properties={properties}
-                columns={{ default: 1, sm: 2, lg: 2, xl: 3 }}
-                staggerDelay={80}
-                gap={1.25}
-              />
-
-              {properties.length >= 12 && (
-                <div class="mt-10 flex justify-center">
-                  <button class="btn-outline">
-                    Cargar mas propiedades
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div class="py-16 text-center">
-              <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface">
-                <svg class="h-8 w-8 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <h3 class="text-lg font-semibold text-text-primary mb-2">
-                No se encontraron propiedades
-              </h3>
-              <p class="text-text-secondary mb-6 max-w-md mx-auto">
-                No hay propiedades que coincidan con los filtros seleccionados. Intenta ajustar los criterios de busqueda.
-              </p>
-              <a href="/arriendos" class="btn-primary inline-flex">
-                Ver todas las propiedades
-              </a>
-            </div>
-          )}
-        </div>
+        <PropertyListingContent
+          client:load
+          properties={properties}
+          hasActiveFilters={hasActiveFilters}
+          emptyHref="/arriendos"
+          emptyLabel="Ver todas las propiedades"
+          itemLabel="propiedades"
+          locationQuery={params.get('locationQuery') || params.get('city') || ''}
+          sortOptions={[
+            { value: 'recent', label: 'Mas recientes' },
+            { value: 'price-asc', label: 'Menor canon' },
+            { value: 'price-desc', label: 'Mayor canon' },
+            { value: 'area-desc', label: 'Mayor area' },
+          ]}
+        />
       </div>
     </div>
   </section>

@@ -10,6 +10,8 @@ import {
   PRICE_RANGES_ARRIENDO,
 } from '../../lib/constants';
 import LoadingSpinner from '../ui/LoadingSpinner';
+import LocationAutocomplete from '../ui/LocationAutocomplete';
+import type { LocationSuggestion } from '../../lib/locationSearch';
 
 interface Props {
   operation: string;
@@ -307,19 +309,24 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
 
         <FilterSection title="Ubicacion">
           <div className="space-y-3">
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]">
-                <LocationIcon />
-              </span>
-              <input
-                type="text"
-                value={locationQuery}
-                onChange={(e) => setLocationQuery(e.target.value)}
-                placeholder="Ciudad, zona o barrio"
-                className={`${inputClass} pl-9`}
-                aria-label="Buscar por ubicacion"
-              />
-            </div>
+            <LocationAutocomplete
+              id="filter-location"
+              value={locationQuery}
+              onChange={(val) => {
+                setLocationQuery(val);
+              }}
+              onSelect={(suggestion: LocationSuggestion) => {
+                if (suggestion.type === 'ciudad') {
+                  setCity(suggestion.name);
+                  setLocationQuery('');
+                } else if (suggestion.city) {
+                  setCity(suggestion.city);
+                  setLocationQuery(suggestion.name);
+                }
+              }}
+              placeholder="Ciudad, zona o barrio"
+              inputClassName={`${inputClass} pl-9`}
+            />
             <select
               value={city}
               onChange={(e) => setCity(e.target.value)}

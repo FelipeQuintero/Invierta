@@ -571,4 +571,63 @@
       animation: none;
     }
   }
+
+  /* ===========================================
+     PROPERTIES MAP - Cluster & Popup Styles
+     =========================================== */
+
+  /* Custom cluster icons */
+  .properties-cluster-icon {
+    background: transparent !important;
+  }
+
+  .properties-cluster {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #ffffff;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    border: 3px solid #ffffff;
+  }
+
+  .properties-cluster--small {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+    background-color: #f97316;
+  }
+
+  .properties-cluster--medium {
+    width: 44px;
+    height: 44px;
+    font-size: 14px;
+    background-color: #ea580c;
+  }
+
+  .properties-cluster--large {
+    width: 52px;
+    height: 52px;
+    font-size: 15px;
+    background-color: #1e3a5f;
+  }
+
+  /* Popup styles */
+  .properties-map-popup .leaflet-popup-content-wrapper {
+    padding: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .properties-map-popup .leaflet-popup-content {
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .properties-map-popup .leaflet-popup-tip {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
 }

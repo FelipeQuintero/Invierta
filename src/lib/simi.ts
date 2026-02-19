@@ -118,6 +118,26 @@ interface SimiTipoInmueble {
   nombre: string;
 }
 
+interface SimiZona {
+  id: string;
+  nomZona: string;
+}
+
+interface SimiBarrio {
+  id: string;
+  nombre: string;
+}
+
+interface SimiZonasResponse {
+  zonas: Array<{ id: string; nomZona: string }>;
+  response: number;
+}
+
+interface SimiBarriosResponse {
+  barrios: SimiBarrio[];
+  response: number;
+}
+
 // ============================================================================
 // API Client
 // ============================================================================
@@ -530,12 +550,44 @@ export async function getCiudades(idDepartamento: number = 0): Promise<SimiCiuda
 
 export async function getTiposInmueble(): Promise<SimiTipoInmueble[]> {
   if (useMock) return [];
-  
+
   try {
     const data = await simiRequest<SimiTipoInmueble[]>('/v2/tipoInmuebles/unique/1');
     return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error('[SIMI] Error fetching tipos de inmueble:', error);
+    return [];
+  }
+}
+
+export async function getZonas(idCiudad: string): Promise<{ id: string; nombre: string }[]> {
+  if (useMock) return [];
+
+  try {
+    const data = await simiRequest<SimiZonasResponse | SimiZona[]>(`/zonas/idCiudad/${idCiudad}`);
+    const raw = Array.isArray(data)
+      ? data
+      : data && 'zonas' in data && Array.isArray(data.zonas)
+        ? data.zonas
+        : [];
+    // Normalize nomZona → nombre
+    return raw.map((z) => ({ id: z.id, nombre: z.nomZona }));
+  } catch (error) {
+    console.error(`[SIMI] Error fetching zonas for ciudad ${idCiudad}:`, error);
+    return [];
+  }
+}
+
+export async function getBarrios(idCiudad: string): Promise<SimiBarrio[]> {
+  if (useMock) return [];
+
+  try {
+    const data = await simiRequest<SimiBarriosResponse | SimiBarrio[]>(`/v2/barrios/idCiudad/${idCiudad}/idZona/0`);
+    if (Array.isArray(data)) return data;
+    if (data && 'barrios' in data && Array.isArray(data.barrios)) return data.barrios;
+    return [];
+  } catch (error) {
+    console.error(`[SIMI] Error fetching barrios for ciudad ${idCiudad}:`, error);
     return [];
   }
 }

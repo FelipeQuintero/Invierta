@@ -1,12 +1,24 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { OPERATION_TYPES, PROPERTY_TYPES } from '../../lib/constants';
 import type { OperationType } from '../../lib/types';
+import LocationAutocomplete from '../ui/LocationAutocomplete';
+import type { LocationSuggestion } from '../../lib/locationSearch';
 
 export default function HeroSearch() {
   const [operation, setOperation] = useState<OperationType>('venta');
   const [propertyType, setPropertyType] = useState('');
   const [query, setQuery] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState<LocationSuggestion | null>(null);
+
+  const handleLocationChange = useCallback((value: string) => {
+    setQuery(value);
+    setSelectedLocation(null);
+  }, []);
+
+  const handleLocationSelect = useCallback((suggestion: LocationSuggestion) => {
+    setSelectedLocation(suggestion);
+  }, []);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -29,6 +41,16 @@ export default function HeroSearch() {
       const isCode = /^\d{1,4}-\d+$/.test(trimmedQuery) || /^[A-Za-z]{2,5}-\d+$/.test(trimmedQuery);
       if (isCode) {
         params.set('code', trimmedQuery);
+      } else if (selectedLocation) {
+        // Use the selected location's city for filtering
+        if (selectedLocation.type === 'ciudad') {
+          params.set('city', selectedLocation.name);
+        } else if (selectedLocation.city) {
+          params.set('city', selectedLocation.city);
+          params.set('locationQuery', selectedLocation.name);
+        } else {
+          params.set('city', trimmedQuery);
+        }
       } else {
         params.set('city', trimmedQuery);
       }
@@ -115,22 +137,16 @@ export default function HeroSearch() {
               </div>
 
               {/* Ciudad, zona o codigo */}
-              <div className="flex flex-col">
-                <label
-                  htmlFor="hero-query"
-                  className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide mb-1.5 pl-1"
-                >
-                  Ciudad o codigo
-                </label>
-                <input
-                  id="hero-query"
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Ej: Bogota, 188-2470..."
-                  className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-shadow"
-                />
-              </div>
+              <LocationAutocomplete
+                id="hero-query"
+                label="Ciudad o codigo"
+                value={query}
+                onChange={handleLocationChange}
+                onSelect={handleLocationSelect}
+                placeholder="Ej: Bogota, Chapinero..."
+                inputClassName="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-shadow"
+                className="flex flex-col"
+              />
 
               {/* Submit button */}
               <div className="flex flex-col justify-end">
