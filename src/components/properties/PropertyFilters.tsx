@@ -537,7 +537,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
   return (
     <>
       {/* Desktop sidebar */}
-      <div className="hidden lg:flex flex-col w-72 xl:w-80 shrink-0 bg-white border-r border-[var(--color-border)] h-[calc(100vh-200px)] sticky top-28 rounded-xl shadow-sm overflow-hidden">
+      <div className="hidden lg:flex flex-col w-72 xl:w-80 shrink-0 bg-white border-r border-[var(--color-border)] h-[calc(100vh-200px)] sticky top-28 rounded-xl shadow-sm">
         <div className="flex items-center gap-2 px-5 py-4 border-b border-[var(--color-border)]">
           <span className="text-[var(--color-accent)]">
             <FilterIcon />

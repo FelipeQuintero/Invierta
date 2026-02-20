@@ -10,6 +10,7 @@ export default function HeroSearch() {
   const [propertyType, setPropertyType] = useState('');
   const [query, setQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<LocationSuggestion | null>(null);
+  const [searchMode, setSearchMode] = useState<'location' | 'code'>('location');
 
   const handleLocationChange = useCallback((value: string) => {
     setQuery(value);
@@ -23,6 +24,15 @@ export default function HeroSearch() {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
+    const trimmedQuery = query.trim();
+
+    if (searchMode === 'code') {
+      if (trimmedQuery) {
+        window.location.href = `/ventas?code=${encodeURIComponent(trimmedQuery)}`;
+      }
+      return;
+    }
+
     const routeMap: Record<string, string> = {
       venta: '/ventas',
       arriendo: '/arriendos',
@@ -35,14 +45,8 @@ export default function HeroSearch() {
     if (operation) params.set('operation', operation);
     if (propertyType) params.set('type', propertyType);
 
-    const trimmedQuery = query.trim();
     if (trimmedQuery) {
-      // Detect SIMI codes (e.g. "188-2470", "INV-001")
-      const isCode = /^\d{1,4}-\d+$/.test(trimmedQuery) || /^[A-Za-z]{2,5}-\d+$/.test(trimmedQuery);
-      if (isCode) {
-        params.set('code', trimmedQuery);
-      } else if (selectedLocation) {
-        // Use the selected location's city for filtering
+      if (selectedLocation) {
         if (selectedLocation.type === 'ciudad') {
           params.set('city', selectedLocation.name);
         } else if (selectedLocation.city) {
@@ -59,6 +63,8 @@ export default function HeroSearch() {
     const queryString = params.toString();
     window.location.href = queryString ? `${basePath}?${queryString}` : basePath;
   }
+
+  const inputClass = "w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-shadow";
 
   return (
     <section className="relative w-full min-h-[540px] md:min-h-[600px] flex items-center justify-center overflow-hidden">
@@ -90,75 +96,123 @@ export default function HeroSearch() {
             onSubmit={handleSubmit}
             className="bg-white rounded-2xl shadow-2xl p-4 md:p-6"
           >
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
-              {/* Tipo de operacion */}
-              <div className="flex flex-col">
-                <label
-                  htmlFor="hero-operation"
-                  className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide mb-1.5 pl-1"
-                >
-                  Tipo de operacion
-                </label>
-                <select
-                  id="hero-operation"
-                  value={operation}
-                  onChange={(e) => setOperation(e.target.value as OperationType)}
-                  className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-shadow appearance-none cursor-pointer"
-                >
-                  {OPERATION_TYPES.map((op) => (
-                    <option key={op.value} value={op.value}>
-                      {op.label}
-                    </option>
-                  ))}
-                </select>
+            {/* Radio toggle */}
+            <div className="flex items-center gap-5 mb-4 pl-1">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="searchMode"
+                  checked={searchMode === 'location'}
+                  onChange={() => { setSearchMode('location'); setQuery(''); setSelectedLocation(null); }}
+                  className="w-4 h-4 accent-[var(--color-primary)]"
+                />
+                <span className={`text-sm font-medium ${searchMode === 'location' ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)]'}`}>
+                  Ubicacion
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="searchMode"
+                  checked={searchMode === 'code'}
+                  onChange={() => { setSearchMode('code'); setQuery(''); setSelectedLocation(null); }}
+                  className="w-4 h-4 accent-[var(--color-primary)]"
+                />
+                <span className={`text-sm font-medium ${searchMode === 'code' ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)]'}`}>
+                  Codigo
+                </span>
+              </label>
+            </div>
+
+            {searchMode === 'location' ? (
+              /* Location mode: operation + type + location + button */
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="hero-operation"
+                    className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide mb-1.5 pl-1"
+                  >
+                    Tipo de operacion
+                  </label>
+                  <select
+                    id="hero-operation"
+                    value={operation}
+                    onChange={(e) => setOperation(e.target.value as OperationType)}
+                    className={`${inputClass} appearance-none cursor-pointer`}
+                  >
+                    {OPERATION_TYPES.map((op) => (
+                      <option key={op.value} value={op.value}>
+                        {op.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="hero-property-type"
+                    className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide mb-1.5 pl-1"
+                  >
+                    Tipo de inmueble
+                  </label>
+                  <select
+                    id="hero-property-type"
+                    value={propertyType}
+                    onChange={(e) => setPropertyType(e.target.value)}
+                    className={`${inputClass} appearance-none cursor-pointer`}
+                  >
+                    <option value="">Todos</option>
+                    {PROPERTY_TYPES.map((pt) => (
+                      <option key={pt.value} value={pt.value}>
+                        {pt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <LocationAutocomplete
+                  id="hero-query"
+                  label="Ubicacion"
+                  value={query}
+                  onChange={handleLocationChange}
+                  onSelect={handleLocationSelect}
+                  placeholder="Ej: Bogota, Chapinero..."
+                  inputClassName={inputClass}
+                  className="flex flex-col"
+                />
+
+                <div className="flex flex-col justify-end">
+                  <button
+                    type="submit"
+                    className="btn-primary w-full py-3 text-sm md:text-base rounded-lg"
+                  >
+                    <Search className="w-5 h-5" />
+                    <span>Buscar</span>
+                  </button>
+                </div>
               </div>
-
-              {/* Tipo de inmueble */}
-              <div className="flex flex-col">
-                <label
-                  htmlFor="hero-property-type"
-                  className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide mb-1.5 pl-1"
-                >
-                  Tipo de inmueble
-                </label>
-                <select
-                  id="hero-property-type"
-                  value={propertyType}
-                  onChange={(e) => setPropertyType(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-shadow appearance-none cursor-pointer"
-                >
-                  <option value="">Todos</option>
-                  {PROPERTY_TYPES.map((pt) => (
-                    <option key={pt.value} value={pt.value}>
-                      {pt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Ciudad, zona o codigo */}
-              <LocationAutocomplete
-                id="hero-query"
-                label="Ciudad o codigo"
-                value={query}
-                onChange={handleLocationChange}
-                onSelect={handleLocationSelect}
-                placeholder="Ej: Bogota, Chapinero..."
-                inputClassName="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-shadow"
-                className="flex flex-col"
-              />
-
-              {/* Submit button */}
-              <div className="flex flex-col justify-end">
+            ) : (
+              /* Code mode: just code input + button */
+              <div className="flex gap-3 md:gap-4">
+                <div className="relative flex-1">
+                  <input
+                    id="hero-code"
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Codigo del inmueble"
+                    className={`${inputClass} pr-10`}
+                  />
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+                </div>
                 <button
                   type="submit"
-                  className="btn-primary w-full py-3 text-sm md:text-base rounded-lg"
+                  className="btn-primary px-6 py-3 text-sm md:text-base rounded-lg shrink-0"
                 >
-                  <Search className="w-5 h-5" />
                   <span>Buscar</span>
                 </button>
               </div>
-            </div>
+            )}
           </form>
 
           {/* Quick links below search */}

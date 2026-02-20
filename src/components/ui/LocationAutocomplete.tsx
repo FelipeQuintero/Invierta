@@ -34,14 +34,41 @@ export default function LocationAutocomplete({
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [isLoading, setIsLoading] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Calculate dropdown position for fixed positioning (escapes overflow contexts)
+  const updateDropdownPosition = useCallback(() => {
+    if (!inputRef.current) return;
+    const rect = inputRef.current.getBoundingClientRect();
+    setDropdownStyle({
+      position: 'fixed',
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
+    });
+  }, []);
 
   // Preload catalog on mount
   useEffect(() => {
     preloadCatalog();
   }, []);
+
+  // Update dropdown position on scroll/resize when open
+  useEffect(() => {
+    if (!isOpen) return;
+    updateDropdownPosition();
+    const handleScrollOrResize = () => updateDropdownPosition();
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+    };
+  }, [isOpen, updateDropdownPosition]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -163,7 +190,8 @@ export default function LocationAutocomplete({
         <ul
           id={listboxId}
           role="listbox"
-          className="absolute z-50 left-0 right-0 mt-1 bg-white border border-[var(--color-border)] rounded-lg shadow-lg max-h-64 overflow-y-auto"
+          className="bg-white border border-[var(--color-border)] rounded-lg shadow-lg max-h-64 overflow-y-auto"
+          style={dropdownStyle}
         >
           {suggestions.map((suggestion, index) => (
             <li

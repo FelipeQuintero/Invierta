@@ -26,6 +26,7 @@ export default function PropertyListingContent({
   locationQuery,
 }: PropertyListingContentProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [visibleCount, setVisibleCount] = useState(12);
 
   return (
     <div className="flex-1 min-w-0 mt-6 lg:mt-0">
@@ -107,14 +108,14 @@ export default function PropertyListingContent({
         viewMode === 'list' ? (
           <>
             <AnimatedPropertyGrid
-              properties={properties}
+              properties={properties.slice(0, visibleCount)}
               columns={{ default: 1, sm: 2, lg: 2, xl: 3 }}
               staggerDelay={80}
               gap={1.25}
             />
-            {properties.length >= 12 && (
+            {visibleCount < properties.length && (
               <div className="mt-10 flex justify-center">
-                <button className="btn-outline">
+                <button className="btn-outline" onClick={() => setVisibleCount(prev => prev + 12)}>
                   Cargar mas {itemLabel}
                 </button>
               </div>
