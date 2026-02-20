@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface StreetViewProps {
   lat: number;
@@ -11,6 +11,14 @@ export default function StreetView({ lat, lng, apiKey }: StreetViewProps) {
   const [error, setError] = useState(false);
 
   const hasCoordinates = lat !== 0 && lng !== 0;
+
+  // Fallback: hide loader after 3s in case onLoad doesn't fire (cross-origin iframe)
+  useEffect(() => {
+    if (hasCoordinates && apiKey) {
+      const timer = setTimeout(() => setLoaded(true), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasCoordinates, apiKey]);
 
   if (!hasCoordinates || !apiKey) {
     return (
