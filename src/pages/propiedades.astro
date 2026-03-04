@@ -4,17 +4,19 @@ import PropertyListingContent from '../components/properties/PropertyListingCont
 import PropertyFilters from '../components/properties/PropertyFilters.tsx';
 import Breadcrumb from '../components/ui/Breadcrumb.astro';
 import { getProperties } from '../lib/simi';
-import type { PropertyFilters as PropertyFiltersType } from '../lib/types';
+import type { PropertyFilters as PropertyFiltersType, OperationType } from '../lib/types';
 
 export const prerender = false;
 
 const url = Astro.url;
 const params = url.searchParams;
 
-const filters: PropertyFiltersType = {
-  operation: 'venta',
-  limit: 20,
-};
+const filters: PropertyFiltersType = {};
+
+const operationParam = params.get('operation');
+if (operationParam === 'venta' || operationParam === 'arriendo') {
+  filters.operation = operationParam as OperationType;
+}
 
 if (params.get('code')) filters.code = params.get('code') || undefined;
 if (params.get('locationQuery')) filters.locationQuery = params.get('locationQuery') || undefined;
@@ -45,15 +47,18 @@ if (multiType && multiType.includes(',')) {
 
 const hasActiveFilters = Array.from(params.keys()).some((k) => k !== '');
 
+const operationLabel = operationParam === 'arriendo' ? 'en Arriendo' : operationParam === 'venta' ? 'en Venta' : '';
+const pageTitle = operationLabel ? `Propiedades ${operationLabel}` : 'Propiedades';
+
 const breadcrumbItems = [
   { label: 'Inicio', href: '/' },
-  { label: 'Propiedades en Venta' },
+  { label: pageTitle },
 ];
 ---
 
 <Layout
-  title="Propiedades en Venta | Invierta Inmobiliaria"
-  description="Encuentra apartamentos, casas, locales y mas propiedades en venta en Colombia. Amplio catalogo con los mejores precios."
+  title={`${pageTitle} | Invierta Inmobiliaria`}
+  description="Encuentra apartamentos, casas, locales y mas propiedades en venta y arriendo en Colombia. Amplio catalogo con los mejores precios."
 >
   <section class="bg-surface py-6">
     <div class="container-custom">
@@ -65,21 +70,21 @@ const breadcrumbItems = [
     <div class="container-custom">
       <div class="mb-6">
         <h1 class="font-heading text-3xl font-bold text-text-primary lg:text-4xl">
-          Propiedades en Venta
+          {pageTitle}
         </h1>
         <p class="mt-2 text-text-secondary">
-          Explora nuestro catalogo de propiedades disponibles para compra en toda Colombia.
+          Explora nuestro catalogo de propiedades disponibles en venta y arriendo en toda Colombia.
         </p>
       </div>
 
       <div class="flex flex-col lg:flex-row lg:gap-6">
-        <PropertyFilters client:load operation="venta" />
+        <PropertyFilters client:load operation={operationParam || ''} />
 
         <PropertyListingContent
           client:load
           properties={properties}
           hasActiveFilters={hasActiveFilters}
-          emptyHref="/ventas"
+          emptyHref="/propiedades"
           emptyLabel="Ver todas las propiedades"
           itemLabel="propiedades"
           locationQuery={params.get('locationQuery') || params.get('city') || ''}

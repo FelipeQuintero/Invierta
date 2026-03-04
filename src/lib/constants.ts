@@ -97,9 +97,9 @@ export const PRICE_RANGES_ARRIENDO = [
 
 export const NAV_LINKS = [
   { href: '/', label: 'Inicio' },
-  { href: '/ventas', label: 'Venta' },
-  { href: '/arriendos', label: 'Arriendo' },
+  { href: '/propiedades', label: 'Propiedades' },
   { href: '/proyectos', label: 'Proyectos' },
+  { href: '/publica', label: 'Publica tu Inmueble' },
   { href: '/servicios', label: 'Servicios' },
 ] as const;
 
@@ -107,7 +107,7 @@ export const TOP_BAR_LINKS: TopBarLink[] = [
   { href: '#', label: 'Portal Propietarios', icon: 'User', external: true },
   { href: '#', label: 'Portal Arrendatarios', icon: 'UserCheck', external: true },
   { href: '#', label: 'Pagos PSE', icon: 'CreditCard', external: true },
-  { href: '/servicios', label: 'Publica tu Inmueble', icon: 'Home', external: false },
+  { href: '/publica', label: 'Publica tu Inmueble', icon: 'Home', external: false },
   { href: '/servicios', label: 'Registra un Referido', icon: 'Users', external: false },
 ];
 

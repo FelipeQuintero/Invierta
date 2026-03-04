@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import {
   PROPERTY_TYPES,
+  OPERATION_TYPES,
   CITIES,
   BEDROOM_OPTIONS,
   BATHROOM_OPTIONS,
@@ -110,6 +111,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [operationFilter, setOperationFilter] = useState(operation || '');
   const [code, setCode] = useState('');
   const [locationQuery, setLocationQuery] = useState('');
   const [city, setCity] = useState('');
@@ -125,6 +127,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    if (params.get('operation')) setOperationFilter(params.get('operation') || '');
     if (params.get('code')) setCode(params.get('code') || '');
     if (params.get('locationQuery')) setLocationQuery(params.get('locationQuery') || '');
     if (params.get('city')) setCity(params.get('city') || '');
@@ -152,6 +155,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
 
   function buildParams(): URLSearchParams {
     const params = new URLSearchParams();
+    if (operationFilter) params.set('operation', operationFilter);
     if (code) params.set('code', code);
     if (locationQuery) params.set('locationQuery', locationQuery);
     if (city) params.set('city', city);
@@ -179,6 +183,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
 
   function handleClear() {
     setLoadingState(true);
+    setOperationFilter('');
     setCode('');
     setLocationQuery('');
     setCity('');
@@ -207,6 +212,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
 
   function removeFilter(key: string) {
     switch (key) {
+      case 'operation': setOperationFilter(''); break;
       case 'code': setCode(''); break;
       case 'locationQuery': setLocationQuery(''); break;
       case 'city': setCity(''); break;
@@ -223,6 +229,10 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
   }
 
   const activeFilters: { key: string; label: string }[] = [];
+  if (operationFilter) {
+    const opLabel = OPERATION_TYPES.find((o) => o.value === operationFilter)?.label || operationFilter;
+    activeFilters.push({ key: 'operation', label: opLabel });
+  }
   if (code) activeFilters.push({ key: 'code', label: `Codigo: ${code}` });
   if (locationQuery) activeFilters.push({ key: 'locationQuery', label: locationQuery });
   if (city) activeFilters.push({ key: 'city', label: city });
@@ -243,7 +253,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
 
   const hasActiveFilters = activeFilters.length > 0;
 
-  const priceRanges = operation === 'arriendo' ? PRICE_RANGES_ARRIENDO : PRICE_RANGES_VENTA;
+  const priceRanges = operationFilter === 'arriendo' ? PRICE_RANGES_ARRIENDO : PRICE_RANGES_VENTA;
 
   const inputClass =
     'w-full h-10 px-3 bg-white border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all duration-200';
@@ -281,6 +291,28 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
             ))}
           </div>
         )}
+
+        <FilterSection title="Tipo de Negocio" defaultOpen={true}>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setOperationFilter(operationFilter === '' ? '' : '')}
+              className={chipClass(operationFilter === '')}
+            >
+              Todos
+            </button>
+            {OPERATION_TYPES.filter((o) => o.value !== 'proyecto').map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setOperationFilter(operationFilter === opt.value ? '' : opt.value)}
+                className={chipClass(operationFilter === opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </FilterSection>
 
         <FilterSection title="Busqueda por Codigo" defaultOpen={!!code}>
           <div className="relative">

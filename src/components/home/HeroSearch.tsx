@@ -28,18 +28,12 @@ export default function HeroSearch() {
 
     if (searchMode === 'code') {
       if (trimmedQuery) {
-        window.location.href = `/ventas?code=${encodeURIComponent(trimmedQuery)}`;
+        window.location.href = `/propiedades?code=${encodeURIComponent(trimmedQuery)}`;
       }
       return;
     }
 
-    const routeMap: Record<string, string> = {
-      venta: '/ventas',
-      arriendo: '/arriendos',
-      proyecto: '/proyectos',
-    };
-
-    const basePath = routeMap[operation] || '/ventas';
+    const basePath = operation === 'proyecto' ? '/proyectos' : '/propiedades';
     const params = new URLSearchParams();
 
     if (operation) params.set('operation', operation);
@@ -222,7 +216,7 @@ export default function HeroSearch() {
               (term) => (
                 <a
                   key={term}
-                  href={`/ventas?city=${encodeURIComponent(term.split(' en ')[1] || '')}`}
+                  href={`/propiedades?city=${encodeURIComponent(term.split(' en ')[1] || '')}`}
                   className="text-sm text-white/80 hover:text-white border border-white/20 hover:border-white/40 rounded-full px-3 py-1 transition-colors"
                 >
                   {term}
