@@ -30,7 +30,7 @@ export default function MobileMenu() {
       {/* Hamburger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center justify-center rounded-md p-2 text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+        className="inline-flex items-center justify-center rounded-md p-2 text-text-secondary hover:text-primary hover:bg-surface transition-colors"
         aria-label="Abrir menu de navegacion"
         aria-expanded={isOpen}
       >

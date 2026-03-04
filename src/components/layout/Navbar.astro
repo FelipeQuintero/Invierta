@@ -26,8 +26,8 @@ function isActive(href: string): boolean {
       class:list={[
         'relative px-4 py-2 text-sm font-medium uppercase tracking-wide transition-colors duration-200',
         isActive(link.href)
-          ? 'text-white'
-          : 'text-white/70 hover:text-white',
+          ? 'text-primary'
+          : 'text-text-secondary hover:text-primary',
       ]}
       aria-current={isActive(link.href) ? 'page' : undefined}
     >
