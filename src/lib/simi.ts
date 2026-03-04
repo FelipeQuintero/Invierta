@@ -1,5 +1,6 @@
 import type { Property, PropertyFilters, Agent, PropertyType, OperationType, PropertyTag } from './types';
 import { getMockProperties, getMockPropertyById } from './mockData';
+import { readCache, writeCache } from './serverCache';
 
 const SIMI_API_URL = import.meta.env.SIMI_API_URL || 'http://simi-api.com/ApiSimiweb/response';
 const SIMI_API_KEY = import.meta.env.SIMI_API_KEY;
@@ -215,9 +216,13 @@ const PROPERTY_TYPE_ID_MAP: Record<PropertyType, number[]> = {
 const CITY_CACHE_TTL = 24 * 60 * 60 * 1000;
 const MAX_PAGES = 100;
 const PAGE_BATCH_SIZE = 5;
+const parsedPropertiesTtl = Number(import.meta.env.PROPERTIES_CACHE_TTL_SECONDS || '300');
+const PROPERTIES_CACHE_TTL_SECONDS =
+  Number.isFinite(parsedPropertiesTtl) && parsedPropertiesTtl > 0 ? parsedPropertiesTtl : 300;
 
 let cachedCityMap: Map<string, string> | null = null;
 let cityCacheTimestamp = 0;
+const inFlightPropertyRequests = new Map<string, Promise<Property[]>>();
 
 // ============================================================================
 // Helpers
@@ -278,6 +283,22 @@ async function resolveCityFilter(city: string): Promise<string> {
   } catch {
     return trimmed;
   }
+}
+
+function buildPropertiesCacheKey(filters?: PropertyFilters): string {
+  if (!filters) return 'properties:v1:all';
+
+  const normalizedEntries = Object.entries(filters)
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => {
+      if (typeof value === 'string') return [key, value.trim()];
+      return [key, value];
+    })
+    .sort(([a], [b]) => a.localeCompare(b));
+
+  if (normalizedEntries.length === 0) return 'properties:v1:all';
+
+  return `properties:v1:${JSON.stringify(Object.fromEntries(normalizedEntries))}`;
 }
 
 // ============================================================================
@@ -352,147 +373,176 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
     return getMockProperties(filters);
   }
 
-  // If searching by code, use the detail endpoint
-  if (filters?.code) {
-    try {
-      const property = await getPropertyById(filters.code);
-      return property ? [property] : [];
-    } catch {
-      return [];
-    }
+  const cacheKey = buildPropertiesCacheKey(filters);
+  const cachedProperties = await readCache<Property[]>(cacheKey);
+  if (cachedProperties) {
+    console.log(`[SIMI] Cache hit: ${cacheKey}`);
+    return cachedProperties;
   }
 
-  try {
-    const cityParam = filters?.city ? await resolveCityFilter(filters.city) : '';
-    const explicitPagination = typeof filters?.limit === 'number' || typeof filters?.offset === 'number';
-    const propertyTypeIds = filters?.propertyType
-      ? PROPERTY_TYPE_ID_MAP[filters.propertyType] || []
-      : [];
-    const typeScopes = propertyTypeIds.length > 0 ? propertyTypeIds : [undefined];
+  const existingRequest = inFlightPropertyRequests.get(cacheKey);
+  if (existingRequest) {
+    return existingRequest;
+  }
 
-    const buildBaseEndpoint = (typeId?: number): string => {
-      let endpoint = '/v2.1.1/filtroInmueble';
+  let shouldCacheResult = true;
 
-      if (filters?.operation) {
-        endpoint += `/tipOper/${OPERATION_MAP[filters.operation]}`;
+  const requestPromise = (async (): Promise<Property[]> => {
+    // If searching by code, use the detail endpoint
+    if (filters?.code) {
+      try {
+        const property = await getPropertyById(filters.code);
+        return property ? [property] : [];
+      } catch {
+        return [];
       }
-      if (typeId) {
-        endpoint += `/tipoInm/${typeId}`;
-      }
-      if (cityParam) {
-        endpoint += `/ciudad/${encodeURIComponent(cityParam)}`;
-      }
-      if (filters?.minPrice) endpoint += `/valmin/${filters.minPrice}`;
-      if (filters?.maxPrice) endpoint += `/valmax/${filters.maxPrice}`;
-      if (filters?.bedrooms) endpoint += `/alcobas/${filters.bedrooms}`;
-      if (filters?.bathrooms) endpoint += `/banios/${filters.bathrooms}`;
+    }
 
-      return endpoint;
-    };
+    try {
+      const cityParam = filters?.city ? await resolveCityFilter(filters.city) : '';
+      const explicitPagination = typeof filters?.limit === 'number' || typeof filters?.offset === 'number';
+      const propertyTypeIds = filters?.propertyType
+        ? PROPERTY_TYPE_ID_MAP[filters.propertyType] || []
+        : [];
+      const typeScopes = propertyTypeIds.length > 0 ? propertyTypeIds : [undefined];
 
-    const fetchSinglePage = async (baseEndpoint: string): Promise<SimiInmueble[]> => {
-      const pageSize = filters?.limit || 100;
-      const page = filters?.offset ? Math.floor(filters.offset / pageSize) + 1 : 1;
-      const endpoint = `${baseEndpoint}/limite/${page}/cantidad/${pageSize}`;
-      const data = await simiRequest<SimiFilterResponse>(endpoint);
-      return Array.isArray(data?.Inmuebles) ? data.Inmuebles : [];
-    };
+      const buildBaseEndpoint = (typeId?: number): string => {
+        let endpoint = '/v2.1.1/filtroInmueble';
 
-    const fetchAllPages = async (baseEndpoint: string): Promise<SimiInmueble[]> => {
-      const firstEndpoint = `${baseEndpoint}/limite/1/cantidad/100`;
-      const firstPage = await simiRequest<SimiFilterResponse>(firstEndpoint);
-      const firstItems = Array.isArray(firstPage?.Inmuebles) ? firstPage.Inmuebles : [];
+        if (filters?.operation) {
+          endpoint += `/tipOper/${OPERATION_MAP[filters.operation]}`;
+        }
+        if (typeId) {
+          endpoint += `/tipoInm/${typeId}`;
+        }
+        if (cityParam) {
+          endpoint += `/ciudad/${encodeURIComponent(cityParam)}`;
+        }
+        if (filters?.minPrice) endpoint += `/valmin/${filters.minPrice}`;
+        if (filters?.maxPrice) endpoint += `/valmax/${filters.maxPrice}`;
+        if (filters?.bedrooms) endpoint += `/alcobas/${filters.bedrooms}`;
+        if (filters?.bathrooms) endpoint += `/banios/${filters.bathrooms}`;
 
-      if (firstItems.length === 0) return [];
+        return endpoint;
+      };
 
-      const total = Number(firstPage?.datosGrales?.totalInmuebles || 0);
-      const itemsPerPage = firstItems.length;
-      const estimatedPages =
-        total > 0
-          ? Math.ceil(total / itemsPerPage)
-          : Number(firstPage?.datosGrales?.totalPagina || 1);
-      const totalPages = Math.max(1, Math.min(estimatedPages, MAX_PAGES));
+      const fetchSinglePage = async (baseEndpoint: string): Promise<SimiInmueble[]> => {
+        const pageSize = filters?.limit || 100;
+        const page = filters?.offset ? Math.floor(filters.offset / pageSize) + 1 : 1;
+        const endpoint = `${baseEndpoint}/limite/${page}/cantidad/${pageSize}`;
+        const data = await simiRequest<SimiFilterResponse>(endpoint);
+        return Array.isArray(data?.Inmuebles) ? data.Inmuebles : [];
+      };
 
-      const allItems: SimiInmueble[] = [...firstItems];
-      const pageNumbers = Array.from(
-        { length: Math.max(0, totalPages - 1) },
-        (_, idx) => idx + 2
+      const fetchAllPages = async (baseEndpoint: string): Promise<SimiInmueble[]> => {
+        const firstEndpoint = `${baseEndpoint}/limite/1/cantidad/100`;
+        const firstPage = await simiRequest<SimiFilterResponse>(firstEndpoint);
+        const firstItems = Array.isArray(firstPage?.Inmuebles) ? firstPage.Inmuebles : [];
+
+        if (firstItems.length === 0) return [];
+
+        const total = Number(firstPage?.datosGrales?.totalInmuebles || 0);
+        const itemsPerPage = firstItems.length;
+        const estimatedPages =
+          total > 0
+            ? Math.ceil(total / itemsPerPage)
+            : Number(firstPage?.datosGrales?.totalPagina || 1);
+        const totalPages = Math.max(1, Math.min(estimatedPages, MAX_PAGES));
+
+        const allItems: SimiInmueble[] = [...firstItems];
+        const pageNumbers = Array.from(
+          { length: Math.max(0, totalPages - 1) },
+          (_, idx) => idx + 2
+        );
+
+        for (let i = 0; i < pageNumbers.length; i += PAGE_BATCH_SIZE) {
+          const batch = pageNumbers.slice(i, i + PAGE_BATCH_SIZE);
+          const results = await Promise.allSettled(
+            batch.map((page) =>
+              simiRequest<SimiFilterResponse>(`${baseEndpoint}/limite/${page}/cantidad/100`)
+            )
+          );
+          for (const result of results) {
+            if (result.status !== 'fulfilled') continue;
+            const items = Array.isArray(result.value?.Inmuebles) ? result.value.Inmuebles : [];
+            if (items.length > 0) {
+              allItems.push(...items);
+            }
+          }
+        }
+
+        return allItems;
+      };
+
+      const rawBatches = await Promise.all(
+        typeScopes.map(async (typeId) => {
+          const baseEndpoint = buildBaseEndpoint(typeId);
+          return explicitPagination ? fetchSinglePage(baseEndpoint) : fetchAllPages(baseEndpoint);
+        })
       );
 
-      for (let i = 0; i < pageNumbers.length; i += PAGE_BATCH_SIZE) {
-        const batch = pageNumbers.slice(i, i + PAGE_BATCH_SIZE);
-        const results = await Promise.allSettled(
-          batch.map((page) =>
-            simiRequest<SimiFilterResponse>(`${baseEndpoint}/limite/${page}/cantidad/100`)
-          )
-        );
-        for (const result of results) {
-          if (result.status !== 'fulfilled') continue;
-          const items = Array.isArray(result.value?.Inmuebles) ? result.value.Inmuebles : [];
-          if (items.length > 0) {
-            allItems.push(...items);
+      const rawUnique = new Map<string, SimiInmueble>();
+      for (const batch of rawBatches) {
+        for (const inmueble of batch) {
+          if (!rawUnique.has(inmueble.Codigo_Inmueble)) {
+            rawUnique.set(inmueble.Codigo_Inmueble, inmueble);
           }
         }
       }
 
-      return allItems;
-    };
+      let rawProperties = Array.from(rawUnique.values());
 
-    const rawBatches = await Promise.all(
-      typeScopes.map(async (typeId) => {
-        const baseEndpoint = buildBaseEndpoint(typeId);
-        return explicitPagination ? fetchSinglePage(baseEndpoint) : fetchAllPages(baseEndpoint);
-      })
-    );
-
-    const rawUnique = new Map<string, SimiInmueble>();
-    for (const batch of rawBatches) {
-      for (const inmueble of batch) {
-        if (!rawUnique.has(inmueble.Codigo_Inmueble)) {
-          rawUnique.set(inmueble.Codigo_Inmueble, inmueble);
-        }
+      if (filters?.zone) {
+        const zoneQuery = normalizeText(filters.zone);
+        rawProperties = rawProperties.filter((p) =>
+          normalizeText(`${p.Zona} ${p.Barrio}`).includes(zoneQuery)
+        );
       }
-    }
 
-    let rawProperties = Array.from(rawUnique.values());
+      if (filters?.locationQuery) {
+        const query = normalizeText(filters.locationQuery);
+        rawProperties = rawProperties.filter((p) =>
+          normalizeText(`${p.Ciudad} ${p.Zona} ${p.Barrio}`).includes(query)
+        );
+      }
 
-    if (filters?.zone) {
-      const zoneQuery = normalizeText(filters.zone);
-      rawProperties = rawProperties.filter((p) =>
-        normalizeText(`${p.Zona} ${p.Barrio}`).includes(zoneQuery)
+      let properties = rawProperties.map(transformSimiProperty);
+
+      if (filters?.minArea) {
+        properties = properties.filter((p) => p.area >= filters.minArea!);
+      }
+      if (filters?.maxArea) {
+        properties = properties.filter((p) => p.area <= filters.maxArea!);
+      }
+      if (filters?.parking) {
+        properties = properties.filter((p) => p.parking >= filters.parking!);
+      }
+      if (filters?.stratum) {
+        properties = properties.filter((p) => p.stratum === filters.stratum!);
+      }
+
+      console.log(
+        `[SIMI] Final properties: ${properties.length} (raw unique: ${rawUnique.size}, city: ${filters?.city || 'all'})`
       );
-    }
 
-    if (filters?.locationQuery) {
-      const query = normalizeText(filters.locationQuery);
-      rawProperties = rawProperties.filter((p) =>
-        normalizeText(`${p.Ciudad} ${p.Zona} ${p.Barrio}`).includes(query)
-      );
+      return properties;
+    } catch (error) {
+      shouldCacheResult = false;
+      console.error('[SIMI] Error fetching properties:', error);
+      return getMockProperties(filters);
     }
+  })();
 
-    let properties = rawProperties.map(transformSimiProperty);
+  inFlightPropertyRequests.set(cacheKey, requestPromise);
 
-    if (filters?.minArea) {
-      properties = properties.filter((p) => p.area >= filters.minArea!);
+  try {
+    const properties = await requestPromise;
+    if (shouldCacheResult) {
+      await writeCache(cacheKey, properties, PROPERTIES_CACHE_TTL_SECONDS);
     }
-    if (filters?.maxArea) {
-      properties = properties.filter((p) => p.area <= filters.maxArea!);
-    }
-    if (filters?.parking) {
-      properties = properties.filter((p) => p.parking >= filters.parking!);
-    }
-    if (filters?.stratum) {
-      properties = properties.filter((p) => p.stratum === filters.stratum!);
-    }
-
-    console.log(
-      `[SIMI] Final properties: ${properties.length} (raw unique: ${rawUnique.size}, city: ${filters?.city || 'all'})`
-    );
-
     return properties;
-  } catch (error) {
-    console.error('[SIMI] Error fetching properties:', error);
-    return getMockProperties(filters);
+  } finally {
+    inFlightPropertyRequests.delete(cacheKey);
   }
 }
 
