@@ -310,9 +310,12 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
   try {
     let endpoint = '/v2.1.1/filtroInmueble';
 
-    const page = filters?.offset ? Math.floor(filters.offset / (filters.limit || 20)) + 1 : 1;
+    // SIMI uses "limite" for page number and "cantidad" for page size.
+    // Default to 100 to avoid truncating results for cities with many listings.
+    const pageSize = filters?.limit || 100;
+    const page = filters?.offset ? Math.floor(filters.offset / pageSize) + 1 : 1;
     endpoint += `/limite/${page}`;
-    endpoint += `/cantidad/${filters?.limit || 20}`;
+    endpoint += `/cantidad/${pageSize}`;
 
     if (filters?.operation) {
       endpoint += `/tipOper/${OPERATION_MAP[filters.operation]}`;
@@ -342,16 +345,14 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
       return getMockProperties(filters);
     }
 
-    console.log(`[SIMI] Found ${data.Inmuebles.length} properties (total: ${data.datosGrales?.totalInmuebles})`);
+    console.log(`[SIMI] Found ${data.Inmuebles.length} properties (total: ${data.datosGrales?.totalInmuebles}, page: ${data.datosGrales?.pagina_actual}, pages: ${data.datosGrales?.totalPagina})`);
 
     let properties = data.Inmuebles.map(transformSimiProperty);
 
-    if (filters?.city) {
-      properties = properties.filter((p) =>
-        p.city.toLowerCase() === filters.city!.toLowerCase()
-      );
-      console.log(`[SIMI] Filtered by city "${filters.city}": ${properties.length} properties`);
-    }
+    // NOTE: City filter is applied server-side via /ciudad/ endpoint param.
+    // A redundant client-side exact-match filter was removed here because it
+    // dropped results when SIMI city names differ from user input
+    // (e.g., "Dosquebradas" vs "Dos Quebradas").
 
     // Client-side filtering for fields not supported by SIMI API
     if (filters?.locationQuery) {
