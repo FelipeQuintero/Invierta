@@ -8,6 +8,8 @@ export interface Property {
   city: string;
   neighborhood: string;
   area: number;
+  builtArea?: number;
+  lotArea?: number;
   bedrooms: number;
   bathrooms: number;
   parking: number;
