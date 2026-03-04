@@ -78,6 +78,7 @@ export interface PropertyFilters {
 export interface SiteConfig {
   name: string;
   logo: string;
+  headerLogo?: string;
   phone: string;
   whatsapp: string;
   email: string;

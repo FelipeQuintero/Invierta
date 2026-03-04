@@ -16,9 +16,9 @@ import MobileMenu from './MobileMenu.tsx';
       <!-- Logo -->
       <a href="/" class="flex items-center shrink-0" aria-label={`${SITE_CONFIG.name} - Inicio`}>
         <img
-          src={SITE_CONFIG.logo}
+          src={SITE_CONFIG.headerLogo || SITE_CONFIG.logo}
           alt={`${SITE_CONFIG.name} Logo`}
-          class="h-10 w-auto lg:h-12"
+          class="h-10 w-auto lg:h-12 drop-shadow-[0_1px_1px_rgba(0,0,0,0.12)]"
           width="120"
           height="48"
           loading="eager"

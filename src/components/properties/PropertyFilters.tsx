@@ -117,6 +117,9 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
   const [city, setCity] = useState('');
   const [zone, setZone] = useState('');
   const [zones, setZones] = useState<string[]>([]);
+  const [availableCities, setAvailableCities] = useState<string[]>([...CITIES]);
+  const [locationEntries, setLocationEntries] = useState<Array<{ type: string; name: string; city?: string }>>([]);
+  const [hasInitializedFromQuery, setHasInitializedFromQuery] = useState(false);
   const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
@@ -146,26 +149,48 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
     if (params.get('bathrooms')) setBathrooms(params.get('bathrooms') || '');
     if (params.get('parking')) setParking(params.get('parking') || '');
     if (params.get('stratum')) setStratum(params.get('stratum') || '');
+    setHasInitializedFromQuery(true);
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/locations')
+      .then((res) => res.json())
+      .then((data) => {
+        const entries: Array<{ type: string; name: string; city?: string }> = data.data || [];
+        setLocationEntries(entries);
+
+        const dynamicCities = [...new Set(
+          entries
+            .filter((loc) => loc.type === 'ciudad' && loc.name)
+            .map((loc) => loc.name)
+        )].sort((a, b) => a.localeCompare(b, 'es'));
+
+        if (dynamicCities.length > 0) {
+          setAvailableCities(dynamicCities);
+        }
+      })
+      .catch(() => {
+        setLocationEntries([]);
+        setAvailableCities([...CITIES]);
+      });
   }, []);
 
   useEffect(() => {
     if (!city) {
       setZones([]);
-      setZone('');
+      if (hasInitializedFromQuery) setZone('');
       return;
     }
-    fetch(`/api/locations`)
-      .then((res) => res.json())
-      .then((data) => {
-        const cityZones: string[] = (data.data || [])
-          .filter((loc: { type: string; city?: string }) => loc.type === 'zona' && loc.city === city)
-          .map((loc: { name: string }) => loc.name)
-          .sort();
-        setZones(cityZones);
-        if (!cityZones.includes(zone)) setZone('');
-      })
-      .catch(() => setZones([]));
-  }, [city]);
+
+    const cityZones = [...new Set(
+      locationEntries
+        .filter((loc) => loc.type === 'zona' && loc.city === city)
+        .map((loc) => loc.name)
+    )].sort((a, b) => a.localeCompare(b, 'es'));
+
+    setZones(cityZones);
+    if (!cityZones.includes(zone)) setZone('');
+  }, [city, hasInitializedFromQuery, locationEntries, zone]);
 
   const setLoadingState = useCallback(
     (loading: boolean) => {
@@ -392,7 +417,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
               aria-label="Filtrar por ciudad"
             >
               <option value="">Todas las ciudades</option>
-              {CITIES.map((c) => (
+              {availableCities.map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>

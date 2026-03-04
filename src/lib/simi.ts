@@ -202,15 +202,22 @@ const PROPERTY_TYPE_MAP: Record<string, PropertyType> = {
 
 const PROPERTY_TYPE_ID_MAP: Record<PropertyType, number[]> = {
   apartamento: [1, 11],
-  casa: [2, 19, 20, 21, 22],
-  casa_campestre: [22],
+  casa: [2, 20, 21, 22],
+  casa_campestre: [19],
   local: [5],
-  oficina: [3],
-  consultorio: [4],
+  oficina: [4],
+  consultorio: [3],
   lote: [7],
   bodega: [6],
   finca: [8],
 };
+
+const CITY_CACHE_TTL = 24 * 60 * 60 * 1000;
+const MAX_PAGES = 100;
+const PAGE_BATCH_SIZE = 5;
+
+let cachedCityMap: Map<string, string> | null = null;
+let cityCacheTimestamp = 0;
 
 // ============================================================================
 // Helpers
@@ -225,6 +232,52 @@ function parsePrice(priceStr: string): number {
 function parseNumber(str: string): number {
   if (!str) return 0;
   return parseInt(str.replace(/,/g, ''), 10) || 0;
+}
+
+function normalizeText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+async function getCityIdMap(): Promise<Map<string, string>> {
+  const now = Date.now();
+  if (cachedCityMap && now - cityCacheTimestamp < CITY_CACHE_TTL) {
+    return cachedCityMap;
+  }
+
+  const cityMap = new Map<string, string>();
+  const departamentos = await getDepartamentos();
+  const cityResults = await Promise.allSettled(
+    departamentos.map((dep) => getCiudades(Number(dep.id)))
+  );
+
+  for (const result of cityResults) {
+    if (result.status !== 'fulfilled') continue;
+    for (const city of result.value) {
+      cityMap.set(normalizeText(city.nombre), city.id);
+    }
+  }
+
+  cachedCityMap = cityMap;
+  cityCacheTimestamp = now;
+  return cityMap;
+}
+
+async function resolveCityFilter(city: string): Promise<string> {
+  const trimmed = city.trim();
+  if (!trimmed) return '';
+  if (/^\d+$/.test(trimmed)) return trimmed;
+
+  try {
+    const cityMap = await getCityIdMap();
+    return cityMap.get(normalizeText(trimmed)) || trimmed;
+  } catch {
+    return trimmed;
+  }
 }
 
 // ============================================================================
@@ -310,67 +363,115 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
   }
 
   try {
-    let endpoint = '/v2.1.1/filtroInmueble';
+    const cityParam = filters?.city ? await resolveCityFilter(filters.city) : '';
+    const explicitPagination = typeof filters?.limit === 'number' || typeof filters?.offset === 'number';
+    const propertyTypeIds = filters?.propertyType
+      ? PROPERTY_TYPE_ID_MAP[filters.propertyType] || []
+      : [];
+    const typeScopes = propertyTypeIds.length > 0 ? propertyTypeIds : [undefined];
 
-    // SIMI uses "limite" for page number and "cantidad" for page size.
-    // Default to 100 to avoid truncating results for cities with many listings.
-    const pageSize = filters?.limit || 100;
-    const page = filters?.offset ? Math.floor(filters.offset / pageSize) + 1 : 1;
-    endpoint += `/limite/${page}`;
-    endpoint += `/cantidad/${pageSize}`;
+    const buildBaseEndpoint = (typeId?: number): string => {
+      let endpoint = '/v2.1.1/filtroInmueble';
 
-    if (filters?.operation) {
-      endpoint += `/tipOper/${OPERATION_MAP[filters.operation]}`;
-    }
+      if (filters?.operation) {
+        endpoint += `/tipOper/${OPERATION_MAP[filters.operation]}`;
+      }
+      if (typeId) {
+        endpoint += `/tipoInm/${typeId}`;
+      }
+      if (cityParam) {
+        endpoint += `/ciudad/${encodeURIComponent(cityParam)}`;
+      }
+      if (filters?.minPrice) endpoint += `/valmin/${filters.minPrice}`;
+      if (filters?.maxPrice) endpoint += `/valmax/${filters.maxPrice}`;
+      if (filters?.bedrooms) endpoint += `/alcobas/${filters.bedrooms}`;
+      if (filters?.bathrooms) endpoint += `/banios/${filters.bathrooms}`;
 
-    if (filters?.propertyType) {
-      const typeIds = PROPERTY_TYPE_ID_MAP[filters.propertyType];
-      if (typeIds && typeIds.length > 0) {
-        endpoint += `/tipoInm/${typeIds[0]}`;
+      return endpoint;
+    };
+
+    const fetchSinglePage = async (baseEndpoint: string): Promise<SimiInmueble[]> => {
+      const pageSize = filters?.limit || 100;
+      const page = filters?.offset ? Math.floor(filters.offset / pageSize) + 1 : 1;
+      const endpoint = `${baseEndpoint}/limite/${page}/cantidad/${pageSize}`;
+      const data = await simiRequest<SimiFilterResponse>(endpoint);
+      return Array.isArray(data?.Inmuebles) ? data.Inmuebles : [];
+    };
+
+    const fetchAllPages = async (baseEndpoint: string): Promise<SimiInmueble[]> => {
+      const firstEndpoint = `${baseEndpoint}/limite/1/cantidad/100`;
+      const firstPage = await simiRequest<SimiFilterResponse>(firstEndpoint);
+      const firstItems = Array.isArray(firstPage?.Inmuebles) ? firstPage.Inmuebles : [];
+
+      if (firstItems.length === 0) return [];
+
+      const total = Number(firstPage?.datosGrales?.totalInmuebles || 0);
+      const itemsPerPage = firstItems.length;
+      const estimatedPages =
+        total > 0
+          ? Math.ceil(total / itemsPerPage)
+          : Number(firstPage?.datosGrales?.totalPagina || 1);
+      const totalPages = Math.max(1, Math.min(estimatedPages, MAX_PAGES));
+
+      const allItems: SimiInmueble[] = [...firstItems];
+      const pageNumbers = Array.from(
+        { length: Math.max(0, totalPages - 1) },
+        (_, idx) => idx + 2
+      );
+
+      for (let i = 0; i < pageNumbers.length; i += PAGE_BATCH_SIZE) {
+        const batch = pageNumbers.slice(i, i + PAGE_BATCH_SIZE);
+        const results = await Promise.allSettled(
+          batch.map((page) =>
+            simiRequest<SimiFilterResponse>(`${baseEndpoint}/limite/${page}/cantidad/100`)
+          )
+        );
+        for (const result of results) {
+          if (result.status !== 'fulfilled') continue;
+          const items = Array.isArray(result.value?.Inmuebles) ? result.value.Inmuebles : [];
+          if (items.length > 0) {
+            allItems.push(...items);
+          }
+        }
+      }
+
+      return allItems;
+    };
+
+    const rawBatches = await Promise.all(
+      typeScopes.map(async (typeId) => {
+        const baseEndpoint = buildBaseEndpoint(typeId);
+        return explicitPagination ? fetchSinglePage(baseEndpoint) : fetchAllPages(baseEndpoint);
+      })
+    );
+
+    const rawUnique = new Map<string, SimiInmueble>();
+    for (const batch of rawBatches) {
+      for (const inmueble of batch) {
+        if (!rawUnique.has(inmueble.Codigo_Inmueble)) {
+          rawUnique.set(inmueble.Codigo_Inmueble, inmueble);
+        }
       }
     }
 
-    if (filters?.city) {
-      endpoint += `/ciudad/${encodeURIComponent(filters.city)}`;
-    }
+    let rawProperties = Array.from(rawUnique.values());
 
-    if (filters?.minPrice) endpoint += `/valmin/${filters.minPrice}`;
-    if (filters?.maxPrice) endpoint += `/valmax/${filters.maxPrice}`;
-
-    if (filters?.bedrooms) endpoint += `/alcobas/${filters.bedrooms}`;
-    if (filters?.bathrooms) endpoint += `/banios/${filters.bathrooms}`;
-
-    const data = await simiRequest<SimiFilterResponse>(endpoint);
-
-    if (!data.Inmuebles || !Array.isArray(data.Inmuebles)) {
-      console.warn('[SIMI] Unexpected response format:', data);
-      return getMockProperties(filters);
-    }
-
-    console.log(`[SIMI] Found ${data.Inmuebles.length} properties (total: ${data.datosGrales?.totalInmuebles}, page: ${data.datosGrales?.pagina_actual}, pages: ${data.datosGrales?.totalPagina})`);
-
-    let properties = data.Inmuebles.map(transformSimiProperty);
-
-    // NOTE: City filter is applied server-side via /ciudad/ endpoint param.
-    // A redundant client-side exact-match filter was removed here because it
-    // dropped results when SIMI city names differ from user input
-    // (e.g., "Dosquebradas" vs "Dos Quebradas").
-
-    // Client-side filtering for fields not supported by SIMI API
     if (filters?.zone) {
-      const z = filters.zone.toLowerCase();
-      properties = properties.filter((p) =>
-        p.neighborhood.toLowerCase().includes(z)
+      const zoneQuery = normalizeText(filters.zone);
+      rawProperties = rawProperties.filter((p) =>
+        normalizeText(`${p.Zona} ${p.Barrio}`).includes(zoneQuery)
       );
     }
+
     if (filters?.locationQuery) {
-      const q = filters.locationQuery.toLowerCase();
-      properties = properties.filter((p) =>
-        p.city.toLowerCase().includes(q) ||
-        p.neighborhood.toLowerCase().includes(q) ||
-        p.location.toLowerCase().includes(q)
+      const query = normalizeText(filters.locationQuery);
+      rawProperties = rawProperties.filter((p) =>
+        normalizeText(`${p.Ciudad} ${p.Zona} ${p.Barrio}`).includes(query)
       );
     }
+
+    let properties = rawProperties.map(transformSimiProperty);
+
     if (filters?.minArea) {
       properties = properties.filter((p) => p.area >= filters.minArea!);
     }
@@ -383,6 +484,10 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
     if (filters?.stratum) {
       properties = properties.filter((p) => p.stratum === filters.stratum!);
     }
+
+    console.log(
+      `[SIMI] Final properties: ${properties.length} (raw unique: ${rawUnique.size}, city: ${filters?.city || 'all'})`
+    );
 
     return properties;
   } catch (error) {
