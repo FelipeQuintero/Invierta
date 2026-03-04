@@ -115,6 +115,8 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
   const [code, setCode] = useState('');
   const [locationQuery, setLocationQuery] = useState('');
   const [city, setCity] = useState('');
+  const [zone, setZone] = useState('');
+  const [zones, setZones] = useState<string[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
@@ -131,6 +133,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
     if (params.get('code')) setCode(params.get('code') || '');
     if (params.get('locationQuery')) setLocationQuery(params.get('locationQuery') || '');
     if (params.get('city')) setCity(params.get('city') || '');
+    if (params.get('zone')) setZone(params.get('zone') || '');
     if (params.get('propertyType')) {
       const val = params.get('propertyType') || '';
       setPropertyTypes(val.includes(',') ? val.split(',') : val ? [val] : []);
@@ -144,6 +147,25 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
     if (params.get('parking')) setParking(params.get('parking') || '');
     if (params.get('stratum')) setStratum(params.get('stratum') || '');
   }, []);
+
+  useEffect(() => {
+    if (!city) {
+      setZones([]);
+      setZone('');
+      return;
+    }
+    fetch(`/api/locations`)
+      .then((res) => res.json())
+      .then((data) => {
+        const cityZones: string[] = (data.data || [])
+          .filter((loc: { type: string; city?: string }) => loc.type === 'zona' && loc.city === city)
+          .map((loc: { name: string }) => loc.name)
+          .sort();
+        setZones(cityZones);
+        if (!cityZones.includes(zone)) setZone('');
+      })
+      .catch(() => setZones([]));
+  }, [city]);
 
   const setLoadingState = useCallback(
     (loading: boolean) => {
@@ -159,6 +181,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
     if (code) params.set('code', code);
     if (locationQuery) params.set('locationQuery', locationQuery);
     if (city) params.set('city', city);
+    if (zone) params.set('zone', zone);
     if (propertyTypes.length === 1) params.set('propertyType', propertyTypes[0]);
     if (propertyTypes.length > 1) params.set('propertyType', propertyTypes.join(','));
     if (minPrice) params.set('minPrice', minPrice);
@@ -187,6 +210,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
     setCode('');
     setLocationQuery('');
     setCity('');
+    setZone('');
     setPropertyTypes([]);
     setMinPrice('');
     setMaxPrice('');
@@ -216,6 +240,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
       case 'code': setCode(''); break;
       case 'locationQuery': setLocationQuery(''); break;
       case 'city': setCity(''); break;
+      case 'zone': setZone(''); break;
       case 'propertyType': setPropertyTypes([]); break;
       case 'minPrice': setMinPrice(''); break;
       case 'maxPrice': setMaxPrice(''); break;
@@ -236,6 +261,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
   if (code) activeFilters.push({ key: 'code', label: `Codigo: ${code}` });
   if (locationQuery) activeFilters.push({ key: 'locationQuery', label: locationQuery });
   if (city) activeFilters.push({ key: 'city', label: city });
+  if (zone) activeFilters.push({ key: 'zone', label: `Zona: ${zone}` });
   if (propertyTypes.length > 0) {
     const labels = propertyTypes
       .map((v) => PROPERTY_TYPES.find((pt) => pt.value === v)?.label || v)
@@ -372,6 +398,21 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
                 </option>
               ))}
             </select>
+            {zones.length > 0 && (
+              <select
+                value={zone}
+                onChange={(e) => setZone(e.target.value)}
+                className={selectClass}
+                aria-label="Filtrar por zona"
+              >
+                <option value="">Todas las zonas</option>
+                {zones.map((z) => (
+                  <option key={z} value={z}>
+                    {z}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </FilterSection>
 

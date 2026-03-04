@@ -27,6 +27,7 @@ if (params.get('propertyType')) {
   }
 }
 if (params.get('city')) filters.city = params.get('city') || undefined;
+if (params.get('zone')) filters.zone = params.get('zone') || undefined;
 if (params.get('minPrice')) filters.minPrice = parseInt(params.get('minPrice') || '0');
 if (params.get('maxPrice')) filters.maxPrice = parseInt(params.get('maxPrice') || '0');
 if (params.get('bedrooms')) filters.bedrooms = parseInt(params.get('bedrooms') || '0');

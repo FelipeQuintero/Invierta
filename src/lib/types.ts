@@ -62,6 +62,7 @@ export interface PropertyFilters {
   bedrooms?: number;
   bathrooms?: number;
   city?: string;
+  zone?: string;
   query?: string;
   code?: string;
   locationQuery?: string;

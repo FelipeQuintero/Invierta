@@ -343,6 +343,7 @@ export function getMockProperties(filters?: {
   operation?: string;
   propertyType?: string;
   city?: string;
+  zone?: string;
   minPrice?: number;
   maxPrice?: number;
   bedrooms?: number;
@@ -381,6 +382,12 @@ export function getMockProperties(filters?: {
   if (filters?.city) {
     filtered = filtered.filter((p) =>
       normalizeText(p.city).includes(normalizeText(filters.city!))
+    );
+  }
+  if (filters?.zone) {
+    const z = normalizeText(filters.zone);
+    filtered = filtered.filter(
+      (p) => normalizeText(p.neighborhood).includes(z)
     );
   }
   if (filters?.locationQuery) {

@@ -357,6 +357,12 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
     // (e.g., "Dosquebradas" vs "Dos Quebradas").
 
     // Client-side filtering for fields not supported by SIMI API
+    if (filters?.zone) {
+      const z = filters.zone.toLowerCase();
+      properties = properties.filter((p) =>
+        p.neighborhood.toLowerCase().includes(z)
+      );
+    }
     if (filters?.locationQuery) {
       const q = filters.locationQuery.toLowerCase();
       properties = properties.filter((p) =>
