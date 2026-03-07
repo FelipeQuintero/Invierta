@@ -2,6 +2,8 @@ import type { APIRoute } from 'astro';
 import { db, schema } from '../../../db';
 import { eq, or } from 'drizzle-orm';
 
+export const prerender = false;
+
 const json = (data: unknown, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
 

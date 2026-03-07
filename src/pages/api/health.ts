@@ -2,6 +2,8 @@ import type { APIRoute } from 'astro';
 import { db } from '../../db';
 import { sql } from 'drizzle-orm';
 
+export const prerender = false;
+
 export const GET: APIRoute = async () => {
   try {
     await db.execute(sql`SELECT 1`);
