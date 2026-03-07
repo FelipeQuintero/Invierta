@@ -113,7 +113,7 @@ export const POST: APIRoute = async ({ request }) => {
       await db.insert(schema.auditEvents).values({
         entityType: 'lead_case', entityId: leadCase.id,
         action: 'lucra_forward_failed', actor: 'webhook',
-        details: { error: String(lucraErr) },
+        metadata: { error: String(lucraErr) },
       });
     }
 
