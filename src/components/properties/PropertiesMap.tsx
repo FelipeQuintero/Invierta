@@ -5,7 +5,7 @@ import { PROPERTY_TYPES } from '../../lib/constants';
 interface PropertiesMapProps {
   properties: Property[];
 }
-
+ 
 function formatPriceCOP(price: number): string {
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
