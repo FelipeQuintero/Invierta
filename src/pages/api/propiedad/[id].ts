@@ -6,8 +6,6 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { getPropertyById } from '../../../lib/simi';
 
-export const prerender = false;
-
 export const GET: APIRoute = async ({ params }) => {
   try {
     const { id } = params;
