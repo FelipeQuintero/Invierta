@@ -1,16 +1,29 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { OPERATION_TYPES, PROPERTY_TYPES } from '../../lib/constants';
-import type { OperationType } from '../../lib/types';
+import type { OperationType, PropertyType } from '../../lib/types';
+import PropertyTypeIcon from '../ui/PropertyTypeIcon';
 import LocationAutocomplete from '../ui/LocationAutocomplete';
 import type { LocationSuggestion } from '../../lib/locationSearch';
 
 export default function HeroSearch() {
   const [operation, setOperation] = useState<OperationType>('venta');
   const [propertyType, setPropertyType] = useState('');
+  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
+  const typeDropdownRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<LocationSuggestion | null>(null);
   const [searchMode, setSearchMode] = useState<'location' | 'code'>('location');
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (typeDropdownRef.current && !typeDropdownRef.current.contains(e.target as Node)) {
+        setTypeDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLocationChange = useCallback((value: string) => {
     setQuery(value);
@@ -142,26 +155,70 @@ export default function HeroSearch() {
                   </select>
                 </div>
 
-                <div className="flex flex-col">
-                  <label
-                    htmlFor="hero-property-type"
+                <div className="flex flex-col relative" ref={typeDropdownRef}>
+                  <span
                     className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide mb-1.5 pl-1"
                   >
                     Tipo de inmueble
-                  </label>
-                  <select
-                    id="hero-property-type"
-                    value={propertyType}
-                    onChange={(e) => setPropertyType(e.target.value)}
-                    className={`${inputClass} appearance-none cursor-pointer`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setTypeDropdownOpen(!typeDropdownOpen)}
+                    className={`${inputClass} appearance-none cursor-pointer text-left flex items-center justify-between gap-2`}
                   >
-                    <option value="">Todos</option>
-                    {PROPERTY_TYPES.map((pt) => (
-                      <option key={pt.value} value={pt.value}>
-                        {pt.label}
-                      </option>
-                    ))}
-                  </select>
+                    <span className="flex items-center gap-2 truncate">
+                      {propertyType ? (
+                        <>
+                          <PropertyTypeIcon type={propertyType as PropertyType} className="w-4 h-4 shrink-0 text-[var(--color-accent)]" />
+                          <span>{PROPERTY_TYPES.find(pt => pt.value === propertyType)?.label}</span>
+                        </>
+                      ) : (
+                        <span>Todos</span>
+                      )}
+                    </span>
+                    <svg className={`w-4 h-4 shrink-0 text-[var(--color-text-muted)] transition-transform duration-200 ${typeDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                  </button>
+                  {typeDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-[var(--color-border)] z-50 p-3 min-w-[280px] md:min-w-[320px]">
+                      <div className="flex items-center justify-between mb-2 px-1">
+                        <span className="text-sm font-semibold text-[var(--color-text-primary)]">Tipo de inmueble</span>
+                        <button
+                          type="button"
+                          onClick={() => setTypeDropdownOpen(false)}
+                          className="p-1 hover:bg-[var(--color-surface)] rounded-md transition-colors"
+                          aria-label="Cerrar"
+                        >
+                          <svg className="w-4 h-4 text-[var(--color-text-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {PROPERTY_TYPES.map((pt) => {
+                          const isActive = propertyType === pt.value;
+                          return (
+                            <button
+                              key={pt.value}
+                              type="button"
+                              onClick={() => {
+                                setPropertyType(isActive ? '' : pt.value);
+                                if (!isActive) setTypeDropdownOpen(false);
+                              }}
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-full border transition-all duration-150 cursor-pointer ${
+                                isActive
+                                  ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)] shadow-sm'
+                                  : 'bg-white text-[var(--color-text-secondary)] border-[var(--color-border)] hover:border-[var(--color-accent)]/50 hover:text-[var(--color-text-primary)]'
+                              }`}
+                            >
+                              <PropertyTypeIcon type={pt.value as PropertyType} className="w-3.5 h-3.5" />
+                              <span>{pt.label}</span>
+                              {isActive && (
+                                <svg className="w-3 h-3 ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <LocationAutocomplete
