@@ -520,6 +520,11 @@ async function fetchPropertiesFromSimi(
 
     let properties = rawProperties.map(transformSimiProperty);
 
+    // Post-fetch operation filter (SIMI API tipOper is unreliable)
+    if (filters?.operation) {
+      properties = properties.filter((p) => p.operationType === filters.operation);
+    }
+
     if (filters?.minArea) {
       properties = properties.filter((p) => p.area >= filters.minArea!);
     }
