@@ -111,9 +111,9 @@ export const NAV_LINKS = [
 ] as const;
 
 export const TOP_BAR_LINKS: TopBarLink[] = [
-  { href: '#', label: 'Portal Propietarios', icon: 'User', external: true },
-  { href: '#', label: 'Portal Arrendatarios', icon: 'UserCheck', external: true },
-  { href: '#', label: 'Pagos PSE', icon: 'CreditCard', external: true },
+  { href: 'https://rent10.online/-/view-module/auth/view-home', label: 'Portal Propietarios', icon: 'User', external: true },
+  { href: 'https://rent10.online/-/view-module/auth/view-home', label: 'Portal Arrendatarios', icon: 'UserCheck', external: true },
+  { href: 'https://pagos.rent10.online/-/view-payment', label: 'Pagos PSE', icon: 'CreditCard', external: true },
   { href: '/publica', label: 'Publica tu Inmueble', icon: 'Home', external: false },
   { href: '/servicios', label: 'Registra un Referido', icon: 'Users', external: false },
 ];
