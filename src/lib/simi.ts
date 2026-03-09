@@ -46,6 +46,7 @@ interface SimiInmuebleDetalle {
   zona: string;
   Gestion: string;
   fotos?: Array<{ foto: string; posi: string }>;
+  video?: string | null;
   video360?: string | null;
 }
 
@@ -94,6 +95,7 @@ interface SimiInmueble {
   foto9?: string;
   foto10?: string;
   foto360: number;
+  video?: string | null;
   video360: string | null;
   
   // Metadata
@@ -382,6 +384,7 @@ function transformSimiProperty(simi: SimiInmueble): Property {
     propertyType,
     operationType,
     coordinates: lat && lng ? { lat, lng } : undefined,
+    videoUrl: simi.video || undefined,
     view360Url: simi.video360 || undefined,
     features: [],
     adminFee: parsePrice(simi.Administracion),
@@ -715,6 +718,7 @@ function transformSimiInmuebleDetalle(data: SimiInmuebleDetalle): Property {
     coordinates: parseFloat(data.latitud) && parseFloat(data.longitud) 
       ? { lat: parseFloat(data.latitud), lng: parseFloat(data.longitud) } 
       : undefined,
+    videoUrl: data.video || undefined,
     view360Url: data.video360 || undefined,
     features: [],
     adminFee: 0,

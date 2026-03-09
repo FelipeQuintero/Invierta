@@ -7,7 +7,12 @@ interface Tab {
   icon: React.ReactNode;
 }
 
-const TABS: Tab[] = [
+interface PropertyDetailTabsProps {
+  showVideo?: boolean;
+  show360?: boolean;
+}
+
+const BASE_TABS: Tab[] = [
   { id: 'fotos', label: 'Fotos', icon: <Camera className="w-4 h-4" /> },
   { id: 'video', label: 'Video', icon: <Video className="w-4 h-4" /> },
   { id: 'mapa', label: 'Mapa', icon: <MapPin className="w-4 h-4" /> },
@@ -24,7 +29,13 @@ function getHeaderOffset() {
   return window.innerWidth >= 1024 ? HEADER_OFFSET_DESKTOP : HEADER_OFFSET_MOBILE;
 }
 
-export default function PropertyDetailTabs() {
+export default function PropertyDetailTabs({ showVideo = true, show360 = true }: PropertyDetailTabsProps) {
+  const tabs = BASE_TABS.filter((tab) => {
+    if (tab.id === 'video') return showVideo;
+    if (tab.id === 'fotos-360') return show360;
+    return true;
+  });
+
   const [activeTab, setActiveTab] = useState('fotos');
   const [isSticky, setIsSticky] = useState(false);
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -72,7 +83,12 @@ export default function PropertyDetailTabs() {
   }, [updateIndicator, scrollToSection]);
 
   useEffect(() => {
-    const sectionIds = TABS.map((t) => t.id);
+    if (!tabs.some((tab) => tab.id === activeTab)) {
+      setActiveTab(tabs[0]?.id || 'fotos');
+      return;
+    }
+
+    const sectionIds = tabs.map((t) => t.id);
     const sectionElements = sectionIds
       .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
@@ -104,7 +120,7 @@ export default function PropertyDetailTabs() {
 
     sectionElements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [activeTab, updateIndicator]);
+  }, [activeTab, tabs, updateIndicator]);
 
   useEffect(() => {
     updateIndicator(activeTab);
@@ -150,7 +166,7 @@ export default function PropertyDetailTabs() {
       >
         <div className="container-custom">
           <div className="relative flex overflow-x-auto scrollbar-none -mb-px">
-            {TABS.map((tab) => (
+            {tabs.map((tab) => (
               <button
                 key={tab.id}
                 ref={(el) => {

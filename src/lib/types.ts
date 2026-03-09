@@ -19,6 +19,7 @@ export interface Property {
   propertyType: PropertyType;
   operationType: OperationType;
   coordinates?: Coordinates;
+  videoUrl?: string;
   view360Url?: string;
   features: string[];
   yearBuilt?: number;
