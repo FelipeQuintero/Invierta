@@ -179,7 +179,7 @@ export default function HeroSearch() {
                     <svg className={`w-4 h-4 shrink-0 text-[var(--color-text-muted)] transition-transform duration-200 ${typeDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                   </button>
                   {typeDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-[var(--color-border)] z-50 p-3 min-w-[280px] md:min-w-[320px]">
+                    <div className="absolute bottom-full left-0 mb-1 bg-white rounded-xl shadow-xl border border-[var(--color-border)] z-50 p-3 min-w-[280px] md:min-w-[320px]">
                       <div className="flex items-center justify-between mb-2 px-1">
                         <span className="text-sm font-semibold text-[var(--color-text-primary)]">Tipo de inmueble</span>
                         <button
@@ -191,7 +191,7 @@ export default function HeroSearch() {
                           <svg className="w-4 h-4 text-[var(--color-text-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                         </button>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-1.5 max-h-[240px] overflow-y-auto">
                         {PROPERTY_TYPES.map((pt) => {
                           const isActive = propertyType === pt.value;
                           return (
