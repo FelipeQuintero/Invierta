@@ -183,34 +183,50 @@ const OPERATION_MAP: Record<OperationType, number> = {
 
 const PROPERTY_TYPE_MAP: Record<string, PropertyType> = {
   'apartamento': 'apartamento',
-  'apartaestudio': 'apartamento',
+  'apartaestudio': 'apartaestudio',
   'casa': 'casa',
+  'casas': 'casa',
+  'casa residencial': 'casa',    // SIMI ID 22 → agrupado bajo 'casa'
+  'casa campestre': 'casa_campestre',
+  'casas campestres': 'casa_campestre',
+  'casa comercial': 'casa_comercial',
+  'casa lote': 'casa_lote',
   'local': 'local',
   'locales': 'local',
   'oficina': 'oficina',
   'oficinas': 'oficina',
   'consultorio': 'consultorio',
   'consultorios': 'consultorio',
-  'casa campestre': 'casa_campestre',
-  'casas campestres': 'casa_campestre',
-  'lote': 'lote',
-  'lotes': 'lote',
   'bodega': 'bodega',
   'bodegas': 'bodega',
+  'edificio': 'edificio',
+  'edificios': 'edificio',
   'finca': 'finca',
   'fincas': 'finca',
+  'hotel': 'hotel',
+  'hoteles': 'hotel',
+  'lote': 'lote',
+  'lotes': 'lote',
+  'parqueadero': 'parqueadero',
+  'parqueaderos': 'parqueadero',
 };
 
 const PROPERTY_TYPE_ID_MAP: Record<PropertyType, number[]> = {
-  apartamento: [1, 11],
-  casa: [2, 20, 21, 22],
+  apartamento: [1],
+  apartaestudio: [11],
+  casa: [2, 22],         // 2=Casa, 22=Casa Residencial
   casa_campestre: [19],
+  casa_comercial: [20],
+  casa_lote: [21],
   local: [5],
   oficina: [4],
   consultorio: [3],
-  lote: [7],
   bodega: [6],
+  edificio: [10],
   finca: [8],
+  hotel: [],             // No disponible en SIMI actualmente
+  lote: [7],
+  parqueadero: [],       // No disponible en SIMI actualmente
 };
 
 const CITY_CACHE_TTL = 24 * 60 * 60 * 1000;

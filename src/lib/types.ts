@@ -31,14 +31,20 @@ export type PropertyTag = 'destacado' | 'negociable' | 'bajo_precio' | 'nuevo';
 
 export type PropertyType =
   | 'apartamento'
+  | 'apartaestudio'
   | 'casa'
   | 'casa_campestre'
+  | 'casa_comercial'
+  | 'casa_lote'
   | 'local'
   | 'oficina'
   | 'consultorio'
-  | 'lote'
   | 'bodega'
-  | 'finca';
+  | 'edificio'
+  | 'finca'
+  | 'hotel'
+  | 'lote'
+  | 'parqueadero';
 
 export type OperationType = 'venta' | 'arriendo' | 'proyecto';
 

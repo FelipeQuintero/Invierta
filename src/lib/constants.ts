@@ -22,14 +22,20 @@ export const SITE_CONFIG: SiteConfig = {
 
 export const PROPERTY_TYPES = [
   { value: 'apartamento', label: 'Apartamento' },
+  { value: 'apartaestudio', label: 'Apartaestudio' },
   { value: 'casa', label: 'Casa' },
   { value: 'casa_campestre', label: 'Casa Campestre' },
+  { value: 'casa_comercial', label: 'Casa Comercial' },
+  { value: 'casa_lote', label: 'Casa Lote' },
   { value: 'local', label: 'Local' },
   { value: 'oficina', label: 'Oficina' },
   { value: 'consultorio', label: 'Consultorio' },
-  { value: 'lote', label: 'Lote' },
   { value: 'bodega', label: 'Bodega' },
+  { value: 'edificio', label: 'Edificio' },
   { value: 'finca', label: 'Finca' },
+  { value: 'hotel', label: 'Hotel' },
+  { value: 'lote', label: 'Lote' },
+  { value: 'parqueadero', label: 'Parqueadero' },
 ] as const;
 
 export const OPERATION_TYPES = [

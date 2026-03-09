@@ -12,6 +12,8 @@ import {
 } from '../../lib/constants';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import LocationAutocomplete from '../ui/LocationAutocomplete';
+import PropertyTypeIcon from '../ui/PropertyTypeIcon';
+import type { PropertyType } from '../../lib/types';
 import type { LocationSuggestion } from '../../lib/locationSearch';
 
 interface Props {
@@ -442,23 +444,28 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
         </FilterSection>
 
         <FilterSection title="Tipo de Inmueble">
-          <div className="space-y-2">
-            {PROPERTY_TYPES.map((pt) => (
-              <label
-                key={pt.value}
-                className="flex items-center gap-2.5 cursor-pointer group"
-              >
-                <input
-                  type="checkbox"
-                  checked={propertyTypes.includes(pt.value)}
-                  onChange={() => togglePropertyType(pt.value)}
-                  className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-accent)] focus:ring-[var(--color-accent)]/20 focus:ring-2 cursor-pointer accent-[var(--color-accent)]"
-                />
-                <span className="text-sm text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors">
-                  {pt.label}
-                </span>
-              </label>
-            ))}
+          <div className="flex flex-wrap gap-2">
+            {PROPERTY_TYPES.map((pt) => {
+              const isActive = propertyTypes.includes(pt.value);
+              return (
+                <button
+                  key={pt.value}
+                  type="button"
+                  onClick={() => togglePropertyType(pt.value)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-150 cursor-pointer ${
+                    isActive
+                      ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)] shadow-sm'
+                      : 'bg-white text-[var(--color-text-secondary)] border-[var(--color-border)] hover:border-[var(--color-accent)]/50 hover:text-[var(--color-text-primary)]'
+                  }`}
+                >
+                  <PropertyTypeIcon type={pt.value as PropertyType} className="w-4 h-4" />
+                  <span>{pt.label}</span>
+                  {isActive && (
+                    <ClearIcon className="w-3 h-3 ml-0.5" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </FilterSection>
 
