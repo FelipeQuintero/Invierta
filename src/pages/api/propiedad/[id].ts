@@ -1,6 +1,8 @@
 // NOTE: This API route requires Astro server output mode (output: 'server' or 'hybrid')
 // in astro.config.mjs. Without it, this endpoint will not work at runtime.
 
+export const prerender = false;
+
 import type { APIRoute } from 'astro';
 import { getPropertyById } from '../../../lib/simi';
 
