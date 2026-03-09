@@ -120,39 +120,39 @@ export const TOP_BAR_LINKS: TopBarLink[] = [
 
 export const SERVICES: ServiceInfo[] = [
   {
-    slug: 'agentes-inmobiliarios',
-    title: 'Agentes Inmobiliarios',
-    shortDescription: 'Red de agentes profesionales para acompanarte en cada paso.',
-    icon: 'Users',
-  },
-  {
     slug: 'creditos-hipotecarios',
-    title: 'Creditos Hipotecarios',
-    shortDescription: 'Te conectamos con las mejores opciones de financiacion.',
+    title: 'Gestión de Créditos Hipotecarios',
+    shortDescription: 'Intermediación con entidades financieras a nivel nacional.',
     icon: 'Landmark',
   },
   {
-    slug: 'prestamos-hipotecas',
-    title: 'Prestamos sobre Hipotecas',
-    shortDescription: 'Obtén liquidez usando tu propiedad como respaldo.',
+    slug: 'administracion-arrendamientos',
+    title: 'Administración de Arrendamientos',
+    shortDescription: 'Colocación de contratos con respaldo jurídico y financiero.',
+    icon: 'Users',
+  },
+  {
+    slug: 'creditos-exterior',
+    title: 'Créditos para Colombianos en el Exterior',
+    shortDescription: 'Compra vivienda en Colombia con proceso 100 % virtual.',
     icon: 'HandCoins',
   },
   {
+    slug: 'monetizacion-divisas',
+    title: 'Monetización de Divisas',
+    shortDescription: 'Trae recursos del exterior con cumplimiento cambiario y soporte.',
+    icon: 'Globe',
+  },
+  {
     slug: 'reduccion-creditos',
-    title: 'Reduccion de Creditos Hipotecarios',
-    shortDescription: 'Optimiza las condiciones de tu credito actual.',
+    title: 'Reducción de Créditos Hipotecarios',
+    shortDescription: 'Reduce intereses, plazo y optimiza tu crédito actual.',
     icon: 'TrendingDown',
   },
   {
     slug: 'avaluos',
-    title: 'Avaluos',
-    shortDescription: 'Conoce el valor real de tu propiedad con avaluos certificados.',
+    title: 'Avalúos Inmobiliarios Profesionales',
+    shortDescription: 'Conoce el valor real de tu propiedad con criterios técnicos.',
     icon: 'FileCheck',
-  },
-  {
-    slug: 'monetizacion-exterior',
-    title: 'Monetizacion para Colombianos en el Exterior',
-    shortDescription: 'Invierte en Colombia desde cualquier parte del mundo.',
-    icon: 'Globe',
   },
 ];

@@ -3,6 +3,20 @@ import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/ui/Breadcrumb.astro';
 import { SERVICES, SITE_CONFIG } from '../../lib/constants';
 
+type ServicePageContent = {
+  subtitle: string;
+  intro: string[];
+  painTitle: string;
+  painPoints: string[];
+  solutionTitle: string;
+  solutionPoints: string[];
+  benefitsTitle: string;
+  benefits: string[];
+  ctaTitle: string;
+  ctaText: string;
+  ctaButton: string;
+};
+
 export async function getStaticPaths() {
   return SERVICES.map((service) => ({
     params: { slug: service.slug },
@@ -18,86 +32,190 @@ const breadcrumbItems = [
   { label: service.title },
 ];
 
-const serviceContent: Record<string, { description: string; benefits: string[]; cta: string }> = {
-  'agentes-inmobiliarios': {
-    description: 'Contamos con una red de agentes inmobiliarios profesionales certificados, listos para acompanarte en cada paso del proceso de compra, venta o arriendo de tu propiedad. Nuestros asesores conocen a fondo el mercado local y te brindaran atencion personalizada para encontrar la mejor opcion segun tus necesidades y presupuesto.',
-    benefits: [
-      'Asesoria personalizada durante todo el proceso',
-      'Conocimiento experto del mercado inmobiliario local',
-      'Negociacion profesional para obtener el mejor precio',
-      'Acompanamiento en tramites legales y documentacion',
-      'Amplia red de contactos y propiedades exclusivas',
-      'Disponibilidad para visitas y consultas',
-    ],
-    cta: 'Conecta con un asesor',
-  },
+const serviceContent: Record<string, ServicePageContent> = {
   'creditos-hipotecarios': {
-    description: 'Te conectamos con las mejores entidades financieras para que obtengas el credito hipotecario que necesitas. Analizamos tu perfil crediticio y te presentamos opciones personalizadas con tasas competitivas. Nuestro equipo te acompana durante todo el proceso de solicitud y aprobacion.',
-    benefits: [
-      'Comparacion de tasas entre multiples entidades',
-      'Asesoria en requisitos y documentacion',
-      'Simulacion de cuotas y plazos',
-      'Acompanamiento en el proceso de aprobacion',
-      'Opciones para diferentes perfiles crediticios',
-      'Sin costo adicional por nuestra asesoria',
+    subtitle: 'Intermediación con entidades financieras a nivel nacional',
+    intro: [
+      'La mayoría de personas no se acercan a un banco por falta de tiempo, desconocimiento del proceso o miedo a no tener perfil.',
+      'En Invierta Inmobiliaria gestionamos tu crédito hipotecario, leasing habitacional o compra de cartera con acompañamiento de principio a fin.',
     ],
-    cta: 'Solicitar asesoria de credito',
+    painTitle: 'Lo que suele frenar el proceso',
+    painPoints: [
+      'No saber qué banco elegir.',
+      'Pensar que el crédito es complicado o inalcanzable.',
+      'No saber cómo estructurar el caso para aumentar probabilidades de aprobación.',
+    ],
+    solutionTitle: 'Cómo te acompañamos',
+    solutionPoints: [
+      'Perfilación financiera y simulación de crédito vivienda.',
+      'Comparación entre bancos y radicación simultánea.',
+      'Gestión documental, seguimiento hasta aprobación y acompañamiento hasta desembolso.',
+      'Apoyo para encontrar la mejor opción inmobiliaria según tu perfil.',
+    ],
+    benefitsTitle: 'Beneficios clave',
+    benefits: [
+      'Cobertura nacional con entidades financieras aliadas.',
+      'Reducción de tiempos desde la solicitud hasta el desembolso.',
+      'Mayor probabilidad de aprobación con presentación estratégica del caso.',
+      'Acompañamiento integral hasta tener tu propiedad.',
+    ],
+    ctaTitle: '¿Quieres saber si calificas?',
+    ctaText: 'Solicita tu estudio gratuito y recibe asesoría personalizada. Estudio sin costo y datos 100 % confidenciales.',
+    ctaButton: 'Solicitar estudio gratuito',
   },
-  'prestamos-hipotecas': {
-    description: 'Obtén liquidez inmediata utilizando tu propiedad como garantia. Los prestamos sobre hipotecas te permiten acceder a capital sin necesidad de vender tu inmueble. Ideal para inversiones, consolidacion de deudas o proyectos personales con tasas mas favorables que un credito de libre inversion.',
-    benefits: [
-      'Tasas de interes mas bajas que creditos de consumo',
-      'Plazos flexibles de pago',
-      'Mantén la propiedad de tu inmueble',
-      'Montos significativos segun el avaluo',
-      'Proceso agil y transparente',
-      'Asesoria completa sobre condiciones',
+  'administracion-arrendamientos': {
+    subtitle: 'Colocación de contratos de administración con respaldo jurídico y financiero',
+    intro: [
+      'Muchos agentes cierran una venta y el cliente desaparece por años, o no logran vender y el propietario termina arrendando con otra inmobiliaria.',
+      'En Invierta Inmobiliaria integramos administración de arrendamientos para que generes ingresos más rápidos y recurrentes sin asumir la operación.',
     ],
-    cta: 'Conocer opciones de prestamo',
+    painTitle: 'Cuando no ofreces administración',
+    painPoints: [
+      'Pierdes propietarios y repetición del negocio.',
+      'Dependes solo de comisiones grandes y esporádicas.',
+      'El ciclo del cliente queda incompleto mientras espera una venta.',
+    ],
+    solutionTitle: 'Integra administración sin operarla',
+    solutionPoints: [
+      'Tú captas propietarios, negocias y cierras.',
+      'Nosotros elaboramos y custodiamos contratos de administración.',
+      'Gestionamos estudio de arrendatarios, cobro mensual, pago al propietario y procesos jurídicos en caso de incumplimiento.',
+      'Incluimos reparaciones locativas con auditoría fotográfica y respaldo financiero al propietario.',
+    ],
+    benefitsTitle: 'Modelo de ingreso para agentes',
+    benefits: [
+      'Comisión en la colocación del contrato de administración.',
+      'Cierres en promedio entre 30 y 60 días.',
+      'Ingreso repetitivo cuando el inmueble vuelve a quedar disponible.',
+      'Relación continua con el propietario para futuros negocios.',
+    ],
+    ctaTitle: 'Activa ingresos recurrentes',
+    ctaText: 'Déjanos tus datos y te explicamos cómo integrar administración en tu portafolio sin asumir carga administrativa ni riesgo jurídico.',
+    ctaButton: 'Quiero integrar administración',
+  },
+  'creditos-exterior': {
+    subtitle: 'Compra vivienda en Colombia aunque vivas en el exterior',
+    intro: [
+      'Vivir fuera del país no debería impedirte invertir en Colombia o comprar tu vivienda propia.',
+      'Te ayudamos a gestionar créditos hipotecarios desde el exterior con cobertura nacional y proceso 100 % virtual.',
+    ],
+    painTitle: 'Barreras más comunes',
+    painPoints: [
+      'No tener tiempo para trámites bancarios complejos.',
+      'Dudas sobre cómo calificar con ingresos en otra moneda.',
+      'Preocupación por el proceso legal y la documentación.',
+    ],
+    solutionTitle: 'Gestión integral desde el exterior',
+    solutionPoints: [
+      'Evaluamos viabilidad financiera con ingresos del exterior.',
+      'Comparamos opciones con bancos aliados.',
+      'Gestionamos crédito hipotecario o leasing habitacional.',
+      'Acompañamos hasta escrituración e incluimos apoyo para encontrar vivienda.',
+    ],
+    benefitsTitle: 'Opciones de financiación',
+    benefits: [
+      'Financiación hasta el 80 % del valor de la vivienda.',
+      'Plazos flexibles de 5 a 30 años.',
+      'Preaprobación aproximada en 48 horas.',
+      'Proceso virtual, ágil y con acompañamiento personalizado.',
+    ],
+    ctaTitle: 'Revisa tu viabilidad sin costo',
+    ctaText: 'Te diremos si puedes acceder al crédito, cuánto podrías financiar y qué propiedades se ajustan a tu perfil.',
+    ctaButton: 'Quiero saber si califico',
+  },
+  'monetizacion-divisas': {
+    subtitle: 'Tu inversión en Colombia, más cerca de ti',
+    intro: [
+      'La monetización de divisas es el proceso legal y estructurado de traer recursos del exterior y convertirlos en pesos para invertir en Colombia.',
+      'En Invierta Inmobiliaria y nuestros aliados te acompañamos para hacerlo con cumplimiento normativo y soporte documental completo.',
+    ],
+    painTitle: 'Riesgos de hacerlo de forma informal',
+    painPoints: [
+      'Límites bancarios o pagos no aceptados por constructoras.',
+      'Transferencias a cuentas de terceros sin estructura formal.',
+      'Problemas tributarios o de justificación del origen de recursos.',
+    ],
+    solutionTitle: 'Proceso formal y seguro',
+    solutionPoints: [
+      'Envío de recursos desde el exterior sin límites de monto.',
+      'Tasa de cambio en tiempo real y pagos directos a constructoras o fiducias.',
+      'Legalización adecuada de la inversión y cumplimiento de normatividad cambiaria.',
+      'Acompañamiento personalizado durante todo el proceso.',
+    ],
+    benefitsTitle: 'Lo que obtienes',
+    benefits: [
+      'Protección de capital y tranquilidad financiera.',
+      'Cumplimiento normativo y trazabilidad documental.',
+      'Proceso ágil y transparente para inversión inmobiliaria.',
+      'Estructura útil para vivienda sobre planos, usados y proyectos fiduciarios.',
+    ],
+    ctaTitle: 'Protege tu inversión',
+    ctaText: 'Agenda una asesoría personalizada y recibe orientación segura para traer tu inversión a Colombia sin improvisaciones.',
+    ctaButton: 'Agendar asesoría',
   },
   'reduccion-creditos': {
-    description: 'Si ya tienes un credito hipotecario, podemos ayudarte a mejorar sus condiciones. Evaluamos tu situacion actual y negociamos con entidades financieras para reducir tu tasa de interes, ajustar plazos o unificar deudas. Ahorrar en el pago mensual de tu hipoteca es posible.',
-    benefits: [
-      'Reduccion de tasa de interes',
-      'Ajuste de plazos segun tu capacidad',
-      'Unificacion de multiples creditos',
-      'Ahorro significativo en intereses totales',
-      'Sin penalizaciones ocultas',
-      'Proceso gestionado integramente por nosotros',
+    subtitle: 'Reduce intereses, acorta tu crédito y protege tu patrimonio',
+    intro: [
+      'Muchos propietarios no saben que pueden optimizar su crédito hipotecario o leasing habitacional de forma legal y segura.',
+      'Te ayudamos a revisar tu estructura actual para reducir intereses, mejorar condiciones y acelerar el pago de tu vivienda.',
     ],
-    cta: 'Evaluar mi credito actual',
+    painTitle: 'Lo que normalmente no se revisa',
+    painPoints: [
+      'Cuánto se está pagando realmente en intereses.',
+      'Si la tasa actual sigue siendo competitiva.',
+      'Cómo reducir plazo o optimizar pagos sin penalidades.',
+    ],
+    solutionTitle: 'Cómo funciona el proceso',
+    solutionPoints: [
+      'Diagnóstico de tasa, plazo, saldo y sistema de amortización.',
+      'Simulación de escenarios para reducir cuota, plazo u optimizar pagos.',
+      'Implementación y acompañamiento en la gestión con la entidad financiera.',
+      'Aplicación de mecanismos legales para abonos estratégicos a capital.',
+    ],
+    benefitsTitle: 'Resultados esperados',
+    benefits: [
+      'Reducción de intereses totales.',
+      'Disminución de años de deuda.',
+      'Mejora de tasa o estructura del crédito.',
+      'Mayor velocidad de amortización sin afectar historial.',
+    ],
+    ctaTitle: 'Solicita revisión gratuita',
+    ctaText: 'Descubre cuánto puedes ahorrar y evita pagar intereses innecesarios durante años.',
+    ctaButton: 'Quiero revisar mi crédito',
   },
-  'avaluos': {
-    description: 'Conoce el valor real de tu propiedad con avaluos certificados realizados por profesionales acreditados. Nuestros avaluos cumplen con todos los requisitos legales y bancarios, siendo validos para tramites de credito, compraventa, sucesiones y procesos juridicos.',
-    benefits: [
-      'Avaluadores certificados y con experiencia',
-      'Informe detallado y profesional',
-      'Valido para tramites bancarios y legales',
-      'Visita presencial al inmueble',
-      'Entrega rapida del informe',
-      'Precios competitivos',
+  avaluos: {
+    subtitle: 'Conoce el valor real de tu propiedad y toma decisiones seguras',
+    intro: [
+      'Fijar precio por percepción puede generar ventas estancadas, pérdidas por subvaloración y negociaciones agresivas.',
+      'Un avalúo profesional se construye con datos reales del mercado y variables técnicas del inmueble.',
     ],
-    cta: 'Solicitar avaluo',
-  },
-  'monetizacion-exterior': {
-    description: 'Si eres colombiano en el exterior y deseas invertir en finca raiz en Colombia, te ofrecemos un servicio integral. Desde la busqueda de la propiedad ideal hasta la gestion de arrendamiento y administracion, nos encargamos de todo para que puedas invertir con tranquilidad desde cualquier parte del mundo.',
-    benefits: [
-      'Busqueda personalizada de propiedades',
-      'Visitas virtuales y documentacion digital',
-      'Gestion de compra a distancia',
-      'Administracion de arriendos',
-      'Reportes periodicos de tu inversion',
-      'Atencion en tu zona horaria',
+    painTitle: 'Errores frecuentes al valorar un inmueble',
+    painPoints: [
+      'Definir precio según referencias informales o necesidad económica.',
+      'No considerar normativa, estado, distribución y comparables verificables.',
+      'Perder compradores calificados por mala posición de precio.',
     ],
-    cta: 'Invertir desde el exterior',
+    solutionTitle: 'Criterios técnicos del avalúo',
+    solutionPoints: [
+      'Ubicación y entorno.',
+      'Área privada y construida.',
+      'Distribución, estado de conservación y acabados.',
+      'Normativa urbanística y comportamiento real del mercado.',
+    ],
+    benefitsTitle: 'Beneficio clave',
+    benefits: [
+      'Acelera la venta y aumenta credibilidad.',
+      'Permite negociar con argumentos técnicos.',
+      'Evita pérdidas económicas por subvaloración.',
+      'Protege al comprador de pagar por encima del valor real.',
+    ],
+    ctaTitle: 'Decide con información técnica',
+    ctaText: 'Solicita tu avalúo profesional y conoce el valor real de tu propiedad.',
+    ctaButton: 'Solicitar avalúo',
   },
 };
 
-const content = serviceContent[service.slug] || {
-  description: service.shortDescription,
-  benefits: ['Asesoria profesional', 'Atencion personalizada', 'Resultados garantizados'],
-  cta: 'Contactar',
-};
+const content = serviceContent[service.slug];
 
 const iconMap: Record<string, string> = {
   Users: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
@@ -109,10 +227,7 @@ const iconMap: Record<string, string> = {
 };
 ---
 
-<Layout
-  title={`${service.title} | Invierta Inmobiliaria`}
-  description={service.shortDescription}
->
+<Layout title={`${service.title} | Invierta Inmobiliaria`} description={service.shortDescription}>
   <section class="bg-surface py-6">
     <div class="container-custom">
       <Breadcrumb items={breadcrumbItems} />
@@ -121,180 +236,86 @@ const iconMap: Record<string, string> = {
 
   <section class="py-12 lg:py-16">
     <div class="container-custom">
-      <div class="lg:flex lg:gap-12">
-        <div class="flex-1">
-          <div class="flex items-center gap-4">
-            <div class="flex h-16 w-16 items-center justify-center rounded-xl bg-primary text-white">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-8 w-8"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d={iconMap[service.icon] || iconMap.FileCheck} />
-              </svg>
-            </div>
-            <h1 class="font-heading text-3xl font-bold text-text-primary lg:text-4xl">
-              {service.title}
-            </h1>
+      <div class="mx-auto max-w-4xl">
+        <div class="flex items-center gap-4">
+          <div class="flex h-16 w-16 items-center justify-center rounded-xl bg-primary text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d={iconMap[service.icon] || iconMap.FileCheck} />
+            </svg>
           </div>
-
-          <p class="mt-6 text-lg leading-relaxed text-text-secondary">
-            {content.description}
-          </p>
-
-          <div class="mt-10">
-            <h2 class="font-heading text-xl font-semibold text-text-primary">
-              Beneficios del servicio
-            </h2>
-            <ul class="mt-4 space-y-3">
-              {content.benefits.map((benefit) => (
-                <li class="flex items-start gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 shrink-0 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 6 9 17l-5-5"/>
-                  </svg>
-                  <span class="text-text-secondary">{benefit}</span>
-                </li>
-              ))}
-            </ul>
+          <div>
+            <h1 class="font-heading text-3xl font-bold text-text-primary lg:text-4xl">{service.title}</h1>
+            <p class="mt-1 text-text-secondary">{content.subtitle}</p>
           </div>
         </div>
 
-        <aside class="mt-10 lg:mt-0 lg:w-96 lg:shrink-0">
-          <div class="sticky top-24 rounded-xl border border-border bg-white p-6 shadow-sm">
-            <h3 class="font-heading text-lg font-semibold text-text-primary">
-              Solicitar este servicio
-            </h3>
-            <p class="mt-2 text-sm text-text-secondary">
-              Completa el formulario o contactanos directamente. Te responderemos en menos de 24 horas.
-            </p>
+        <div class="mt-8 space-y-4 text-lg leading-relaxed text-text-secondary">
+          {content.intro.map((paragraph) => <p>{paragraph}</p>)}
+        </div>
 
-            <form class="mt-6 space-y-4">
-              <div>
-                <label for="name" class="block text-sm font-medium text-text-primary">
-                  Nombre completo
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  required
-                  class="mt-1 w-full rounded-lg border border-border bg-white px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  placeholder="Tu nombre"
-                />
-              </div>
-              <div>
-                <label for="email" class="block text-sm font-medium text-text-primary">
-                  Correo electronico
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required
-                  class="mt-1 w-full rounded-lg border border-border bg-white px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  placeholder="tu@email.com"
-                />
-              </div>
-              <div>
-                <label for="phone" class="block text-sm font-medium text-text-primary">
-                  Telefono / WhatsApp
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  required
-                  class="mt-1 w-full rounded-lg border border-border bg-white px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  placeholder="300 123 4567"
-                />
-              </div>
-              <div>
-                <label for="message" class="block text-sm font-medium text-text-primary">
-                  Mensaje (opcional)
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows="3"
-                  class="mt-1 w-full rounded-lg border border-border bg-white px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none"
-                  placeholder="Cuentanos mas sobre lo que necesitas..."
-                ></textarea>
-              </div>
-              <button
-                type="submit"
-                class="btn-primary w-full"
-              >
-                {content.cta}
-              </button>
-            </form>
+        <div class="mt-10 grid gap-6 lg:grid-cols-2">
+          <article class="rounded-xl border border-border bg-white p-6 shadow-sm">
+            <h2 class="font-heading text-xl font-semibold text-text-primary">{content.painTitle}</h2>
+            <ul class="mt-4 space-y-3">
+              {content.painPoints.map((point) => (
+                <li class="flex items-start gap-3">
+                  <span class="mt-1 block h-2 w-2 rounded-full bg-danger"></span>
+                  <span class="text-text-secondary">{point}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
 
-            <div class="mt-6 border-t border-border pt-6">
-              <p class="text-center text-sm text-text-muted">O contactanos directamente</p>
-              <div class="mt-4 flex flex-col gap-3">
-                <a
-                  href={`https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent(`Hola, me interesa el servicio de ${service.title}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#20bd5a]"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+          <article class="rounded-xl border border-border bg-white p-6 shadow-sm">
+            <h2 class="font-heading text-xl font-semibold text-text-primary">{content.solutionTitle}</h2>
+            <ul class="mt-4 space-y-3">
+              {content.solutionPoints.map((point) => (
+                <li class="flex items-start gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 shrink-0 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6 9 17l-5-5" />
                   </svg>
-                  WhatsApp
-                </a>
-                <a
-                  href={`tel:${SITE_CONFIG.phone}`}
-                  class="flex items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-text-primary transition-colors hover:bg-surface"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                  </svg>
-                  {SITE_CONFIG.phone}
-                </a>
-              </div>
-            </div>
-          </div>
-        </aside>
+                  <span class="text-text-secondary">{point}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </div>
+
+        <article class="mt-6 rounded-xl border border-border bg-white p-6 shadow-sm">
+          <h2 class="font-heading text-xl font-semibold text-text-primary">{content.benefitsTitle}</h2>
+          <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+            {content.benefits.map((benefit) => (
+              <li class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                <span class="text-text-secondary">{benefit}</span>
+              </li>
+            ))}
+          </ul>
+        </article>
       </div>
     </div>
   </section>
 
-  <section class="bg-surface py-12">
+  <section class="bg-primary py-14">
     <div class="container-custom">
-      <h2 class="font-heading text-2xl font-bold text-text-primary text-center">
-        Otros servicios
-      </h2>
-      <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {SERVICES.filter(s => s.slug !== service.slug).slice(0, 3).map((otherService) => (
+      <div class="mx-auto max-w-3xl text-center">
+        <h2 class="font-heading text-2xl font-bold text-white lg:text-3xl">{content.ctaTitle}</h2>
+        <p class="mt-4 text-white/85">{content.ctaText}</p>
+        <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <a
-            href={`/servicios/${otherService.slug}`}
-            class="flex items-center gap-4 rounded-lg border border-border bg-white p-4 transition-all hover:border-primary/30 hover:shadow-sm"
+            href={`https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent(`Hola, me interesa el servicio de ${service.title}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 rounded-lg bg-[#25D366] px-6 py-3 font-semibold text-white transition-colors hover:bg-[#20bd5a]"
           >
-            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d={iconMap[otherService.icon] || iconMap.FileCheck} />
-              </svg>
-            </div>
-            <div>
-              <h3 class="font-medium text-text-primary">{otherService.title}</h3>
-              <p class="text-sm text-text-muted line-clamp-1">{otherService.shortDescription}</p>
-            </div>
+            {content.ctaButton}
           </a>
-        ))}
+          <a href={`tel:${SITE_CONFIG.phone}`} class="inline-flex items-center gap-2 rounded-lg border-2 border-white px-6 py-3 font-semibold text-white transition-colors hover:bg-white hover:text-primary">
+            Llamar ahora
+          </a>
+        </div>
       </div>
     </div>
   </section>
