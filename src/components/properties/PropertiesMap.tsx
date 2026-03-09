@@ -40,7 +40,7 @@ function buildPopupHTML(property: Property): string {
         <div style="display:flex;gap:10px;font-size:12px;color:#4a5568;margin-bottom:8px;">
           <span title="Area">${property.area} m&sup2;</span>
           ${property.bedrooms > 0 ? `<span title="Habitaciones">${property.bedrooms} hab</span>` : ''}
-          ${property.bathrooms > 0 ? `<span title="Banos">${property.bathrooms} ban</span>` : ''}
+          ${property.bathrooms > 0 ? `<span title="Baños">${property.bathrooms} baños</span>` : ''}
         </div>
         <a href="/propiedad/${property.id}"
           style="display:block;text-align:center;background:#f97316;color:#fff;padding:6px 12px;border-radius:4px;text-decoration:none;font-size:13px;font-weight:600;">
