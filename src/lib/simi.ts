@@ -259,13 +259,14 @@ let prewarmScheduled = false;
 
 function parsePrice(priceStr: string): number {
   if (!priceStr || priceStr === '0') return 0;
-  // Remove commas and parse
-  return parseInt(priceStr.replace(/,/g, ''), 10) || 0;
+  const normalized = priceStr.replace(/[\s,$.]/g, '');
+  return parseInt(normalized, 10) || 0;
 }
 
 function parseNumber(str: string): number {
   if (!str) return 0;
-  return parseInt(str.replace(/,/g, ''), 10) || 0;
+  const normalized = str.replace(/[\s,.$]/g, '');
+  return parseInt(normalized, 10) || 0;
 }
 
 function normalizeText(value: string): string {
@@ -360,6 +361,9 @@ function transformSimiProperty(simi: SimiInmueble): Property {
   
   const lat = parseFloat(simi.latitud) || 0;
   const lng = parseFloat(simi.longitud) || 0;
+  const builtArea = parseNumber(simi.AreaConstruida);
+  const lotArea = parseNumber(simi.AreaLote);
+  const area = builtArea || lotArea || 0;
   
   const title = `${simi.Tipo_Inmueble || 'Inmueble'} en ${simi.Barrio || simi.Ciudad || 'Colombia'}`;
   
@@ -372,9 +376,9 @@ function transformSimiProperty(simi: SimiInmueble): Property {
     location: `${simi.Barrio}, ${simi.Ciudad}`,
     city: simi.Ciudad || '',
     neighborhood: simi.Barrio || simi.Zona || '',
-    area: parseNumber(simi.AreaConstruida) || parseNumber(simi.AreaLote) || 0,
-    builtArea: parseNumber(simi.AreaConstruida) || undefined,
-    lotArea: parseNumber(simi.AreaLote) || undefined,
+    area,
+    builtArea: builtArea || undefined,
+    lotArea: lotArea || undefined,
     bedrooms: parseNumber(simi.Alcobas),
     bathrooms: parseNumber(simi.banios),
     parking: parseNumber(simi.garaje),
@@ -699,6 +703,9 @@ function transformSimiInmuebleDetalle(data: SimiInmuebleDetalle): Property {
   const tipoNombre = (data.Tipo_Inmueble || '').toLowerCase().trim();
   const propertyType: PropertyType = PROPERTY_TYPE_MAP[tipoNombre] || 'apartamento';
   const operationType: OperationType = isArriendo ? 'arriendo' : 'venta';
+  const builtArea = parseNumber(data.AreaConstruida);
+  const lotArea = parseNumber(data.AreaLote);
+  const area = builtArea || lotArea || 0;
 
   return {
     id: data.idInm,
@@ -709,9 +716,9 @@ function transformSimiInmuebleDetalle(data: SimiInmuebleDetalle): Property {
     location: `${data.barrio}, ${data.ciudad}`,
     city: data.ciudad || '',
     neighborhood: data.barrio || data.zona || '',
-    area: parseNumber(data.AreaConstruida) || parseNumber(data.AreaLote) || 0,
-    builtArea: parseNumber(data.AreaConstruida) || undefined,
-    lotArea: parseNumber(data.AreaLote) || undefined,
+    area,
+    builtArea: builtArea || undefined,
+    lotArea: lotArea || undefined,
     bedrooms: parseNumber(data.alcobas),
     bathrooms: parseNumber(data.banos),
     parking: parseNumber(data.garaje),

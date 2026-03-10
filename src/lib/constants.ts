@@ -115,7 +115,7 @@ export const TOP_BAR_LINKS: TopBarLink[] = [
   { href: 'https://invierta.portal.rent10.online/', label: 'Portal Arrendatarios', icon: 'UserCheck', external: true },
   { href: 'https://pagos.rent10.online/-/view-payment', label: 'Pagos PSE', icon: 'CreditCard', external: true },
   { href: '/publica', label: 'Publica tu Inmueble', icon: 'Home', external: false },
-  { href: '/servicios', label: 'Registra un Referido', icon: 'Users', external: false },
+  { href: '/referidos', label: 'Registrar referido', icon: 'Users', external: false },
 ];
 
 export const SERVICES: ServiceInfo[] = [
@@ -127,8 +127,8 @@ export const SERVICES: ServiceInfo[] = [
   },
   {
     slug: 'administracion-arrendamientos',
-    title: 'Administración de Arrendamientos',
-    shortDescription: 'Colocación de contratos con respaldo jurídico y financiero.',
+    title: 'Colocación de contratos de administración',
+    shortDescription: 'Colocación de contratos de administración con respaldo jurídico y financiero.',
     icon: 'Users',
   },
   {

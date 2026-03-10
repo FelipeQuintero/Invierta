@@ -1,0 +1,107 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Breadcrumb from '../components/ui/Breadcrumb.astro';
+import { SITE_CONFIG } from '../lib/constants';
+
+const breadcrumbItems = [
+  { label: 'Inicio', href: '/' },
+  { label: 'Registrar referido' },
+];
+const webhookUrl = import.meta.env.PUBLIC_GHL_WEBHOOK_URL || '';
+---
+
+<Layout
+  title="Registrar referido | Invierta Inmobiliaria"
+  description="Registra un referido inmobiliario en Invierta. Déjanos los datos y nuestro equipo hará seguimiento."
+>
+  <section class="bg-surface py-6">
+    <div class="container-custom">
+      <Breadcrumb items={breadcrumbItems} />
+    </div>
+  </section>
+
+  <section class="py-12 lg:py-20">
+    <div class="container-custom">
+      <div class="mx-auto max-w-3xl text-center">
+        <h1 class="font-heading text-3xl font-bold text-text-primary lg:text-4xl">Registrar referido</h1>
+        <p class="mt-4 text-lg text-text-secondary">Comparte los datos del prospecto y te contactaremos para continuar el proceso comercial.</p>
+      </div>
+
+      <div class="mx-auto mt-10 max-w-2xl rounded-xl border border-border bg-white p-6 shadow-sm lg:p-8">
+        <form id="referido-form" class="space-y-4" data-webhook={webhookUrl}>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="nombre" class="mb-1.5 block text-sm font-medium text-text-primary">Nombre del referido</label>
+              <input id="nombre" name="firstName" required class="w-full rounded-lg border border-border px-3 py-2.5 text-sm focus:border-secondary focus:outline-none" />
+            </div>
+            <div>
+              <label for="apellido" class="mb-1.5 block text-sm font-medium text-text-primary">Apellido del referido</label>
+              <input id="apellido" name="lastName" required class="w-full rounded-lg border border-border px-3 py-2.5 text-sm focus:border-secondary focus:outline-none" />
+            </div>
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="email" class="mb-1.5 block text-sm font-medium text-text-primary">Correo</label>
+              <input id="email" name="email" type="email" required class="w-full rounded-lg border border-border px-3 py-2.5 text-sm focus:border-secondary focus:outline-none" />
+            </div>
+            <div>
+              <label for="phone" class="mb-1.5 block text-sm font-medium text-text-primary">Teléfono</label>
+              <input id="phone" name="phone" required class="w-full rounded-lg border border-border px-3 py-2.5 text-sm focus:border-secondary focus:outline-none" />
+            </div>
+          </div>
+          <div>
+            <label for="message" class="mb-1.5 block text-sm font-medium text-text-primary">Detalle del referido</label>
+            <textarea id="message" name="message" rows="4" required class="w-full rounded-lg border border-border px-3 py-2.5 text-sm focus:border-secondary focus:outline-none" placeholder="Ejemplo: busca apartamento en Pereira, presupuesto aprox. 350M"></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary w-full">Enviar referido</button>
+          <p id="referido-status" class="text-center text-sm text-text-secondary"></p>
+        </form>
+
+        <div class="mt-6 border-t border-border pt-6 text-center">
+          <p class="text-sm text-text-secondary">También puedes compartirlo por WhatsApp:</p>
+          <a href={`https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent('Hola, quiero registrar un referido.')}`} target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#25D366] px-5 py-2.5 font-semibold text-white transition-colors hover:bg-[#20bd5a]">Enviar por WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const form = document.getElementById('referido-form');
+  const status = document.getElementById('referido-status');
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const webhook = form.getAttribute('data-webhook') || '';
+
+    if (!webhook) {
+      status.textContent = 'No fue posible enviar el formulario en este momento. Escríbenos por WhatsApp.';
+      return;
+    }
+
+    status.textContent = 'Enviando...';
+
+    const formData = new FormData(form);
+    const payload = new URLSearchParams();
+
+    for (const [key, value] of formData.entries()) {
+      payload.append(key, String(value));
+    }
+
+    try {
+      const response = await fetch(webhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: payload,
+      });
+
+      if (!response.ok) throw new Error('Error al enviar');
+
+      status.textContent = '¡Referido enviado con éxito!';
+      form.reset();
+    } catch {
+      status.textContent = 'No se pudo enviar automáticamente. Usa el botón de WhatsApp por favor.';
+    }
+  });
+</script>

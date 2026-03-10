@@ -1,4 +1,4 @@
-__🔹 Administración de Arrendamientos para Agentes Inmobiliarios \(titulo\)__
+__🔹 Colocación de contratos de administración para Agentes Inmobiliarios \(titulo\)__
 
 __\(Colocación de contratos de administración con respaldo jurídico y financiero\) Subtitulos\.__
 
@@ -92,7 +92,7 @@ __🔥 BLOQUE 1 – HERO \(Impacto inmediato\)__
 
 __TITULAR GRANDE:__
 
-__¿Cuántos propietarios estás perdiendo por no ofrecer administración de arrendamientos?__
+__¿Cuántos propietarios estás perdiendo por no ofrecer colocación de contratos de administración?__
 
 __Subtítulo:__
 
@@ -173,7 +173,7 @@ Los agentes financieramente estables combinan ambos modelos\.
 
 __🏆 BLOQUE 6 – AUTORIDAD__
 
-Somos una inmobiliaria con 15 años de experiencia en administración de arrendamientos, con respaldo jurídico y financiero, presencia en múltiples ciudades y estructura sólida para soportar crecimiento conjunto con agentes aliados\.
+Somos una inmobiliaria con 15 años de experiencia en colocación de contratos de administración, con respaldo jurídico y financiero, presencia en múltiples ciudades y estructura sólida para soportar crecimiento conjunto con agentes aliados\.
 
 __📋 BLOQUE 7 – FORMULARIO ESTRATÉGICO__
 

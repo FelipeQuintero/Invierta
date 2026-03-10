@@ -137,10 +137,6 @@ const hasView360 = Boolean(isValidExternalUrl(rawView360Url) && !isYoutubeUrl(ra
             </div>
 
             <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              <div class="rounded-lg bg-surface p-4 text-center">
-                <p class="text-2xl font-bold text-primary">{formatArea(property.area)}</p>
-                <p class="text-xs text-text-muted">Area</p>
-              </div>
               {property.builtArea != null && property.builtArea > 0 && (
                 <div class="rounded-lg bg-surface p-4 text-center">
                   <p class="text-2xl font-bold text-primary">{formatArea(property.builtArea)}</p>

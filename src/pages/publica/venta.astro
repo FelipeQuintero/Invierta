@@ -1,0 +1,58 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/ui/Breadcrumb.astro';
+import { SITE_CONFIG } from '../../lib/constants';
+
+const breadcrumbItems = [
+  { label: 'Inicio', href: '/' },
+  { label: 'Publica tu Inmueble', href: '/publica' },
+  { label: 'Venta' },
+];
+
+const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent('Hola, me interesa publicar mi inmueble en venta.')}`;
+---
+
+<Layout
+  title="Publica tu Inmueble en Venta | Invierta Inmobiliaria"
+  description="Publica tu propiedad en venta con Invierta Inmobiliaria. Te apoyamos con valoración, promoción y acompañamiento comercial."
+>
+  <section class="bg-surface py-6">
+    <div class="container-custom">
+      <Breadcrumb items={breadcrumbItems} />
+    </div>
+  </section>
+
+  <section class="py-12 lg:py-20">
+    <div class="container-custom">
+      <div class="mx-auto max-w-3xl text-center">
+        <h1 class="font-heading text-3xl font-bold text-text-primary lg:text-4xl">Publica tu Inmueble en Venta</h1>
+        <p class="mt-4 text-lg text-text-secondary">
+          Conecta tu inmueble con compradores calificados. Nuestro equipo te acompaña desde la valoración hasta el cierre.
+        </p>
+      </div>
+
+      <div class="mx-auto mt-12 max-w-4xl grid gap-6 sm:grid-cols-3">
+        <div class="rounded-xl border border-border bg-white p-6 text-center shadow-sm">
+          <h3 class="font-semibold text-text-primary">Valoración comercial</h3>
+          <p class="mt-2 text-sm text-text-secondary">Te orientamos para definir un precio competitivo según mercado.</p>
+        </div>
+        <div class="rounded-xl border border-border bg-white p-6 text-center shadow-sm">
+          <h3 class="font-semibold text-text-primary">Difusión estratégica</h3>
+          <p class="mt-2 text-sm text-text-secondary">Publicamos y promovemos tu inmueble para acelerar oportunidades reales.</p>
+        </div>
+        <div class="rounded-xl border border-border bg-white p-6 text-center shadow-sm">
+          <h3 class="font-semibold text-text-primary">Acompañamiento legal</h3>
+          <p class="mt-2 text-sm text-text-secondary">Soporte documental y comercial durante todo el proceso de venta.</p>
+        </div>
+      </div>
+
+      <div class="mx-auto mt-12 max-w-xl text-center">
+        <p class="text-text-secondary mb-6">Cuéntanos sobre tu inmueble y te contactamos para iniciar la gestión.</p>
+        <div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-lg bg-[#25D366] px-6 py-3 font-semibold text-white transition-colors hover:bg-[#20bd5a]">Escribir por WhatsApp</a>
+          <a href={`tel:${SITE_CONFIG.phone}`} class="inline-flex items-center gap-2 rounded-lg border-2 border-primary px-6 py-3 font-semibold text-primary transition-colors hover:bg-primary hover:text-white">Llamar ahora</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
