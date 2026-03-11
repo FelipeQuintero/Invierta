@@ -10,9 +10,12 @@ export function isValidKuulaEmbedUrl(value: string): boolean {
     const parsed = new URL(normalizeKuulaUrl(value));
     const isHttp = parsed.protocol === 'https:' || parsed.protocol === 'http:';
     const host = parsed.hostname.toLowerCase();
-    const isKuulaDomain = host === 'kuula.co' || host.endsWith('.kuula.co') || host === 'www.kuula.co';
+    const isKuulaDomain = host === 'kuula.co' || host === 'www.kuula.co' || host.endsWith('.kuula.co');
 
-    return isHttp && isKuulaDomain && parsed.pathname.length > 1;
+    const path = parsed.pathname.toLowerCase();
+    const hasAcceptedPath = path.startsWith('/share/') || path.startsWith('/embed/');
+
+    return isHttp && isKuulaDomain && hasAcceptedPath;
   } catch {
     return false;
   }
