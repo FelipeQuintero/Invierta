@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getAdminAuthState, isAdminTokenFallbackEnabled, isSupabaseAuthConfigured } from '../../lib/adminAuth';
+import { getAdminAuthState } from '../../lib/adminAuth';
 import { getKuulaEmbedUrl, getKuulaLinkHistory, isValidKuulaEmbedUrl, normalizeKuulaUrl, searchPropertiesForAdmin, upsertKuulaEmbedUrl, type AdminPropertySearchResult } from '../../lib/kuula';
 import { getPropertyById } from '../../lib/simi';
 
@@ -172,17 +172,9 @@ if (Astro.request.method === 'POST') {
           Sesión activa como <strong>{auth.email || 'usuario legado por token'}</strong> ({auth.role || 'admin'}).
         </div>
 
-        {!isSupabaseAuthConfigured() && (
-          <div class="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Supabase Auth no está configurado. Solo funciona el acceso legado por token.
-          </div>
-        )}
-
-        {isAdminTokenFallbackEnabled() && (
-          <div class="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Fallback por token activo temporalmente para continuidad operativa.
-          </div>
-        )}
+        <div class="mt-5 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          Acceso MVP por token activo para continuidad operativa.
+        </div>
 
         {message && (
           <div class={`mt-5 rounded-lg px-4 py-3 text-sm ${messageType === 'success' ? 'border border-green-200 bg-green-50 text-green-700' : messageType === 'error' ? 'border border-red-200 bg-red-50 text-red-700' : 'border border-blue-200 bg-blue-50 text-blue-700'}`}>

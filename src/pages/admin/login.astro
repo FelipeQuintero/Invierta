@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getAdminAuthState, isAdminTokenFallbackEnabled, isSupabaseAuthConfigured, loginWithEmailPassword } from '../../lib/adminAuth';
+import { getAdminAuthState, isAdminTokenConfigured, loginWithAdminToken } from '../../lib/adminAuth';
 
 export const prerender = false;
 
@@ -15,16 +15,15 @@ if (existingAuth.isAuthenticated) {
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const nextFromForm = String(form.get('next') || '').trim();
-  const email = String(form.get('email') || '').trim();
-  const password = String(form.get('password') || '');
+  const token = String(form.get('token') || '').trim();
 
-  if (!isSupabaseAuthConfigured()) {
-    error = 'Supabase Auth no está configurado en el servidor.';
-  } else if (!email || !password) {
-    error = 'Debes ingresar email y contraseña.';
+  if (!isAdminTokenConfigured()) {
+    error = 'ADMIN_TOKEN no está configurado en el servidor.';
+  } else if (!token) {
+    error = 'Debes ingresar el token de acceso admin.';
   } else {
     try {
-      await loginWithEmailPassword(Astro.cookies, email, password);
+      loginWithAdminToken(Astro.cookies, token);
       return Astro.redirect(nextFromForm || nextPath);
     } catch (err) {
       error = err instanceof Error ? err.message : 'No fue posible iniciar sesión.';
@@ -38,18 +37,11 @@ if (Astro.request.method === 'POST') {
     <div class="container-custom max-w-md">
       <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
         <h1 class="font-heading text-2xl font-bold text-text-primary">Acceso admin</h1>
-        <p class="mt-1 text-sm text-text-secondary">Inicia sesión con tu usuario autorizado para gestionar Kuula.</p>
+        <p class="mt-1 text-sm text-text-secondary">Ingresa el token para gestionar Kuula.</p>
 
-        {!isSupabaseAuthConfigured() && (
+        {!isAdminTokenConfigured() && (
           <div class="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            Falta configurar <strong>SUPABASE_URL</strong> y <strong>SUPABASE_ANON_KEY</strong> en el servidor.
-          </div>
-        )}
-
-        {isAdminTokenFallbackEnabled() && (
-          <div class="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Modo fallback por token activo temporalmente. Si necesitas acceso legado usa
-            <code> /admin/kuula?token=ADMIN_TOKEN</code>.
+            Falta configurar <strong>ADMIN_TOKEN</strong> en el servidor.
           </div>
         )}
 
@@ -63,17 +55,12 @@ if (Astro.request.method === 'POST') {
           <input type="hidden" name="next" value={nextPath} />
 
           <div>
-            <label for="email" class="mb-1 block text-sm font-medium text-text-primary">Email</label>
-            <input id="email" name="email" type="email" autocomplete="email" required class="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary" />
+            <label for="token" class="mb-1 block text-sm font-medium text-text-primary">Token admin</label>
+            <input id="token" name="token" type="password" autocomplete="off" required class="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary" />
           </div>
 
-          <div>
-            <label for="password" class="mb-1 block text-sm font-medium text-text-primary">Contraseña</label>
-            <input id="password" name="password" type="password" autocomplete="current-password" required class="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary" />
-          </div>
-
-          <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90" disabled={!isSupabaseAuthConfigured()}>
-            Iniciar sesión
+          <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90" disabled={!isAdminTokenConfigured()}>
+            Ingresar
           </button>
         </form>
       </div>
