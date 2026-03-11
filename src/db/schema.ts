@@ -122,3 +122,46 @@ export const auditEvents = pgTable('audit_events', {
   index('audit_action_idx').on(table.action),
   index('audit_created_idx').on(table.createdAt),
 ]);
+
+/**
+ * SIMI properties cache persisted in Postgres for fast reads.
+ */
+export const simiProperties = pgTable('simi_properties', {
+  id: varchar('id', { length: 100 }).primaryKey(), // Codigo_Inmueble
+  city: varchar('city', { length: 120 }),
+  zone: varchar('zone', { length: 120 }),
+  neighborhood: varchar('neighborhood', { length: 120 }),
+  operationType: varchar('operation_type', { length: 20 }),
+  propertyType: varchar('property_type', { length: 40 }),
+  price: integer('price').default(0).notNull(),
+  area: integer('area').default(0).notNull(),
+  bedrooms: integer('bedrooms').default(0).notNull(),
+  bathrooms: integer('bathrooms').default(0).notNull(),
+  parking: integer('parking').default(0).notNull(),
+  stratum: integer('stratum').default(0).notNull(),
+  isFeatured: boolean('is_featured').default(false).notNull(),
+  sourceCreatedAt: timestamp('source_created_at'),
+  sourceUpdatedAt: timestamp('source_updated_at').defaultNow().notNull(),
+  lastSyncedAt: timestamp('last_synced_at').defaultNow().notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  payload: jsonb('payload').notNull(),
+}, (table) => [
+  index('simi_properties_city_idx').on(table.city),
+  index('simi_properties_operation_idx').on(table.operationType),
+  index('simi_properties_property_type_idx').on(table.propertyType),
+  index('simi_properties_price_idx').on(table.price),
+  index('simi_properties_last_synced_idx').on(table.lastSyncedAt),
+  index('simi_properties_is_active_idx').on(table.isActive),
+]);
+
+/**
+ * Control table for manual/cron sync runs.
+ */
+export const simiSyncState = pgTable('simi_sync_state', {
+  key: varchar('key', { length: 50 }).primaryKey().default('default'),
+  lastSuccessAt: timestamp('last_success_at'),
+  lastAttemptAt: timestamp('last_attempt_at').defaultNow().notNull(),
+  status: varchar('status', { length: 20 }).default('idle').notNull(), // idle, running, success, error
+  message: text('message'),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});

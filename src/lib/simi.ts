@@ -1,6 +1,7 @@
 import type { Property, PropertyFilters, Agent, PropertyType, OperationType, PropertyTag } from './types';
 import { getMockProperties, getMockPropertyById } from './mockData';
 import { readCacheEntry, writeCache } from './serverCache';
+import { getPropertiesFromDb, updateSyncState, upsertPropertiesToDb } from './simiDbCache';
 
 const SIMI_API_URL = import.meta.env.SIMI_API_URL || 'http://simi-api.com/ApiSimiweb/response';
 const SIMI_API_KEY = import.meta.env.SIMI_API_KEY;
@@ -616,6 +617,18 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
     return getMockProperties(filters);
   }
 
+  // L0: persisted Postgres cache (fast path)
+  try {
+    const dbCached = await getPropertiesFromDb(filters);
+    if (dbCached && dbCached.length > 0) {
+      console.log(`[SIMI][DB] cache hit: ${dbCached.length} properties`);
+      return dbCached;
+    }
+  } catch (error) {
+    console.error('[SIMI][DB] cache read failed, falling back to Redis/SIMI:', error);
+  }
+
+  // L1/L2: existing stale-while-revalidate cache
   const cacheKey = buildPropertiesCacheKey(filters);
   const cacheEntry = await readCacheEntry<Property[]>(cacheKey);
 
@@ -627,9 +640,14 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
   if (cacheEntry?.isStale) {
     console.log(`[SIMI] Cache hit (stale): ${cacheKey} - revalidating in background`);
     if (!inFlightPropertyRequests.has(cacheKey)) {
-      const revalidatePromise = fetchAndCacheProperties(cacheKey, filters).finally(() => {
-        inFlightPropertyRequests.delete(cacheKey);
-      });
+      const revalidatePromise = fetchAndCacheProperties(cacheKey, filters)
+        .then(async (properties) => {
+          await upsertPropertiesToDb(properties);
+          return properties;
+        })
+        .finally(() => {
+          inFlightPropertyRequests.delete(cacheKey);
+        });
       inFlightPropertyRequests.set(cacheKey, revalidatePromise);
     }
     return cacheEntry.value;
@@ -640,15 +658,36 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
     return existingRequest;
   }
 
-  const requestPromise = fetchAndCacheProperties(cacheKey, filters).finally(() => {
-    inFlightPropertyRequests.delete(cacheKey);
-  });
+  const requestPromise = fetchAndCacheProperties(cacheKey, filters)
+    .then(async (properties) => {
+      await upsertPropertiesToDb(properties);
+      return properties;
+    })
+    .finally(() => {
+      inFlightPropertyRequests.delete(cacheKey);
+    });
   inFlightPropertyRequests.set(cacheKey, requestPromise);
 
   return requestPromise;
 }
 
 schedulePropertiesPrewarm();
+
+export async function syncSimiPropertiesToDb(filters?: PropertyFilters): Promise<{ synced: number }> {
+  if (useMock) return { synced: 0 };
+
+  await updateSyncState('running', 'Iniciando sincronización SIMI');
+  try {
+    const { properties } = await fetchPropertiesFromSimi(filters);
+    await upsertPropertiesToDb(properties);
+    await updateSyncState('success', `Sincronizadas ${properties.length} propiedades`);
+    return { synced: properties.length };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Error inesperado';
+    await updateSyncState('error', message);
+    throw error;
+  }
+}
 
 export async function getFeaturedProperties(cantidad: number = 10): Promise<Property[]> {
   if (useMock) {
