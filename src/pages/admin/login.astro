@@ -1,0 +1,82 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getAdminAuthState, isAdminTokenFallbackEnabled, isSupabaseAuthConfigured, loginWithEmailPassword } from '../../lib/adminAuth';
+
+export const prerender = false;
+
+let error = '';
+const nextPath = Astro.url.searchParams.get('next') || '/admin/kuula';
+
+const existingAuth = await getAdminAuthState(Astro.request, Astro.cookies);
+if (existingAuth.isAuthenticated) {
+  return Astro.redirect(nextPath);
+}
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const nextFromForm = String(form.get('next') || '').trim();
+  const email = String(form.get('email') || '').trim();
+  const password = String(form.get('password') || '');
+
+  if (!isSupabaseAuthConfigured()) {
+    error = 'Supabase Auth no está configurado en el servidor.';
+  } else if (!email || !password) {
+    error = 'Debes ingresar email y contraseña.';
+  } else {
+    try {
+      await loginWithEmailPassword(Astro.cookies, email, password);
+      return Astro.redirect(nextFromForm || nextPath);
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'No fue posible iniciar sesión.';
+    }
+  }
+}
+---
+
+<Layout title="Login Admin | Invierta" description="Acceso al panel interno de Kuula">
+  <section class="py-10">
+    <div class="container-custom max-w-md">
+      <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+        <h1 class="font-heading text-2xl font-bold text-text-primary">Acceso admin</h1>
+        <p class="mt-1 text-sm text-text-secondary">Inicia sesión con tu usuario autorizado para gestionar Kuula.</p>
+
+        {!isSupabaseAuthConfigured() && (
+          <div class="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            Falta configurar <strong>SUPABASE_URL</strong> y <strong>SUPABASE_ANON_KEY</strong> en el servidor.
+          </div>
+        )}
+
+        {isAdminTokenFallbackEnabled() && (
+          <div class="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Modo fallback por token activo temporalmente. Si necesitas acceso legado usa
+            <code> /admin/kuula?token=ADMIN_TOKEN</code>.
+          </div>
+        )}
+
+        {error && (
+          <div class="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        <form method="POST" class="mt-6 space-y-4">
+          <input type="hidden" name="next" value={nextPath} />
+
+          <div>
+            <label for="email" class="mb-1 block text-sm font-medium text-text-primary">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required class="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary" />
+          </div>
+
+          <div>
+            <label for="password" class="mb-1 block text-sm font-medium text-text-primary">Contraseña</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required class="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary" />
+          </div>
+
+          <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90" disabled={!isSupabaseAuthConfigured()}>
+            Iniciar sesión
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+</Layout>

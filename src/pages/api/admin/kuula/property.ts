@@ -1,7 +1,7 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { isAdminRequestAuthorized, isAdminTokenConfigured } from '../../../../lib/adminAuth';
+import { getAdminAuthState } from '../../../../lib/adminAuth';
 import { getKuulaEmbedUrl } from '../../../../lib/kuula';
 import { getPropertyById } from '../../../../lib/simi';
 
@@ -13,8 +13,8 @@ function json(data: unknown, status = 200): Response {
 }
 
 export const GET: APIRoute = async ({ request, url, cookies }) => {
-  if (!isAdminTokenConfigured()) return json({ error: 'ADMIN_TOKEN no configurado en el servidor' }, 500);
-  if (!isAdminRequestAuthorized(request, cookies)) return json({ error: 'No autorizado' }, 401);
+  const auth = await getAdminAuthState(request, cookies, ['admin', 'editor']);
+  if (!auth.isAuthenticated) return json({ error: 'No autorizado' }, 401);
 
   const propertyId = (url.searchParams.get('propertyId') || '').trim();
   if (!propertyId) return json({ error: 'propertyId es requerido' }, 400);

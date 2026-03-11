@@ -1,0 +1,8 @@
+---
+import { logoutAdmin } from '../../lib/adminAuth';
+
+export const prerender = false;
+
+logoutAdmin(Astro.cookies);
+return Astro.redirect('/admin/login');
+---
