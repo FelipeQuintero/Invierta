@@ -8,14 +8,18 @@ import { SITE_CONFIG } from '../lib/constants';
 interface Props {
   title?: string;
   description?: string;
+  canonicalUrl?: string;
 }
 
 const {
   title = SITE_CONFIG.seo.title,
   description = SITE_CONFIG.seo.description,
+  canonicalUrl,
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site || import.meta.env.SITE_URL || 'https://inviertainmobiliaria.com');
+const canonicalURL = canonicalUrl
+  ? new URL(canonicalUrl)
+  : new URL(Astro.url.pathname, Astro.site || import.meta.env.SITE_URL || 'https://inviertainmobiliaria.com');
 const ogImage = new URL(SITE_CONFIG.seo.ogImage, canonicalURL.origin).href;
 ---
 

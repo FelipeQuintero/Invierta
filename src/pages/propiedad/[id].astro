@@ -7,6 +7,7 @@ import PropertyMap from '../../components/property-detail/PropertyMap.tsx';
 import StreetView from '../../components/property-detail/StreetView.tsx';
 import View360 from '../../components/property-detail/View360.tsx';
 import ContactForm from '../../components/property-detail/ContactForm.tsx';
+import ShareButtons from '../../components/property-detail/ShareButtons.tsx';
 import { getPropertyById } from '../../lib/simi';
 import { formatPrice, formatArea } from '../../lib/utils';
 import { SITE_CONFIG } from '../../lib/constants';
@@ -79,11 +80,17 @@ const hasVideo = Boolean(youtubeFromVideoField || youtubeFrom360Field || (isVali
 const videoEmbedUrl = youtubeFromVideoField || youtubeFrom360Field || (isValidExternalUrl(rawVideoUrl) ? rawVideoUrl : undefined);
 
 const hasView360 = Boolean(isValidExternalUrl(rawView360Url) && !isYoutubeUrl(rawView360Url));
+
+const canonicalPropertyUrl = new URL(
+  Astro.url.pathname,
+  Astro.site || import.meta.env.SITE_URL || 'https://inviertainmobiliaria.com'
+).href;
 ---
 
 <Layout
   title={`${property.title} | Invierta Inmobiliaria`}
   description={property.description.slice(0, 160)}
+  canonicalUrl={canonicalPropertyUrl}
 >
   <section class="bg-surface py-4">
     <div class="container-custom">
@@ -120,6 +127,7 @@ const hasView360 = Boolean(isValidExternalUrl(rawView360Url) && !isYoutubeUrl(ra
                   </svg>
                   {property.neighborhood}, {property.city}
                 </p>
+                <ShareButtons url={canonicalPropertyUrl} title={property.title} client:load />
               </div>
               <div class="text-right">
                 <p class="font-heading text-2xl font-bold text-secondary lg:text-3xl">
