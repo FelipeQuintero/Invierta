@@ -15,6 +15,13 @@
       "when": 1773243000000,
       "tag": "0001_simi_properties_cache",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773248165710,
+      "tag": "0002_blue_moira_mactaggert",
+      "breakpoints": true
     }
   ]
 }

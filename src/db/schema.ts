@@ -165,3 +165,15 @@ export const simiSyncState = pgTable('simi_sync_state', {
   message: text('message'),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+/**
+ * Kuula embed URL administrada manualmente por propiedad (id/código SIMI).
+ */
+export const propertyKuulaLinks = pgTable('property_kuula_links', {
+  propertyId: varchar('property_id', { length: 100 }).primaryKey(),
+  kuulaEmbedUrl: text('kuula_embed_url').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => [
+  index('property_kuula_links_updated_at_idx').on(table.updatedAt),
+]);

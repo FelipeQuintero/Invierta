@@ -11,6 +11,7 @@ import ShareButtons from '../../components/property-detail/ShareButtons.tsx';
 import { getPropertyById } from '../../lib/simi';
 import { formatPrice, formatArea } from '../../lib/utils';
 import { SITE_CONFIG } from '../../lib/constants';
+import { getKuulaEmbedUrl } from '../../lib/kuula';
 
 // Disable prerendering - fetch fresh data on each request
 export const prerender = false;
@@ -73,13 +74,16 @@ function toYoutubeEmbedUrl(url?: string) {
 const rawVideoUrl = typeof property.videoUrl === 'string' ? property.videoUrl.trim() : '';
 const rawView360Url = typeof property.view360Url === 'string' ? property.view360Url.trim() : '';
 
+const adminKuulaUrl = (await getKuulaEmbedUrl(id!)) || (await getKuulaEmbedUrl(property.id));
+const effectiveView360Url = adminKuulaUrl?.trim() || rawView360Url;
+
 const youtubeFromVideoField = toYoutubeEmbedUrl(rawVideoUrl);
-const youtubeFrom360Field = !youtubeFromVideoField ? toYoutubeEmbedUrl(rawView360Url) : undefined;
+const youtubeFrom360Field = !youtubeFromVideoField ? toYoutubeEmbedUrl(effectiveView360Url) : undefined;
 
 const hasVideo = Boolean(youtubeFromVideoField || youtubeFrom360Field || (isValidExternalUrl(rawVideoUrl) && !isYoutubeUrl(rawVideoUrl)));
 const videoEmbedUrl = youtubeFromVideoField || youtubeFrom360Field || (isValidExternalUrl(rawVideoUrl) ? rawVideoUrl : undefined);
 
-const hasView360 = Boolean(isValidExternalUrl(rawView360Url) && !isYoutubeUrl(rawView360Url));
+const hasView360 = Boolean(isValidExternalUrl(effectiveView360Url) && !isYoutubeUrl(effectiveView360Url));
 
 const canonicalPropertyUrl = new URL(
   Astro.url.pathname,
@@ -286,7 +290,7 @@ const canonicalPropertyUrl = new URL(
               <div id="fotos-360" class="mt-8">
                 <h2 class="font-heading text-xl font-semibold text-text-primary">Tour Virtual 360</h2>
                 <div class="mt-4 overflow-hidden rounded-lg">
-                  <View360 url={rawView360Url} client:visible />
+                  <View360 url={effectiveView360Url} client:visible />
                 </div>
               </div>
             )}

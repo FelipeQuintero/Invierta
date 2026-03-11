@@ -1,0 +1,159 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { clearAdminAuthCookie, isAdminRequestAuthorized, isAdminTokenConfigured, isValidAdminToken, setAdminAuthCookie } from '../../lib/adminAuth';
+import { getKuulaEmbedUrl, isValidKuulaEmbedUrl, normalizeKuulaUrl, upsertKuulaEmbedUrl } from '../../lib/kuula';
+import { getPropertyById } from '../../lib/simi';
+
+export const prerender = false;
+
+type MessageType = 'success' | 'error' | 'info';
+
+let message = '';
+let messageType: MessageType = 'info';
+let propertyIdValue = '';
+let kuulaUrlValue = '';
+let propertyPreview: Awaited<ReturnType<typeof getPropertyById>>;
+
+const tokenFromQuery = Astro.url.searchParams.get('token');
+const logout = Astro.url.searchParams.get('logout') === '1';
+
+if (logout) {
+  clearAdminAuthCookie(Astro.cookies);
+  return Astro.redirect('/admin/kuula');
+}
+
+if (tokenFromQuery) {
+  if (isValidAdminToken(tokenFromQuery)) {
+    setAdminAuthCookie(Astro.cookies, tokenFromQuery);
+    return Astro.redirect('/admin/kuula');
+  }
+
+  message = 'Token inválido. Verifica el enlace.';
+  messageType = 'error';
+}
+
+const adminConfigured = isAdminTokenConfigured();
+const isAuthorized = isAdminRequestAuthorized(Astro.request, Astro.cookies);
+
+if (Astro.request.method === 'POST') {
+  if (!adminConfigured) {
+    message = 'ADMIN_TOKEN no está configurado en el servidor.';
+    messageType = 'error';
+  } else if (!isAuthorized) {
+    message = 'No autorizado. Abre esta URL con ?token=TU_ADMIN_TOKEN.';
+    messageType = 'error';
+  } else {
+    const formData = await Astro.request.formData();
+    const intent = String(formData.get('intent') || 'save');
+    propertyIdValue = String(formData.get('propertyId') || '').trim();
+    kuulaUrlValue = String(formData.get('kuulaEmbedUrl') || '').trim();
+
+    if (!propertyIdValue) {
+      message = 'Debes ingresar el ID/código de propiedad.';
+      messageType = 'error';
+    } else {
+      propertyPreview = await getPropertyById(propertyIdValue);
+
+      if (!propertyPreview && intent === 'search') {
+        message = `No se encontró la propiedad ${propertyIdValue}.`;
+        messageType = 'error';
+      } else if (intent === 'search') {
+        const existingKuula = await getKuulaEmbedUrl(propertyIdValue);
+        if (existingKuula) kuulaUrlValue = existingKuula;
+        message = `Propiedad encontrada: ${propertyPreview?.title || propertyIdValue}`;
+        messageType = 'success';
+      } else if (!kuulaUrlValue) {
+        message = 'Debes ingresar la URL embed de Kuula.';
+        messageType = 'error';
+      } else if (!isValidKuulaEmbedUrl(kuulaUrlValue)) {
+        message = 'La URL no es válida o no pertenece a Kuula.';
+        messageType = 'error';
+      } else {
+        await upsertKuulaEmbedUrl(propertyIdValue, normalizeKuulaUrl(kuulaUrlValue));
+        message = `Link 360 guardado para propiedad ${propertyIdValue}.`;
+        messageType = 'success';
+      }
+    }
+  }
+}
+---
+
+<Layout title="Admin Kuula | Invierta" description="Gestión interna de enlaces Kuula por propiedad">
+  <section class="py-10">
+    <div class="container-custom max-w-3xl">
+      <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <h1 class="font-heading text-2xl font-bold text-text-primary">Admin Kuula</h1>
+            <p class="mt-1 text-sm text-text-secondary">Asignar/actualizar link de tour 360 por propiedad (uso interno).</p>
+          </div>
+          {isAuthorized && (
+            <a href="/admin/kuula?logout=1" class="text-sm text-text-muted underline hover:text-text-primary">Cerrar acceso</a>
+          )}
+        </div>
+
+        {!adminConfigured && (
+          <div class="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            Falta configurar <strong>ADMIN_TOKEN</strong> en variables de entorno del servidor.
+          </div>
+        )}
+
+        {!isAuthorized && adminConfigured && (
+          <div class="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Acceso restringido. Abre esta ruta usando: <code>/admin/kuula?token=TU_ADMIN_TOKEN</code>
+          </div>
+        )}
+
+        {message && (
+          <div class={`mt-5 rounded-lg px-4 py-3 text-sm ${messageType === 'success' ? 'border border-green-200 bg-green-50 text-green-700' : messageType === 'error' ? 'border border-red-200 bg-red-50 text-red-700' : 'border border-blue-200 bg-blue-50 text-blue-700'}`}>
+            {message}
+          </div>
+        )}
+
+        <form method="POST" class="mt-6 space-y-4">
+          <div>
+            <label for="propertyId" class="mb-1 block text-sm font-medium text-text-primary">ID / código SIMI</label>
+            <input
+              id="propertyId"
+              name="propertyId"
+              type="text"
+              value={propertyIdValue}
+              placeholder="Ej: 188-2470"
+              class="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary"
+              required
+            />
+          </div>
+
+          <div>
+            <label for="kuulaEmbedUrl" class="mb-1 block text-sm font-medium text-text-primary">URL embed Kuula</label>
+            <input
+              id="kuulaEmbedUrl"
+              name="kuulaEmbedUrl"
+              type="url"
+              value={kuulaUrlValue}
+              placeholder="https://kuula.co/share/..."
+              class="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </div>
+
+          <div class="flex flex-wrap gap-3">
+            <button type="submit" name="intent" value="search" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-text-primary hover:bg-surface">
+              Buscar propiedad
+            </button>
+            <button type="submit" name="intent" value="save" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
+              Guardar link Kuula
+            </button>
+          </div>
+        </form>
+
+        {propertyPreview && (
+          <div class="mt-6 rounded-lg border border-border bg-surface p-4 text-sm text-text-secondary">
+            <p><strong class="text-text-primary">Propiedad:</strong> {propertyPreview.title}</p>
+            <p><strong class="text-text-primary">ID:</strong> {propertyPreview.id}</p>
+            <p><strong class="text-text-primary">Ubicación:</strong> {propertyPreview.neighborhood}, {propertyPreview.city}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+</Layout>
