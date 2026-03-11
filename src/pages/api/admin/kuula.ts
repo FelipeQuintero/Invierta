@@ -1,7 +1,7 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { isAdminRequestAuthorized, isAdminTokenConfigured } from '../../../lib/adminAuth';
+import { getAdminAuthState } from '../../../lib/adminAuth';
 import { getKuulaEmbedUrl, isValidKuulaEmbedUrl, normalizeKuulaUrl, upsertKuulaEmbedUrl } from '../../../lib/kuula';
 
 interface KuulaPayload {
@@ -17,8 +17,8 @@ function json(data: unknown, status = 200): Response {
 }
 
 export const GET: APIRoute = async ({ request, url, cookies }) => {
-  if (!isAdminTokenConfigured()) return json({ error: 'ADMIN_TOKEN no configurado en el servidor' }, 500);
-  if (!isAdminRequestAuthorized(request, cookies)) return json({ error: 'No autorizado' }, 401);
+  const auth = await getAdminAuthState(request, cookies, ['admin', 'editor']);
+  if (!auth.isAuthenticated) return json({ error: 'No autorizado' }, 401);
 
   const propertyId = (url.searchParams.get('propertyId') || '').trim();
   if (!propertyId) return json({ error: 'propertyId es requerido' }, 400);
@@ -28,8 +28,8 @@ export const GET: APIRoute = async ({ request, url, cookies }) => {
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-  if (!isAdminTokenConfigured()) return json({ error: 'ADMIN_TOKEN no configurado en el servidor' }, 500);
-  if (!isAdminRequestAuthorized(request, cookies)) return json({ error: 'No autorizado' }, 401);
+  const auth = await getAdminAuthState(request, cookies, ['admin', 'editor']);
+  if (!auth.isAuthenticated) return json({ error: 'No autorizado' }, 401);
 
   let payload: KuulaPayload;
   try {
@@ -49,6 +49,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return json({ error: 'La URL no es válida o no corresponde a Kuula' }, 400);
   }
 
-  await upsertKuulaEmbedUrl(propertyId, normalizeKuulaUrl(kuulaEmbedUrl));
+  const changedBy = request.headers.get('x-admin-user')?.trim() || 'admin_token';
+  await upsertKuulaEmbedUrl(propertyId, normalizeKuulaUrl(kuulaEmbedUrl), changedBy);
   return json({ ok: true, data: { propertyId, kuulaEmbedUrl: normalizeKuulaUrl(kuulaEmbedUrl) } });
 };

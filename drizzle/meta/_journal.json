@@ -22,6 +22,13 @@
       "when": 1773248165710,
       "tag": "0002_blue_moira_mactaggert",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773250200000,
+      "tag": "0003_kuula_link_history",
+      "breakpoints": true
     }
   ]
 }
