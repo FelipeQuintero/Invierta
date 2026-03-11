@@ -1,7 +1,12 @@
 import type { Property, PropertyFilters, Agent, PropertyType, OperationType, PropertyTag } from './types';
 import { getMockProperties, getMockPropertyById } from './mockData';
 import { readCacheEntry, writeCache } from './serverCache';
-import { getPropertiesFromDb, updateSyncState, upsertPropertiesToDb } from './simiDbCache';
+import {
+  deactivateMissingPropertiesFromSync,
+  getPropertiesFromDb,
+  updateSyncState,
+  upsertPropertiesToDb,
+} from './simiDbCache';
 
 const SIMI_API_URL = import.meta.env.SIMI_API_URL || 'http://simi-api.com/ApiSimiweb/response';
 const SIMI_API_KEY = import.meta.env.SIMI_API_KEY;
@@ -673,15 +678,31 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
 
 schedulePropertiesPrewarm();
 
-export async function syncSimiPropertiesToDb(filters?: PropertyFilters): Promise<{ synced: number }> {
-  if (useMock) return { synced: 0 };
+export async function syncSimiPropertiesToDb(
+  filters?: PropertyFilters
+): Promise<{ synced: number; deactivated: number }> {
+  if (useMock) return { synced: 0, deactivated: 0 };
 
   await updateSyncState('running', 'Iniciando sincronización SIMI');
   try {
     const { properties } = await fetchPropertiesFromSimi(filters);
     await upsertPropertiesToDb(properties);
-    await updateSyncState('success', `Sincronizadas ${properties.length} propiedades`);
-    return { synced: properties.length };
+
+    // Garantiza sincronización de eliminadas dentro del alcance del sync actual.
+    const deactivated = await deactivateMissingPropertiesFromSync(
+      properties.map((p) => p.id),
+      {
+        operation: filters?.operation,
+        propertyType: filters?.propertyType,
+        city: filters?.city,
+      }
+    );
+
+    await updateSyncState(
+      'success',
+      `Sincronizadas ${properties.length} propiedades, desactivadas ${deactivated}`
+    );
+    return { synced: properties.length, deactivated };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Error inesperado';
     await updateSyncState('error', message);

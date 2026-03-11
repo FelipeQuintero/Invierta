@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, ilike, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ilike, lte, notInArray, sql } from 'drizzle-orm';
 import { db, schema } from '../db';
 import type { Property, PropertyFilters } from './types';
 
@@ -113,6 +113,33 @@ export async function upsertPropertiesToDb(properties: Property[]): Promise<void
         payload: sql`excluded.payload`,
       },
     });
+}
+
+export async function deactivateMissingPropertiesFromSync(
+  idsFromSource: string[],
+  filters?: Pick<PropertyFilters, 'operation' | 'propertyType' | 'city'>
+): Promise<number> {
+  if (!hasDatabase()) return 0;
+
+  const conditions = [eq(schema.simiProperties.isActive, true)];
+
+  if (filters?.operation) conditions.push(eq(schema.simiProperties.operationType, filters.operation));
+  if (filters?.propertyType) conditions.push(eq(schema.simiProperties.propertyType, filters.propertyType));
+  if (filters?.city) conditions.push(ilike(schema.simiProperties.city, `%${filters.city}%`));
+
+  if (idsFromSource.length > 0) {
+    conditions.push(notInArray(schema.simiProperties.id, idsFromSource));
+  }
+
+  const result = await db
+    .update(schema.simiProperties)
+    .set({
+      isActive: false,
+      lastSyncedAt: new Date(),
+    })
+    .where(and(...conditions));
+
+  return result.rowCount ?? 0;
 }
 
 export async function updateSyncState(status: 'running' | 'success' | 'error', message?: string): Promise<void> {

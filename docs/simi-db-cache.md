@@ -63,5 +63,6 @@ Ejemplo cada 15 minutos:
 ## Notas de consistencia
 
 - Estrategia pragmática: upsert por ID SIMI + `last_synced_at`.
+- El endpoint de sync ahora también **desactiva (`is_active=false`)** en BD los inmuebles que ya no vienen desde SIMI, dentro del alcance del sync ejecutado (global o segmentado por `city/operation/propertyType`).
 - Sin endpoint oficial de delta por fecha en SIMI, por lo que la actualización incremental viable se plantea por segmentación (ciudad/operación/tipo) vía sync on-demand/cron.
 - En caso de caída de BD, el sistema mantiene fallback al flujo actual (SIMI/Redis/memoria).
