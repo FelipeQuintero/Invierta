@@ -1,48 +1,25 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import PropertyListingContent from '../components/properties/PropertyListingContent.tsx';
-import PropertyFilters from '../components/properties/PropertyFilters.tsx';
 import Breadcrumb from '../components/ui/Breadcrumb.astro';
-import { getProperties } from '../lib/simi';
-import type { PropertyFilters as PropertyFiltersType } from '../lib/types';
+import ProjectFilters from '../components/projects/ProjectFilters.tsx';
+import type { Project } from '../components/projects/types';
 
 export const prerender = false;
 
-const url = Astro.url;
-const params = url.searchParams;
+const apiUrl = new URL('/api/projects', Astro.url);
+let projects: Project[] = [];
 
-const filters: PropertyFiltersType = {
-  operation: 'proyecto',
-  limit: 20,
-};
-
-if (params.get('code')) filters.code = params.get('code') || undefined;
-if (params.get('locationQuery')) filters.locationQuery = params.get('locationQuery') || undefined;
-if (params.get('propertyType')) {
-  const val = params.get('propertyType') || '';
-  if (!val.includes(',')) {
-    filters.propertyType = val as PropertyFiltersType['propertyType'];
+try {
+  const response = await fetch(apiUrl);
+  if (response.ok) {
+    const data = await response.json();
+    projects = Array.isArray(data) ? data : data?.projects || [];
   }
-}
-if (params.get('city')) filters.city = params.get('city') || undefined;
-if (params.get('minPrice')) filters.minPrice = parseInt(params.get('minPrice') || '0');
-if (params.get('maxPrice')) filters.maxPrice = parseInt(params.get('maxPrice') || '0');
-if (params.get('bedrooms')) filters.bedrooms = parseInt(params.get('bedrooms') || '0');
-if (params.get('bathrooms')) filters.bathrooms = parseInt(params.get('bathrooms') || '0');
-if (params.get('minArea')) filters.minArea = parseInt(params.get('minArea') || '0');
-if (params.get('maxArea')) filters.maxArea = parseInt(params.get('maxArea') || '0');
-if (params.get('parking')) filters.parking = parseInt(params.get('parking') || '0');
-if (params.get('stratum')) filters.stratum = parseInt(params.get('stratum') || '0');
-
-let properties = await getProperties(filters);
-
-const multiType = params.get('propertyType');
-if (multiType && multiType.includes(',')) {
-  const types = multiType.split(',');
-  properties = properties.filter((p) => types.includes(p.propertyType));
+} catch (error) {
+  console.error('Error cargando proyectos:', error);
 }
 
-const hasActiveFilters = Array.from(params.keys()).some((k) => k !== '');
+projects = projects.filter((project) => project?.isActive !== false);
 
 const breadcrumbItems = [
   { label: 'Inicio', href: '/' },
@@ -52,7 +29,7 @@ const breadcrumbItems = [
 
 <Layout
   title="Proyectos Nuevos sobre Planos | Invierta Inmobiliaria"
-  description="Invierte en proyectos nuevos sobre planos. Apartamentos y casas en construccion con precios de preventa."
+  description="Conoce proyectos inmobiliarios nuevos en preventa, construcción y entrega inmediata en Colombia."
 >
   <section class="bg-surface py-6">
     <div class="container-custom">
@@ -63,32 +40,13 @@ const breadcrumbItems = [
   <section class="py-6 lg:py-8">
     <div class="container-custom">
       <div class="mb-6">
-        <h1 class="font-heading text-3xl font-bold text-text-primary lg:text-4xl">
-          Proyectos Nuevos
-        </h1>
+        <h1 class="font-heading text-3xl font-bold text-text-primary lg:text-4xl">Proyectos Nuevos</h1>
         <p class="mt-2 text-text-secondary">
-          Descubre proyectos sobre planos y en construccion. Invierte desde el inicio con precios de preventa.
+          Invierte desde planos con proyectos seleccionados en preventa, construcción y entrega inmediata.
         </p>
       </div>
 
-      <div class="flex flex-col lg:flex-row lg:gap-6">
-        <PropertyFilters client:load operation="proyecto" />
-
-        <PropertyListingContent
-          client:load
-          properties={properties}
-          hasActiveFilters={hasActiveFilters}
-          emptyHref="/proyectos"
-          emptyLabel="Ver todos los proyectos"
-          itemLabel="proyectos"
-          locationQuery={params.get('locationQuery') || params.get('city') || ''}
-          sortOptions={[
-            { value: 'recent', label: 'Mas recientes' },
-            { value: 'price-asc', label: 'Menor precio' },
-            { value: 'price-desc', label: 'Mayor precio' },
-          ]}
-        />
-      </div>
+      <ProjectFilters client:load projects={projects} />
     </div>
   </section>
 </Layout>

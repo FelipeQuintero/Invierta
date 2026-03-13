@@ -1,0 +1,225 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/ui/Breadcrumb.astro';
+import ImageGallery from '../../components/property-detail/ImageGallery.tsx';
+import PropertyMap from '../../components/property-detail/PropertyMap.tsx';
+import ContactForm from '../../components/property-detail/ContactForm.tsx';
+import ProjectAmenities from '../../components/projects/ProjectAmenities.tsx';
+import ProjectTypologies from '../../components/projects/ProjectTypologies.tsx';
+import { SITE_CONFIG } from '../../lib/constants';
+import type { Project } from '../../components/projects/types';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const listUrl = new URL('/api/projects', Astro.url);
+
+let projects: Project[] = [];
+
+try {
+  const listResponse = await fetch(listUrl);
+  if (listResponse.ok) {
+    const data = await listResponse.json();
+    projects = Array.isArray(data) ? data : data?.projects || [];
+  }
+} catch (error) {
+  console.error('Error cargando listado de proyectos:', error);
+}
+
+const basicProject = projects.find((item) => item.slug === slug);
+if (!basicProject) {
+  return Astro.redirect('/404');
+}
+
+let project: Project = basicProject;
+
+try {
+  const detailResponse = await fetch(new URL(`/api/projects/${basicProject.id}`, Astro.url));
+  if (detailResponse.ok) {
+    const data = await detailResponse.json();
+    project = data?.project || data;
+  }
+} catch (error) {
+  console.error('Error cargando detalle del proyecto:', error);
+}
+
+function formatPrice(value?: number) {
+  if (!value) return 'A consultar';
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function formatStage(stage: Project['constructionStage']) {
+  switch (stage) {
+    case 'preventa':
+      return 'Preventa';
+    case 'en_construccion':
+      return 'En Construcción';
+    case 'entrega_inmediata':
+      return 'Entrega Inmediata';
+    default:
+      return stage;
+  }
+}
+
+function formatDeliveryDate(value?: string) {
+  if (!value) return 'Por confirmar';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
+}
+
+function toYoutubeEmbedUrl(url?: string) {
+  if (!url) return undefined;
+  try {
+    const parsed = new URL(url);
+
+    if (parsed.hostname.includes('youtu.be')) {
+      const id = parsed.pathname.split('/').filter(Boolean)[0];
+      return id ? `https://www.youtube.com/embed/${id}` : undefined;
+    }
+
+    if (parsed.pathname.includes('/shorts/')) {
+      const id = parsed.pathname.split('/shorts/')[1]?.split('/')[0];
+      return id ? `https://www.youtube.com/embed/${id}` : undefined;
+    }
+
+    if (parsed.hostname.includes('youtube.com')) {
+      const id = parsed.searchParams.get('v');
+      return id ? `https://www.youtube.com/embed/${id}` : undefined;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
+}
+
+const images = project.images?.length ? project.images : project.coverImage ? [project.coverImage] : [];
+const videoEmbedUrl = toYoutubeEmbedUrl(project.videoUrl) || project.videoUrl;
+
+const breadcrumbItems = [
+  { label: 'Inicio', href: '/' },
+  { label: 'Proyectos Nuevos', href: '/proyectos' },
+  { label: project.name },
+];
+
+const whatsappMessage = `Hola, me interesa el proyecto ${project.name}. ¿Podrían enviarme más información?`;
+const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent(whatsappMessage)}`;
+---
+
+<Layout
+  title={`${project.name} | Proyectos Nuevos`}
+  description={project.shortDescription || project.description || `Conoce ${project.name} en ${project.city}`}
+>
+  <section class="bg-surface py-4">
+    <div class="container-custom">
+      <Breadcrumb items={breadcrumbItems} />
+    </div>
+  </section>
+
+  <section class="py-6 lg:py-10">
+    <div class="container-custom">
+      <div class="lg:grid lg:grid-cols-[1fr_340px] lg:gap-8">
+        <div class="min-w-0 space-y-8">
+          <ImageGallery images={images} title={project.name} client:load />
+
+          <section>
+            <span class="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+              {formatStage(project.constructionStage)}
+            </span>
+            <h1 class="mt-2 font-heading text-2xl font-bold text-text-primary lg:text-3xl">{project.name}</h1>
+            {project.developer && <p class="mt-1 text-sm font-medium text-accent">Constructora: {project.developer}</p>}
+
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+              <div class="rounded-lg bg-surface p-4">
+                <p class="text-xs text-text-muted">Ubicación</p>
+                <p class="mt-1 font-medium text-text-primary">
+                  {[project.city, project.zone, project.neighborhood].filter(Boolean).join(', ')}
+                </p>
+              </div>
+              <div class="rounded-lg bg-surface p-4">
+                <p class="text-xs text-text-muted">Fecha estimada de entrega</p>
+                <p class="mt-1 font-medium text-text-primary">{formatDeliveryDate(project.deliveryDate)}</p>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 class="font-heading text-xl font-semibold text-text-primary">Descripción</h2>
+            <p class="mt-3 whitespace-pre-line leading-relaxed text-text-secondary">
+              {project.description || 'No hay descripción disponible para este proyecto.'}
+            </p>
+          </section>
+
+          <section class="rounded-xl border border-border bg-white p-5">
+            <h2 class="font-heading text-xl font-semibold text-text-primary">Rango de precios</h2>
+            <p class="mt-2 text-lg font-bold text-accent">
+              Desde {formatPrice(project.priceFrom)} hasta {formatPrice(project.priceTo)}
+            </p>
+          </section>
+
+          <section>
+            <h2 class="mb-4 font-heading text-xl font-semibold text-text-primary">Amenidades</h2>
+            <ProjectAmenities amenities={project.amenities || []} />
+          </section>
+
+          <section>
+            <h2 class="mb-4 font-heading text-xl font-semibold text-text-primary">Tipologías</h2>
+            <ProjectTypologies client:load typologies={project.typologies || []} />
+          </section>
+
+          {project.coordinates && (
+            <section>
+              <PropertyMap
+                lat={project.coordinates.lat}
+                lng={project.coordinates.lng}
+                title={project.name}
+                client:visible
+              />
+            </section>
+          )}
+
+          {project.videoUrl && (
+            <section>
+              <h2 class="font-heading text-xl font-semibold text-text-primary">Video</h2>
+              <div class="mt-4 h-64 overflow-hidden rounded-xl border border-border bg-surface md:h-[420px]">
+                <iframe
+                  src={videoEmbedUrl}
+                  title={`Video de ${project.name}`}
+                  class="h-full w-full border-0"
+                  loading="lazy"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen
+                />
+              </div>
+            </section>
+          )}
+        </div>
+
+        <aside class="mt-8 lg:mt-0">
+          <div class="sticky top-[132px] space-y-5">
+            <div class="rounded-xl border border-border bg-white p-5 shadow-sm">
+              <h3 class="font-heading text-lg font-semibold text-text-primary">¿Te interesa este proyecto?</h3>
+              <p class="mt-2 text-sm text-text-secondary">Habla con un asesor y recibe disponibilidad, precios y formas de pago.</p>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 font-semibold text-white transition-colors hover:bg-[#20bd5a]"
+              >
+                Contactar por WhatsApp
+              </a>
+            </div>
+
+            <ContactForm propertyTitle={`Proyecto ${project.name}`} client:visible />
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</Layout>

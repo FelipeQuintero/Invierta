@@ -4,13 +4,28 @@ import HeroSearch from '../components/home/HeroSearch.tsx';
 import FeaturedProperties from '../components/home/FeaturedProperties.astro';
 import ServicesPreview from '../components/home/ServicesPreview.astro';
 import AnimateOnScroll from '../components/ui/AnimateOnScroll.tsx';
-import { getProperties, getFeaturedProperties } from '../lib/simi';
+import ProjectCard from '../components/projects/ProjectCard.tsx';
+import type { Project } from '../components/projects/types';
+import { getFeaturedProperties } from '../lib/simi';
 import { SITE_CONFIG } from '../lib/constants';
 
 // Disable prerendering - fetch fresh data on each request
 export const prerender = false;
 
 const featuredProperties = await getFeaturedProperties(8);
+
+let featuredProjects: Project[] = [];
+try {
+  const response = await fetch(new URL('/api/projects?featured=true', Astro.url));
+  if (response.ok) {
+    const data = await response.json();
+    featuredProjects = Array.isArray(data) ? data : data?.projects || [];
+  }
+} catch (error) {
+  console.error('Error cargando proyectos destacados:', error);
+}
+
+featuredProjects = featuredProjects.filter((project) => project?.isActive !== false).slice(0, 4);
 ---
 
 <Layout>
@@ -18,6 +33,35 @@ const featuredProperties = await getFeaturedProperties(8);
 
   <AnimateOnScroll animation="slide-up" client:visible>
     <FeaturedProperties properties={featuredProperties} />
+  </AnimateOnScroll>
+
+  <AnimateOnScroll animation="slide-up" delay={80} client:visible>
+    <section class="py-4 pb-16 md:pb-20 lg:pb-24">
+      <div class="container-custom">
+        <div class="mb-10 text-center md:mb-14">
+          <h2 class="font-heading text-3xl font-bold text-text-primary md:text-4xl">Proyectos Nuevos</h2>
+          <p class="mx-auto mt-3 max-w-2xl text-base text-text-secondary md:text-lg">
+            Invierte desde planos con precios de preventa
+          </p>
+        </div>
+
+        {featuredProjects.length > 0 ? (
+          <>
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {featuredProjects.map((project) => <ProjectCard project={project} />)}
+            </div>
+            <div class="mt-10 text-center md:mt-14">
+              <a href="/proyectos" class="btn-outline text-sm md:text-base">
+                Ver todos los proyectos
+                <span aria-hidden="true">→</span>
+              </a>
+            </div>
+          </>
+        ) : (
+          <p class="py-10 text-center text-text-muted">No hay proyectos destacados disponibles en este momento.</p>
+        )}
+      </div>
+    </section>
   </AnimateOnScroll>
 
   <AnimateOnScroll animation="slide-up" delay={100} client:visible>
