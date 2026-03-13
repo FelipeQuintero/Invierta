@@ -1,0 +1,398 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getAdminAuthState } from '../../lib/adminAuth';
+
+export const prerender = false;
+
+const auth = await getAdminAuthState(Astro.request, Astro.cookies, ['admin', 'editor']);
+if (!auth.isAuthenticated) {
+  return Astro.redirect('/admin/login?next=/admin/projects');
+}
+
+const adminToken = (import.meta.env.ADMIN_TOKEN || '').trim();
+---
+
+<Layout title="Admin Proyectos | Invierta" description="Gestión de proyectos inmobiliarios">
+  <section class="py-10">
+    <div class="container-custom max-w-6xl space-y-6">
+      <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <h1 class="font-heading text-2xl font-bold text-text-primary">Admin Proyectos</h1>
+            <p class="mt-1 text-sm text-text-secondary">Gestiona proyectos manuales y sus tipologías.</p>
+          </div>
+          <a href="/admin/logout" class="text-sm text-text-muted underline hover:text-text-primary">Cerrar sesión</a>
+        </div>
+
+        <div class="mt-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          Sesión activa como <strong>{auth.email || 'usuario legado por token'}</strong> ({auth.role || 'admin'}).
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-border bg-white p-6 shadow-sm space-y-4">
+        <h2 class="text-lg font-semibold text-text-primary">Formulario de proyecto</h2>
+        <p id="message" class="text-sm"></p>
+
+        <form id="projectForm" class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <input id="projectId" type="hidden" />
+          <label class="text-sm">Slug<input id="slug" class="mt-1 w-full rounded border border-border px-3 py-2" required /></label>
+          <label class="text-sm">Nombre<input id="name" class="mt-1 w-full rounded border border-border px-3 py-2" required /></label>
+          <label class="text-sm">Constructora<input id="developer" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Ciudad<input id="city" class="mt-1 w-full rounded border border-border px-3 py-2" required /></label>
+          <label class="text-sm">Zona<input id="zone" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Barrio<input id="neighborhood" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Dirección<input id="address" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Etapa
+            <select id="constructionStage" class="mt-1 w-full rounded border border-border px-3 py-2">
+              <option value="preventa">Preventa</option>
+              <option value="en_construccion">En construcción</option>
+              <option value="entrega_inmediata">Entrega inmediata</option>
+            </select>
+          </label>
+          <label class="text-sm">Entrega estimada<input id="deliveryDate" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Precio desde<input id="priceFrom" type="number" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Precio hasta<input id="priceTo" type="number" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm md:col-span-2">Descripción corta<textarea id="shortDescription" class="mt-1 w-full rounded border border-border px-3 py-2"></textarea></label>
+          <label class="text-sm md:col-span-2">Descripción larga<textarea id="description" class="mt-1 w-full rounded border border-border px-3 py-2"></textarea></label>
+          <label class="text-sm md:col-span-2">Amenidades (una por línea)<textarea id="amenities" class="mt-1 w-full rounded border border-border px-3 py-2"></textarea></label>
+          <label class="text-sm md:col-span-2">Imágenes URL (una por línea)<textarea id="images" class="mt-1 w-full rounded border border-border px-3 py-2"></textarea></label>
+          <label class="text-sm">Imagen de portada URL<input id="coverImage" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Video URL<input id="videoUrl" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Brochure URL<input id="brochureUrl" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Latitud<input id="lat" type="number" step="any" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Longitud<input id="lng" type="number" step="any" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="inline-flex items-center gap-2 text-sm"><input id="isActive" type="checkbox" checked />Activo</label>
+          <label class="inline-flex items-center gap-2 text-sm"><input id="isFeatured" type="checkbox" />Destacado</label>
+          <div class="md:col-span-2 flex gap-2">
+            <button type="submit" class="rounded bg-primary px-4 py-2 text-white">Guardar</button>
+            <button type="button" id="resetBtn" class="rounded border border-border px-4 py-2">Limpiar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="rounded-xl border border-border bg-white p-6 shadow-sm space-y-3">
+        <h2 class="text-lg font-semibold text-text-primary">Proyectos existentes</h2>
+        <div class="overflow-auto rounded border border-border">
+          <table class="min-w-full text-sm">
+            <thead class="bg-surface">
+              <tr>
+                <th class="px-3 py-2 text-left">Nombre</th><th class="px-3 py-2 text-left">Ciudad</th><th class="px-3 py-2 text-left">Etapa</th><th class="px-3 py-2 text-left">Estado</th><th class="px-3 py-2 text-left">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="projectsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-border bg-white p-6 shadow-sm space-y-3">
+        <h2 class="text-lg font-semibold text-text-primary">Tipologías del proyecto seleccionado</h2>
+        <form id="typologyForm" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <input id="typologyId" type="hidden" />
+          <label class="text-sm">Nombre<input id="tName" class="mt-1 w-full rounded border border-border px-3 py-2" required /></label>
+          <label class="text-sm">Área<input id="tArea" type="number" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Habitaciones<input id="tBedrooms" type="number" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Baños<input id="tBathrooms" type="number" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Parqueaderos<input id="tParking" type="number" class="mt-1 w-full rounded border border-border px-3 py-2" value="0" /></label>
+          <label class="text-sm">Precio<input id="tPrice" type="number" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Unidades disponibles<input id="tAvailableUnits" type="number" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Unidades totales<input id="tTotalUnits" type="number" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm">Orden<input id="tSortOrder" type="number" class="mt-1 w-full rounded border border-border px-3 py-2" value="0" /></label>
+          <label class="text-sm md:col-span-3">Imagen plano URL<input id="tFloorPlanImage" class="mt-1 w-full rounded border border-border px-3 py-2" /></label>
+          <label class="text-sm md:col-span-3">Características (una por línea)<textarea id="tFeatures" class="mt-1 w-full rounded border border-border px-3 py-2"></textarea></label>
+          <div class="md:col-span-3 flex gap-2">
+            <button type="submit" class="rounded bg-primary px-4 py-2 text-white">Guardar tipología</button>
+            <button type="button" id="resetTypologyBtn" class="rounded border border-border px-4 py-2">Limpiar</button>
+          </div>
+        </form>
+        <div class="overflow-auto rounded border border-border">
+          <table class="min-w-full text-sm">
+            <thead class="bg-surface"><tr><th class="px-3 py-2 text-left">Nombre</th><th class="px-3 py-2 text-left">Precio</th><th class="px-3 py-2 text-left">Área</th><th class="px-3 py-2 text-left">Acciones</th></tr></thead>
+            <tbody id="typologiesTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script is:inline>
+    const adminToken = JSON.parse(document.getElementById('admin-token').textContent || '""');
+    const authHeaders = () => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` });
+
+    const messageEl = document.getElementById('message');
+    const projectForm = document.getElementById('projectForm');
+    const typologyForm = document.getElementById('typologyForm');
+    const projectsTable = document.getElementById('projectsTable');
+    const typologiesTable = document.getElementById('typologiesTable');
+
+    let selectedProjectId = '';
+    let projects = [];
+    let typologies = [];
+
+    const listFields = (value) => value.split('\n').map((item) => item.trim()).filter(Boolean);
+    const numberOrNull = (value) => value === '' ? null : Number(value);
+
+    function setMessage(text, ok = true) {
+      messageEl.textContent = text;
+      messageEl.className = ok ? 'text-sm text-green-700' : 'text-sm text-red-700';
+    }
+
+    function resetProjectForm() {
+      projectForm.reset();
+      document.getElementById('projectId').value = '';
+      document.getElementById('isActive').checked = true;
+      selectedProjectId = '';
+      typologies = [];
+      renderTypologies();
+    }
+
+    function fillProjectForm(project) {
+      document.getElementById('projectId').value = project.id;
+      document.getElementById('slug').value = project.slug || '';
+      document.getElementById('name').value = project.name || '';
+      document.getElementById('developer').value = project.developer || '';
+      document.getElementById('description').value = project.description || '';
+      document.getElementById('shortDescription').value = project.shortDescription || '';
+      document.getElementById('city').value = project.city || '';
+      document.getElementById('zone').value = project.zone || '';
+      document.getElementById('neighborhood').value = project.neighborhood || '';
+      document.getElementById('address').value = project.address || '';
+      document.getElementById('constructionStage').value = project.constructionStage || 'preventa';
+      document.getElementById('deliveryDate').value = project.deliveryDate || '';
+      document.getElementById('priceFrom').value = project.priceFrom ?? '';
+      document.getElementById('priceTo').value = project.priceTo ?? '';
+      document.getElementById('amenities').value = Array.isArray(project.amenities) ? project.amenities.join('\n') : '';
+      document.getElementById('images').value = Array.isArray(project.images) ? project.images.join('\n') : '';
+      document.getElementById('coverImage').value = project.coverImage || '';
+      document.getElementById('videoUrl').value = project.videoUrl || '';
+      document.getElementById('brochureUrl').value = project.brochureUrl || '';
+      document.getElementById('isActive').checked = Boolean(project.isActive);
+      document.getElementById('isFeatured').checked = Boolean(project.isFeatured);
+      document.getElementById('lat').value = project.coordinates?.lat ?? '';
+      document.getElementById('lng').value = project.coordinates?.lng ?? '';
+      selectedProjectId = project.id;
+      loadProjectDetail(project.id);
+    }
+
+    async function loadProjects() {
+      const res = await fetch('/api/projects');
+      const data = await res.json();
+      projects = data.data || [];
+      renderProjects();
+    }
+
+    async function loadProjectDetail(projectId) {
+      const res = await fetch(`/api/projects/${projectId}`);
+      const data = await res.json();
+      typologies = data.data?.typologies || [];
+      renderTypologies();
+    }
+
+    function renderProjects() {
+      projectsTable.innerHTML = '';
+      for (const project of projects) {
+        const tr = document.createElement('tr');
+        tr.className = 'border-t border-border';
+        tr.innerHTML = `
+          <td class="px-3 py-2">${project.name}</td>
+          <td class="px-3 py-2">${project.city || '-'}</td>
+          <td class="px-3 py-2">${project.constructionStage || '-'}</td>
+          <td class="px-3 py-2">${project.isActive ? 'Activo' : 'Inactivo'}</td>
+          <td class="px-3 py-2 flex gap-2">
+            <button data-action="edit" data-id="${project.id}" class="rounded border border-border px-2 py-1">Editar</button>
+            <button data-action="toggle" data-id="${project.id}" class="rounded border border-border px-2 py-1">${project.isActive ? 'Desactivar' : 'Activar'}</button>
+            <button data-action="delete" data-id="${project.id}" class="rounded border border-red-300 px-2 py-1 text-red-700">Soft delete</button>
+          </td>
+        `;
+        projectsTable.appendChild(tr);
+      }
+    }
+
+    function renderTypologies() {
+      typologiesTable.innerHTML = '';
+      for (const typology of typologies) {
+        const tr = document.createElement('tr');
+        tr.className = 'border-t border-border';
+        tr.innerHTML = `
+          <td class="px-3 py-2">${typology.name}</td>
+          <td class="px-3 py-2">${typology.price ?? '-'}</td>
+          <td class="px-3 py-2">${typology.area ?? '-'}</td>
+          <td class="px-3 py-2 flex gap-2">
+            <button data-action="edit-typology" data-id="${typology.id}" class="rounded border border-border px-2 py-1">Editar</button>
+            <button data-action="delete-typology" data-id="${typology.id}" class="rounded border border-red-300 px-2 py-1 text-red-700">Eliminar</button>
+          </td>
+        `;
+        typologiesTable.appendChild(tr);
+      }
+    }
+
+    projectForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const id = document.getElementById('projectId').value;
+      const lat = document.getElementById('lat').value;
+      const lng = document.getElementById('lng').value;
+
+      const payload = {
+        slug: document.getElementById('slug').value,
+        name: document.getElementById('name').value,
+        developer: document.getElementById('developer').value,
+        description: document.getElementById('description').value,
+        shortDescription: document.getElementById('shortDescription').value,
+        city: document.getElementById('city').value,
+        zone: document.getElementById('zone').value,
+        neighborhood: document.getElementById('neighborhood').value,
+        address: document.getElementById('address').value,
+        constructionStage: document.getElementById('constructionStage').value,
+        deliveryDate: document.getElementById('deliveryDate').value,
+        priceFrom: numberOrNull(document.getElementById('priceFrom').value),
+        priceTo: numberOrNull(document.getElementById('priceTo').value),
+        amenities: listFields(document.getElementById('amenities').value),
+        images: listFields(document.getElementById('images').value),
+        coverImage: document.getElementById('coverImage').value,
+        videoUrl: document.getElementById('videoUrl').value,
+        brochureUrl: document.getElementById('brochureUrl').value,
+        coordinates: lat && lng ? { lat: Number(lat), lng: Number(lng) } : null,
+        isActive: document.getElementById('isActive').checked,
+        isFeatured: document.getElementById('isFeatured').checked,
+      };
+
+      const endpoint = id ? `/api/projects/${id}` : '/api/projects';
+      const method = id ? 'PUT' : 'POST';
+      const res = await fetch(endpoint, { method, headers: authHeaders(), body: JSON.stringify(payload) });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(data.error || 'Error guardando proyecto', false);
+        return;
+      }
+
+      setMessage('Proyecto guardado correctamente');
+      if (!id && data.data?.id) selectedProjectId = data.data.id;
+      await loadProjects();
+      if (selectedProjectId) await loadProjectDetail(selectedProjectId);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', resetProjectForm);
+
+    projectsTable.addEventListener('click', async (event) => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      const id = button.dataset.id;
+      const action = button.dataset.action;
+      if (!id || !action) return;
+
+      if (action === 'edit') {
+        const project = projects.find((item) => item.id === id);
+        if (project) fillProjectForm(project);
+        return;
+      }
+
+      if (action === 'delete') {
+        const res = await fetch(`/api/projects/${id}`, { method: 'DELETE', headers: authHeaders() });
+        const data = await res.json();
+        if (!res.ok) return setMessage(data.error || 'Error eliminando proyecto', false);
+        setMessage('Proyecto desactivado');
+        await loadProjects();
+        return;
+      }
+
+      if (action === 'toggle') {
+        const project = projects.find((item) => item.id === id);
+        if (!project) return;
+        const res = await fetch(`/api/projects/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ isActive: !project.isActive }) });
+        const data = await res.json();
+        if (!res.ok) return setMessage(data.error || 'Error actualizando estado', false);
+        setMessage('Estado actualizado');
+        await loadProjects();
+      }
+    });
+
+    function resetTypologyForm() {
+      typologyForm.reset();
+      document.getElementById('typologyId').value = '';
+      document.getElementById('tParking').value = '0';
+      document.getElementById('tSortOrder').value = '0';
+    }
+
+    function fillTypologyForm(typology) {
+      document.getElementById('typologyId').value = typology.id;
+      document.getElementById('tName').value = typology.name || '';
+      document.getElementById('tArea').value = typology.area ?? '';
+      document.getElementById('tBedrooms').value = typology.bedrooms ?? '';
+      document.getElementById('tBathrooms').value = typology.bathrooms ?? '';
+      document.getElementById('tParking').value = typology.parking ?? 0;
+      document.getElementById('tPrice').value = typology.price ?? '';
+      document.getElementById('tAvailableUnits').value = typology.availableUnits ?? '';
+      document.getElementById('tTotalUnits').value = typology.totalUnits ?? '';
+      document.getElementById('tSortOrder').value = typology.sortOrder ?? 0;
+      document.getElementById('tFloorPlanImage').value = typology.floorPlanImage || '';
+      document.getElementById('tFeatures').value = Array.isArray(typology.features) ? typology.features.join('\n') : '';
+    }
+
+    typologyForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!selectedProjectId) {
+        setMessage('Primero selecciona/edita un proyecto para manejar tipologías', false);
+        return;
+      }
+
+      const typologyId = document.getElementById('typologyId').value;
+      const payload = {
+        name: document.getElementById('tName').value,
+        area: numberOrNull(document.getElementById('tArea').value),
+        bedrooms: numberOrNull(document.getElementById('tBedrooms').value),
+        bathrooms: numberOrNull(document.getElementById('tBathrooms').value),
+        parking: numberOrNull(document.getElementById('tParking').value) ?? 0,
+        price: numberOrNull(document.getElementById('tPrice').value),
+        availableUnits: numberOrNull(document.getElementById('tAvailableUnits').value),
+        totalUnits: numberOrNull(document.getElementById('tTotalUnits').value),
+        sortOrder: numberOrNull(document.getElementById('tSortOrder').value) ?? 0,
+        floorPlanImage: document.getElementById('tFloorPlanImage').value,
+        features: listFields(document.getElementById('tFeatures').value),
+      };
+
+      const endpoint = typologyId
+        ? `/api/projects/${selectedProjectId}/typologies?typologyId=${encodeURIComponent(typologyId)}`
+        : `/api/projects/${selectedProjectId}/typologies`;
+      const method = typologyId ? 'PUT' : 'POST';
+
+      const res = await fetch(endpoint, { method, headers: authHeaders(), body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (!res.ok) return setMessage(data.error || 'Error guardando tipología', false);
+
+      setMessage('Tipología guardada');
+      resetTypologyForm();
+      await loadProjectDetail(selectedProjectId);
+    });
+
+    document.getElementById('resetTypologyBtn').addEventListener('click', resetTypologyForm);
+
+    typologiesTable.addEventListener('click', async (event) => {
+      const button = event.target.closest('button');
+      if (!button || !selectedProjectId) return;
+
+      const typologyId = button.dataset.id;
+      const action = button.dataset.action;
+      if (!typologyId || !action) return;
+
+      if (action === 'edit-typology') {
+        const typology = typologies.find((item) => item.id === typologyId);
+        if (typology) fillTypologyForm(typology);
+        return;
+      }
+
+      if (action === 'delete-typology') {
+        const res = await fetch(`/api/projects/${selectedProjectId}/typologies?typologyId=${encodeURIComponent(typologyId)}`, {
+          method: 'DELETE',
+          headers: authHeaders(),
+        });
+        const data = await res.json();
+        if (!res.ok) return setMessage(data.error || 'Error eliminando tipología', false);
+        setMessage('Tipología eliminada');
+        await loadProjectDetail(selectedProjectId);
+      }
+    });
+
+    loadProjects();
+  </script>
+  <script id="admin-token" type="application/json">{JSON.stringify(adminToken)}</script>
+</Layout>

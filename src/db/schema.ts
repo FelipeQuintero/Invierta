@@ -192,3 +192,61 @@ export const propertyKuulaLinkHistory = pgTable('property_kuula_link_history', {
   index('property_kuula_link_history_property_id_idx').on(table.propertyId),
   index('property_kuula_link_history_changed_at_idx').on(table.changedAt),
 ]);
+
+/**
+ * Proyectos inmobiliarios administrados manualmente (no SIMI).
+ */
+export const projects = pgTable('projects', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  slug: varchar('slug', { length: 255 }).notNull().unique(),
+  name: varchar('name', { length: 255 }).notNull(),
+  developer: varchar('developer', { length: 255 }),
+  description: text('description'),
+  shortDescription: text('short_description'),
+  city: varchar('city', { length: 120 }).notNull(),
+  zone: varchar('zone', { length: 120 }),
+  neighborhood: varchar('neighborhood', { length: 120 }),
+  address: varchar('address', { length: 255 }),
+  coordinates: jsonb('coordinates'),
+  constructionStage: varchar('construction_stage', { length: 50 }),
+  deliveryDate: varchar('delivery_date', { length: 100 }),
+  priceFrom: integer('price_from'),
+  priceTo: integer('price_to'),
+  amenities: jsonb('amenities'),
+  images: jsonb('images'),
+  coverImage: text('cover_image'),
+  videoUrl: text('video_url'),
+  brochureUrl: text('brochure_url'),
+  isActive: boolean('is_active').notNull().default(true),
+  isFeatured: boolean('is_featured').notNull().default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => [
+  index('projects_city_idx').on(table.city),
+  index('projects_construction_stage_idx').on(table.constructionStage),
+  index('projects_is_active_idx').on(table.isActive),
+  index('projects_is_featured_idx').on(table.isFeatured),
+]);
+
+/**
+ * Tipologías disponibles por proyecto.
+ */
+export const projectTypologies = pgTable('project_typologies', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 255 }).notNull(),
+  area: integer('area'),
+  bedrooms: integer('bedrooms'),
+  bathrooms: integer('bathrooms'),
+  parking: integer('parking').notNull().default(0),
+  price: integer('price'),
+  floorPlanImage: text('floor_plan_image'),
+  availableUnits: integer('available_units'),
+  totalUnits: integer('total_units'),
+  features: jsonb('features'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => [
+  index('project_typologies_project_id_idx').on(table.projectId),
+]);

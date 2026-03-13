@@ -29,6 +29,13 @@
       "when": 1773250200000,
       "tag": "0003_kuula_link_history",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1773414432205,
+      "tag": "0004_faithful_wild_pack",
+      "breakpoints": true
     }
   ]
 }
