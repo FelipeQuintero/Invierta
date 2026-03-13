@@ -5,11 +5,21 @@ import { getAdminAuthState, isAdminTokenConfigured, loginWithAdminToken } from '
 export const prerender = false;
 
 let error = '';
-const nextPath = Astro.url.searchParams.get('next') || '/admin/kuula';
+const nextPath = Astro.url.searchParams.get('next') || '/admin/projects';
+const tokenFromQuery = Astro.url.searchParams.get('token') || '';
 
 const existingAuth = await getAdminAuthState(Astro.request, Astro.cookies);
 if (existingAuth.isAuthenticated) {
   return Astro.redirect(nextPath);
+}
+
+if (tokenFromQuery) {
+  try {
+    loginWithAdminToken(Astro.cookies, tokenFromQuery);
+    return Astro.redirect(nextPath);
+  } catch (err) {
+    error = err instanceof Error ? err.message : 'No fue posible iniciar sesión.';
+  }
 }
 
 if (Astro.request.method === 'POST') {
