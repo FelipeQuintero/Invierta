@@ -11,7 +11,7 @@ import ShareButtons from '../../components/property-detail/ShareButtons.tsx';
 import { getPropertyById } from '../../lib/simi';
 import { formatPrice, formatArea } from '../../lib/utils';
 import { SITE_CONFIG } from '../../lib/constants';
-import { getKuulaEmbedUrl } from '../../lib/kuula';
+
 
 // Disable prerendering - fetch fresh data on each request
 export const prerender = false;
@@ -74,8 +74,7 @@ function toYoutubeEmbedUrl(url?: string) {
 const rawVideoUrl = typeof property.videoUrl === 'string' ? property.videoUrl.trim() : '';
 const rawView360Url = typeof property.view360Url === 'string' ? property.view360Url.trim() : '';
 
-const adminKuulaUrl = (await getKuulaEmbedUrl(id!)) || (await getKuulaEmbedUrl(property.id));
-const effectiveView360Url = adminKuulaUrl?.trim() || rawView360Url;
+const effectiveView360Url = rawView360Url;
 
 const youtubeFromVideoField = toYoutubeEmbedUrl(rawVideoUrl);
 const youtubeFrom360Field = !youtubeFromVideoField ? toYoutubeEmbedUrl(effectiveView360Url) : undefined;

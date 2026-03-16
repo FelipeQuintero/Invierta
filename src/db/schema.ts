@@ -167,33 +167,6 @@ export const simiSyncState = pgTable('simi_sync_state', {
 });
 
 /**
- * Kuula embed URL administrada manualmente por propiedad (id/código SIMI).
- */
-export const propertyKuulaLinks = pgTable('property_kuula_links', {
-  propertyId: varchar('property_id', { length: 100 }).primaryKey(),
-  kuulaEmbedUrl: text('kuula_embed_url').notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-}, (table) => [
-  index('property_kuula_links_updated_at_idx').on(table.updatedAt),
-]);
-
-/**
- * Historial básico de cambios de links Kuula.
- */
-export const propertyKuulaLinkHistory = pgTable('property_kuula_link_history', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  propertyId: varchar('property_id', { length: 100 }).notNull(),
-  previousKuulaEmbedUrl: text('previous_kuula_embed_url'),
-  newKuulaEmbedUrl: text('new_kuula_embed_url').notNull(),
-  changedBy: varchar('changed_by', { length: 255 }).notNull().default('admin_token'),
-  changedAt: timestamp('changed_at').defaultNow().notNull(),
-}, (table) => [
-  index('property_kuula_link_history_property_id_idx').on(table.propertyId),
-  index('property_kuula_link_history_changed_at_idx').on(table.changedAt),
-]);
-
-/**
  * Proyectos inmobiliarios administrados manualmente (no SIMI).
  */
 export const projects = pgTable('projects', {

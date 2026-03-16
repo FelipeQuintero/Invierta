@@ -42,12 +42,12 @@ if (Astro.request.method === 'POST') {
 }
 ---
 
-<Layout title="Login Admin | Invierta" description="Acceso al panel interno de Kuula">
+<Layout title="Login Admin | Invierta" description="Acceso al panel de administración">
   <section class="py-10">
     <div class="container-custom max-w-md">
       <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
         <h1 class="font-heading text-2xl font-bold text-text-primary">Acceso admin</h1>
-        <p class="mt-1 text-sm text-text-secondary">Ingresa el token para gestionar Kuula.</p>
+        <p class="mt-1 text-sm text-text-secondary">Ingresa el token de acceso.</p>
 
         {!isAdminTokenConfigured() && (
           <div class="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

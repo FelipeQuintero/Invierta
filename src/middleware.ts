@@ -7,7 +7,8 @@ import {
 } from './lib/adminAuth';
 
 function isProtectedPath(pathname: string): boolean {
-  return pathname === '/admin/kuula' || pathname.startsWith('/api/admin/kuula');
+  if (pathname === '/admin/login' || pathname === '/admin/logout') return false;
+  return pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
 }
 
 function unauthorizedApiResponse(): Response {
