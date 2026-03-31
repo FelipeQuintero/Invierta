@@ -653,7 +653,11 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
     if (!inFlightPropertyRequests.has(cacheKey)) {
       const revalidatePromise = fetchAndCacheProperties(cacheKey, filters)
         .then(async (properties) => {
-          await upsertPropertiesToDb(properties);
+          try {
+            await upsertPropertiesToDb(properties);
+          } catch (dbErr) {
+            console.error('[SIMI][DB] upsert failed during revalidation (non-fatal):', dbErr);
+          }
           return properties;
         })
         .finally(() => {
@@ -671,7 +675,11 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
 
   const requestPromise = fetchAndCacheProperties(cacheKey, filters)
     .then(async (properties) => {
-      await upsertPropertiesToDb(properties);
+      try {
+        await upsertPropertiesToDb(properties);
+      } catch (dbErr) {
+        console.error('[SIMI][DB] upsert failed (non-fatal):', dbErr);
+      }
       return properties;
     })
     .finally(() => {

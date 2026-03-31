@@ -37,7 +37,19 @@ if (params.get('maxArea')) filters.maxArea = parseInt(params.get('maxArea') || '
 if (params.get('parking')) filters.parking = parseInt(params.get('parking') || '0');
 if (params.get('stratum')) filters.stratum = parseInt(params.get('stratum') || '0');
 
-let properties = await getProperties(filters);
+let properties: Awaited<ReturnType<typeof getProperties>> = [];
+let fetchError = false;
+try {
+  properties = await getProperties(filters);
+} catch (err) {
+  console.error('[propiedades] getProperties failed, retrying once:', err);
+  try {
+    properties = await getProperties(filters);
+  } catch (retryErr) {
+    console.error('[propiedades] retry also failed:', retryErr);
+    fetchError = true;
+  }
+}
 
 // Client-side multi-type filter (SIMI API only supports one type at a time)
 const multiType = params.get('propertyType');
@@ -78,25 +90,35 @@ const breadcrumbItems = [
         </p>
       </div>
 
-      <div class="flex flex-col lg:flex-row lg:gap-6">
-        <PropertyFilters client:load operation={operationParam || ''} />
+      {fetchError ? (
+        <div class="rounded-xl border border-red-200 bg-red-50 p-8 text-center">
+          <p class="text-lg font-semibold text-red-700">No pudimos cargar las propiedades en este momento</p>
+          <p class="mt-2 text-sm text-red-600">El servidor de datos no respondió. Esto suele ser temporal.</p>
+          <button onclick="window.location.reload()" class="mt-4 rounded-lg bg-primary px-6 py-2 text-white font-medium hover:bg-primary/90 transition-colors">
+            Reintentar
+          </button>
+        </div>
+      ) : (
+        <div class="flex flex-col lg:flex-row lg:gap-6">
+          <PropertyFilters client:load operation={operationParam || ''} />
 
-        <PropertyListingContent
-          client:load
-          properties={properties}
-          hasActiveFilters={hasActiveFilters}
-          emptyHref="/propiedades"
-          emptyLabel="Ver todas las propiedades"
-          itemLabel="propiedades"
-          locationQuery={params.get('locationQuery') || params.get('city') || ''}
-          sortOptions={[
-            { value: 'recent', label: 'Mas recientes' },
-            { value: 'price-asc', label: 'Menor precio' },
-            { value: 'price-desc', label: 'Mayor precio' },
-            { value: 'area-desc', label: 'Mayor area' },
-          ]}
-        />
-      </div>
+          <PropertyListingContent
+            client:load
+            properties={properties}
+            hasActiveFilters={hasActiveFilters}
+            emptyHref="/propiedades"
+            emptyLabel="Ver todas las propiedades"
+            itemLabel="propiedades"
+            locationQuery={params.get('locationQuery') || params.get('city') || ''}
+            sortOptions={[
+              { value: 'recent', label: 'Mas recientes' },
+              { value: 'price-asc', label: 'Menor precio' },
+              { value: 'price-desc', label: 'Mayor precio' },
+              { value: 'area-desc', label: 'Mayor area' },
+            ]}
+          />
+        </div>
+      )}
     </div>
   </section>
 </Layout>
