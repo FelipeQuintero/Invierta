@@ -275,6 +275,12 @@ function parseNumber(str: string): number {
   return parseInt(normalized, 10) || 0;
 }
 
+function parseArea(str: string): number {
+  if (!str) return 0;
+  const normalized = str.replace(/[\s,$]/g, '');
+  return parseFloat(normalized) || 0;
+}
+
 function normalizeText(value: string): string {
   return value
     .normalize('NFD')
@@ -367,8 +373,8 @@ function transformSimiProperty(simi: SimiInmueble): Property {
   
   const lat = parseFloat(simi.latitud) || 0;
   const lng = parseFloat(simi.longitud) || 0;
-  const builtArea = parseNumber(simi.AreaConstruida);
-  const lotArea = parseNumber(simi.AreaLote);
+  const builtArea = parseArea(simi.AreaConstruida);
+  const lotArea = parseArea(simi.AreaLote);
   const area = builtArea || lotArea || 0;
   
   const title = `${simi.Tipo_Inmueble || 'Inmueble'} en ${simi.Barrio || simi.Ciudad || 'Colombia'}`;
@@ -763,8 +769,8 @@ function transformSimiInmuebleDetalle(data: SimiInmuebleDetalle): Property {
   const tipoNombre = (data.Tipo_Inmueble || '').toLowerCase().trim();
   const propertyType: PropertyType = PROPERTY_TYPE_MAP[tipoNombre] || 'apartamento';
   const operationType: OperationType = isArriendo ? 'arriendo' : 'venta';
-  const builtArea = parseNumber(data.AreaConstruida);
-  const lotArea = parseNumber(data.AreaLote);
+  const builtArea = parseArea(data.AreaConstruida);
+  const lotArea = parseArea(data.AreaLote);
   const area = builtArea || lotArea || 0;
 
   return {

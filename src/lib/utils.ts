@@ -8,7 +8,8 @@ export function formatPrice(price: number): string {
 }
 
 export function formatArea(area: number): string {
-  return `${area} m²`;
+  const formatted = Number.isInteger(area) ? area.toString() : area.toFixed(2);
+  return `${formatted} m²`;
 }
 
 export function slugify(text: string): string {

@@ -8,7 +8,7 @@ import type { LocationSuggestion } from '../../lib/locationSearch';
 
 export default function HeroSearch() {
   const [operation, setOperation] = useState<OperationType>('venta');
-  const [propertyType, setPropertyType] = useState('');
+  const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const typeDropdownRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
@@ -50,7 +50,7 @@ export default function HeroSearch() {
     const params = new URLSearchParams();
 
     if (operation) params.set('operation', operation);
-    if (propertyType) params.set('type', propertyType);
+    if (propertyTypes.length > 0) params.set('propertyType', propertyTypes.join(','));
 
     if (trimmedQuery) {
       if (selectedLocation) {
@@ -167,11 +167,11 @@ export default function HeroSearch() {
                     className={`${inputClass} appearance-none cursor-pointer text-left flex items-center justify-between gap-2`}
                   >
                     <span className="flex items-center gap-2 truncate">
-                      {propertyType ? (
-                        <>
-                          <PropertyTypeIcon type={propertyType as PropertyType} className="w-4 h-4 shrink-0 text-[var(--color-accent)]" />
-                          <span>{PROPERTY_TYPES.find(pt => pt.value === propertyType)?.label}</span>
-                        </>
+                      {propertyTypes.length > 0 ? (
+                        <span>{propertyTypes.length === 1
+                          ? PROPERTY_TYPES.find(pt => pt.value === propertyTypes[0])?.label
+                          : `${propertyTypes.length} seleccionados`}
+                        </span>
                       ) : (
                         <span>Todos</span>
                       )}
@@ -193,14 +193,17 @@ export default function HeroSearch() {
                       </div>
                       <div className="flex flex-wrap gap-1.5 max-h-[240px] overflow-y-auto">
                         {PROPERTY_TYPES.map((pt) => {
-                          const isActive = propertyType === pt.value;
+                          const isActive = propertyTypes.includes(pt.value);
                           return (
                             <button
                               key={pt.value}
                               type="button"
                               onClick={() => {
-                                setPropertyType(isActive ? '' : pt.value);
-                                if (!isActive) setTypeDropdownOpen(false);
+                                setPropertyTypes(prev =>
+                                  prev.includes(pt.value)
+                                    ? prev.filter(t => t !== pt.value)
+                                    : [...prev, pt.value]
+                                );
                               }}
                               className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-full border transition-all duration-150 cursor-pointer ${
                                 isActive

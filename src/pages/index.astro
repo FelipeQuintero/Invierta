@@ -31,6 +31,38 @@ featuredProjects = featuredProjects.filter((project) => project?.isActive !== fa
 <Layout>
   <HeroSearch client:load />
 
+  <!-- Accesos Rapidos -->
+  <section class="bg-white py-8 border-b border-border">
+    <div class="mx-auto max-w-6xl px-4">
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
+        <a href="https://invierta.portal.rent10.online/" target="_blank" rel="noopener noreferrer" class="group flex flex-col items-center gap-3 rounded-xl p-4 transition-all hover:bg-surface hover:shadow-md">
+          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <span class="text-center text-sm font-medium text-text-secondary group-hover:text-primary">Portal Propietarios</span>
+        </a>
+        <a href="https://invierta.portal.rent10.online/" target="_blank" rel="noopener noreferrer" class="group flex flex-col items-center gap-3 rounded-xl p-4 transition-all hover:bg-surface hover:shadow-md">
+          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+          </div>
+          <span class="text-center text-sm font-medium text-text-secondary group-hover:text-accent">Portal Inquilinos</span>
+        </a>
+        <a href="https://pagos.rent10.online/-/view-payment" target="_blank" rel="noopener noreferrer" class="group flex flex-col items-center gap-3 rounded-xl p-4 transition-all hover:bg-surface hover:shadow-md">
+          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10 text-green-600 transition-colors group-hover:bg-green-500 group-hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+          </div>
+          <span class="text-center text-sm font-medium text-text-secondary group-hover:text-green-600">Pagos PSE</span>
+        </a>
+        <a href="/referidos" class="group flex flex-col items-center gap-3 rounded-xl p-4 transition-all hover:bg-surface hover:shadow-md">
+          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-purple-500/10 text-purple-600 transition-colors group-hover:bg-purple-500 group-hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
+          </div>
+          <span class="text-center text-sm font-medium text-text-secondary group-hover:text-purple-600">Registra un Referido</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <AnimateOnScroll animation="slide-up" client:visible>
     <FeaturedProperties properties={featuredProperties} />
   </AnimateOnScroll>

@@ -13,20 +13,52 @@ const breadcrumbItems = [
   title="Publica tu Inmueble | Invierta Inmobiliaria"
   description="Publica tu propiedad en venta o arriendo con Invierta Inmobiliaria. Llegamos a miles de compradores e inquilinos potenciales."
 >
-  <section class="bg-surface py-6">
+  <!-- Breadcrumb -->
+  <section class="bg-surface py-4">
     <div class="container-custom">
       <Breadcrumb items={breadcrumbItems} />
     </div>
   </section>
 
-  <section class="py-12 lg:py-20">
+  <!-- Hero Section -->
+  <div class="relative bg-gradient-to-br from-primary via-primary/90 to-navy py-16 md:py-20 text-white overflow-hidden">
+    <!-- Decorative elements -->
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-10 left-10 w-32 h-32 rounded-full border-2 border-white/30"></div>
+      <div class="absolute bottom-10 right-10 w-48 h-48 rounded-full border-2 border-white/20"></div>
+      <div class="absolute top-1/2 left-1/3 w-20 h-20 rounded-full border border-white/20"></div>
+    </div>
+    <div class="mx-auto max-w-4xl px-4 text-center relative z-10">
+      <h1 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold">
+        Publica tu Inmueble
+      </h1>
+      <p class="mt-4 text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
+        Conecta tu propiedad con compradores e inquilinos calificados. Nuestro equipo te acompaña desde la valoración hasta el cierre.
+      </p>
+    </div>
+  </div>
+
+  <!-- Video Placeholder -->
+  <div class="mx-auto max-w-4xl px-4 -mt-8 mb-8 relative z-10">
+    <div class="rounded-2xl bg-slate-100 h-48 md:h-64 flex items-center justify-center shadow-lg border border-border">
+      <div class="text-center text-slate-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        <p class="text-sm mt-2">Video de presentación (YouTube)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Venta / Arriendo Cards -->
+  <section class="py-12 lg:py-16">
     <div class="container-custom">
       <div class="mx-auto max-w-3xl text-center mb-10 lg:mb-14">
-        <h1 class="font-heading text-3xl font-bold text-text-primary lg:text-4xl">
-          Publica tu Inmueble
-        </h1>
-        <p class="mt-4 text-lg text-text-secondary">
-          Selecciona el tipo de publicacion que necesitas. En {SITE_CONFIG.name} te ayudamos a conectar con compradores e inquilinos de forma rapida y segura.
+        <h2 class="font-heading text-2xl font-bold text-text-primary lg:text-3xl">
+          ¿Qué tipo de publicación necesitas?
+        </h2>
+        <p class="mt-3 text-text-secondary">
+          En {SITE_CONFIG.name} te ayudamos a conectar con compradores e inquilinos de forma rápida y segura.
         </p>
       </div>
 
@@ -42,11 +74,11 @@ const breadcrumbItems = [
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
           </div>
-          <h2 class="font-heading text-xl font-bold text-text-primary group-hover:text-primary transition-colors">
+          <h3 class="font-heading text-xl font-bold text-text-primary group-hover:text-primary transition-colors">
             Publicar en Venta
-          </h2>
+          </h3>
           <p class="mt-3 text-center text-text-secondary text-sm leading-relaxed">
-            Vende tu propiedad con el respaldo de nuestro equipo de expertos. Avaluos, asesoria legal y promocion incluida.
+            Vende tu propiedad con el respaldo de nuestro equipo de expertos. Avalúos, asesoría legal y promoción incluida.
           </p>
           <span class="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
             Comenzar
@@ -67,9 +99,9 @@ const breadcrumbItems = [
               <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
             </svg>
           </div>
-          <h2 class="font-heading text-xl font-bold text-text-primary group-hover:text-secondary transition-colors">
+          <h3 class="font-heading text-xl font-bold text-text-primary group-hover:text-secondary transition-colors">
             Publicar en Arriendo
-          </h2>
+          </h3>
           <p class="mt-3 text-center text-text-secondary text-sm leading-relaxed">
             Arrienda tu inmueble de forma segura. Nos encargamos de encontrar al inquilino ideal y gestionar todo el proceso.
           </p>
@@ -83,4 +115,105 @@ const breadcrumbItems = [
       </div>
     </div>
   </section>
+
+  <!-- Contact Form Section -->
+  <section class="py-12 bg-surface">
+    <div class="mx-auto max-w-xl px-4">
+      <h2 class="text-center font-heading text-2xl font-bold text-text-primary mb-2">
+        ¿Quieres publicar tu inmueble?
+      </h2>
+      <p class="text-center text-text-secondary mb-8">
+        Déjanos tus datos y un asesor se comunicará contigo
+      </p>
+      <form id="publica-form" class="space-y-4 bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-border">
+        <div>
+          <label for="nombre" class="block text-sm font-medium text-text-secondary mb-1">Nombre completo</label>
+          <input
+            type="text"
+            id="nombre"
+            name="firstName"
+            required
+            class="w-full rounded-lg border border-border px-4 py-3 text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Tu nombre"
+          />
+        </div>
+        <div>
+          <label for="celular" class="block text-sm font-medium text-text-secondary mb-1">Celular</label>
+          <input
+            type="tel"
+            id="celular"
+            name="phone"
+            required
+            class="w-full rounded-lg border border-border px-4 py-3 text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Ej: 312 248 2337"
+          />
+        </div>
+        <div>
+          <label for="correo" class="block text-sm font-medium text-text-secondary mb-1">Correo electrónico</label>
+          <input
+            type="email"
+            id="correo"
+            name="email"
+            required
+            class="w-full rounded-lg border border-border px-4 py-3 text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="tu@correo.com"
+          />
+        </div>
+        <button
+          type="submit"
+          class="w-full rounded-lg bg-accent py-3 text-white font-semibold hover:bg-accent/90 transition-colors shadow-md cursor-pointer"
+        >
+          Quiero publicar mi inmueble
+        </button>
+        <p id="form-message" class="text-center text-sm hidden"></p>
+      </form>
+    </div>
+  </section>
+
+  <script>
+    document.getElementById('publica-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target as HTMLFormElement;
+      const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const msg = document.getElementById('form-message')!;
+
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+      msg.className = 'text-center text-sm hidden';
+
+      const firstName = (form.elements.namedItem('firstName') as HTMLInputElement).value.trim();
+      const phone = (form.elements.namedItem('phone') as HTMLInputElement).value.trim();
+      const email = (form.elements.namedItem('email') as HTMLInputElement).value.trim();
+
+      try {
+        const webhookUrl = (import.meta as any).env?.PUBLIC_GHL_WEBHOOK_URL
+          || 'https://services.leadconnectorhq.com/hooks/8kbdbM2PqR4rZqVDL126/webhook-trigger/a380a512-3b67-4cc6-b639-86d3aacfdccf';
+
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            firstName,
+            phone,
+            email,
+            source: 'Publica tu Inmueble',
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al enviar');
+        }
+
+        msg.textContent = '¡Gracias! Un asesor te contactará pronto.';
+        msg.className = 'text-center text-sm text-green-600 mt-2';
+        form.reset();
+      } catch {
+        msg.textContent = 'Error al enviar. Intenta de nuevo.';
+        msg.className = 'text-center text-sm text-red-500 mt-2';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Quiero publicar mi inmueble';
+      }
+    });
+  </script>
 </Layout>

@@ -4,12 +4,12 @@ export const SITE_CONFIG: SiteConfig = {
   name: import.meta.env.SITE_NAME || 'Invierta Inmobiliaria',
   logo: '/logo.webp',
   headerLogo: '/logo-dark.webp',
-  phone: '+57 300 123 4567',
-  whatsapp: import.meta.env.WHATSAPP_NUMBER || '573001234567',
-  email: 'contacto@inviertainmobiliaria.com',
-  address: 'Bogota, Colombia',
+  phone: '+57 312 248 2337',
+  whatsapp: import.meta.env.WHATSAPP_NUMBER || '573122482327',
+  email: 'comercial@invierta.com.co',
+  address: 'Calle 14 No 16-47 Pinares, Pereira',
   socialMedia: {
-    facebook: 'https://facebook.com/inviertainmobiliaria',
+    facebook: 'https://www.facebook.com/InviertaInmobiliariaEjeCafetero',
     instagram: 'https://instagram.com/inviertainmobiliaria',
   },
   seo: {
@@ -106,8 +106,8 @@ export const NAV_LINKS = [
   { href: '/', label: 'Inicio' },
   { href: '/propiedades', label: 'Propiedades' },
   { href: '/proyectos', label: 'Proyectos' },
-  { href: '/publica', label: 'Publica tu Inmueble' },
   { href: '/servicios', label: 'Servicios' },
+  { href: '/publica', label: 'Publica tu Inmueble' },
 ] as const;
 
 export const TOP_BAR_LINKS: TopBarLink[] = [
@@ -134,7 +134,7 @@ export const SERVICES: ServiceInfo[] = [
   {
     slug: 'creditos-exterior',
     title: 'Créditos para Colombianos en el Exterior',
-    shortDescription: 'Compra vivienda en Colombia con proceso 100 % virtual.',
+    shortDescription: 'Compra tu inmueble en Colombia con proceso 100 % virtual.',
     icon: 'HandCoins',
   },
   {
