@@ -629,6 +629,51 @@ function schedulePropertiesPrewarm(): void {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Daily full sync: SIMI → PostgreSQL (with deactivation of delisted properties)
+// ---------------------------------------------------------------------------
+const SYNC_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const INITIAL_SYNC_DELAY_MS = 30_000; // 30s after server start
+let dailySyncScheduled = false;
+
+async function runFullSync(): Promise<void> {
+  if (useMock) return;
+  console.log('[SIMI][SYNC] Starting full sync SIMI → DB');
+  try {
+    const result = await syncSimiPropertiesToDb(); // no filters = ALL properties
+    console.log(
+      `[SIMI][SYNC] Done: ${result.synced} synced, ${result.deactivated} deactivated`
+    );
+  } catch (error) {
+    console.error('[SIMI][SYNC] Full sync failed:', error);
+  }
+}
+
+function scheduleDailySync(): void {
+  if (dailySyncScheduled || useMock) return;
+  dailySyncScheduled = true;
+
+  // Initial sync shortly after startup (DB gets populated for the first time)
+  const initial = setTimeout(() => {
+    void runFullSync();
+  }, INITIAL_SYNC_DELAY_MS);
+  if (typeof (initial as { unref?: () => void }).unref === 'function') {
+    (initial as { unref: () => void }).unref();
+  }
+
+  // Then every 24 hours
+  const interval = setInterval(() => {
+    void runFullSync();
+  }, SYNC_INTERVAL_MS);
+  if (typeof (interval as { unref?: () => void }).unref === 'function') {
+    (interval as { unref: () => void }).unref();
+  }
+
+  console.log(
+    `[SIMI][SYNC] Scheduled: initial sync in ${INITIAL_SYNC_DELAY_MS / 1000}s, then every 24h`
+  );
+}
+
 export async function getProperties(filters?: PropertyFilters): Promise<Property[]> {
   if (useMock) {
     console.log('[SIMI] Using mock data - no API key configured');
@@ -698,6 +743,7 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
 }
 
 schedulePropertiesPrewarm();
+scheduleDailySync();
 
 export async function syncSimiPropertiesToDb(
   filters?: PropertyFilters
