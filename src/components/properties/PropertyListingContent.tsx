@@ -116,7 +116,7 @@ export default function PropertyListingContent({
             {visibleCount < properties.length && (
               <div className="mt-10 flex justify-center">
                 <button className="btn-outline" onClick={() => setVisibleCount(prev => prev + 12)}>
-                  Cargar mas {itemLabel}
+                  Cargar más {itemLabel}
                 </button>
               </div>
             )}
@@ -135,7 +135,7 @@ export default function PropertyListingContent({
             No se encontraron {itemLabel}
           </h3>
           <p className="text-text-secondary mb-6 max-w-md mx-auto">
-            No hay {itemLabel} que coincidan con los filtros seleccionados. Intenta ajustar los criterios de busqueda.
+            No hay {itemLabel} que coincidan con los filtros seleccionados. Intenta ajustar los criterios de búsqueda.
           </p>
           {locationQuery && (
             <DidYouMean query={locationQuery} basePath={emptyHref} />

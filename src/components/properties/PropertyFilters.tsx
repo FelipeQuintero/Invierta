@@ -285,7 +285,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
     const opLabel = OPERATION_TYPES.find((o) => o.value === operationFilter)?.label || operationFilter;
     activeFilters.push({ key: 'operation', label: opLabel });
   }
-  if (code) activeFilters.push({ key: 'code', label: `Codigo: ${code}` });
+  if (code) activeFilters.push({ key: 'code', label: `Código: ${code}` });
   if (locationQuery) activeFilters.push({ key: 'locationQuery', label: locationQuery });
   if (city) activeFilters.push({ key: 'city', label: city });
   if (zone) activeFilters.push({ key: 'zone', label: `Zona: ${zone}` });
@@ -367,7 +367,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
           </div>
         </FilterSection>
 
-        <FilterSection title="Busqueda por Codigo" defaultOpen={!!code}>
+        <FilterSection title="Búsqueda por Código" defaultOpen={!!code}>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]">
               <CodeIcon />
@@ -376,15 +376,15 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="Codigo SIMI (ej: INV-001)"
+              placeholder="Código SIMI (ej: INV-001)"
               className={`${inputClass} pl-9 pr-10`}
-              aria-label="Buscar por codigo SIMI"
+              aria-label="Buscar por código SIMI"
             />
             {code && (
               <button
                 type="submit"
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[var(--color-accent)] hover:text-[var(--color-accent-dark)]"
-                aria-label="Buscar por codigo"
+                aria-label="Buscar por código"
               >
                 <SearchIcon />
               </button>
@@ -392,7 +392,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
           </div>
         </FilterSection>
 
-        <FilterSection title="Ubicacion">
+        <FilterSection title="Ubicación">
           <div className="space-y-3">
             <LocationAutocomplete
               id="filter-location"
@@ -671,7 +671,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
               <FilterIcon />
             </span>
             <span className="flex flex-col items-start">
-              <span className="font-semibold text-[var(--color-text-primary)]">Filtros de busqueda</span>
+              <span className="font-semibold text-[var(--color-text-primary)]">Filtros de búsqueda</span>
               <span className="text-xs text-[var(--color-text-muted)]">
                 {hasActiveFilters
                   ? `${activeFilters.length} filtro${activeFilters.length > 1 ? 's' : ''} activo${activeFilters.length > 1 ? 's' : ''}`

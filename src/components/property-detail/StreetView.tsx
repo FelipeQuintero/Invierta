@@ -62,7 +62,7 @@ export default function StreetView({ lat, lng, apiKey }: StreetViewProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
           </svg>
-          <p className="text-[var(--color-text-secondary)] text-sm">Street View no disponible para esta ubicacion</p>
+          <p className="text-[var(--color-text-secondary)] text-sm">Street View no disponible para esta ubicación</p>
           <a
             href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`}
             target="_blank"

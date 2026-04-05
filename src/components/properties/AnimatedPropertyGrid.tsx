@@ -103,7 +103,7 @@ export default function AnimatedPropertyGrid({
           No se encontraron propiedades
         </h3>
         <p className="text-text-secondary text-sm max-w-md">
-          Intenta ajustar los filtros de busqueda o explorar otras categorias para encontrar lo que buscas.
+          Intenta ajustar los filtros de búsqueda o explorar otras categorías para encontrar lo que buscas.
         </p>
       </div>
     );

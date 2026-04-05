@@ -1,5 +1,8 @@
 import type { SiteConfig, ServiceInfo, TopBarLink } from './types';
 
+// TODO: Reemplazar VIDEO_ID_AQUI con el ID real del video institucional de Invierta o el video de Ventas y Rentas
+export const DEFAULT_VIDEO_URL = 'https://www.youtube.com/embed/VIDEO_ID_AQUI';
+
 export const SITE_CONFIG: SiteConfig = {
   name: import.meta.env.SITE_NAME || 'Invierta Inmobiliaria',
   logo: '/logo.webp',
@@ -114,8 +117,8 @@ export const TOP_BAR_LINKS: TopBarLink[] = [
   { href: 'https://invierta.portal.rent10.online/', label: 'Portal Propietarios', icon: 'User', external: true },
   { href: 'https://invierta.portal.rent10.online/', label: 'Portal Arrendatarios', icon: 'UserCheck', external: true },
   { href: 'https://pagos.rent10.online/-/view-payment', label: 'Pagos PSE', icon: 'CreditCard', external: true },
-  { href: '/publica', label: 'Publica tu Inmueble', icon: 'Home', external: false },
   { href: '/referidos', label: 'Registrar referido', icon: 'Users', external: false },
+  { href: '/publica', label: 'Publica tu Inmueble', icon: 'Home', external: false },
 ];
 
 export const SERVICES: ServiceInfo[] = [

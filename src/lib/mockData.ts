@@ -5,7 +5,7 @@ export const mockProperties: Property[] = [
     id: '1',
     title: 'Apartamento en Chapinero Alto',
     description:
-      'Hermoso apartamento con vista a los cerros orientales. Amplia sala-comedor, cocina integral, tres habitaciones con closet, dos banos completos y parqueadero cubierto. Excelente ubicacion cerca a centros comerciales y transporte publico.',
+      'Hermoso apartamento con vista a los cerros orientales. Amplia sala-comedor, cocina integral, tres habitaciones con closet, dos baños completos y parqueadero cubierto. Excelente ubicación cerca a centros comerciales y transporte público.',
     price: 450_000_000,
     priceType: 'venta',
     location: 'Chapinero, Bogota',
@@ -41,7 +41,7 @@ export const mockProperties: Property[] = [
     id: '2',
     title: 'Casa Campestre en Chia',
     description:
-      'Espectacular casa campestre con amplios jardines, piscina privada y zonas verdes. Ideal para familias que buscan tranquilidad sin alejarse de Bogota. Cuatro habitaciones, sala de estar, estudio y garaje para dos vehiculos.',
+      'Espectacular casa campestre con amplios jardines, piscina privada y zonas verdes. Ideal para familias que buscan tranquilidad sin alejarse de Bogotá. Cuatro habitaciones, sala de estar, estudio y garaje para dos vehículos.',
     price: 980_000_000,
     priceType: 'venta',
     location: 'Chia, Cundinamarca',
@@ -76,7 +76,7 @@ export const mockProperties: Property[] = [
     id: '3',
     title: 'Apartaestudio en Cedritos',
     description:
-      'Moderno apartaestudio totalmente remodelado. Ambiente integrado con cocina abierta, bano con acabados de lujo y closet empotrado. Edificio con gimnasio y salon social.',
+      'Moderno apartaestudio totalmente remodelado. Ambiente integrado con cocina abierta, baño con acabados de lujo y closet empotrado. Edificio con gimnasio y salón social.',
     price: 1_800_000,
     priceType: 'arriendo',
     location: 'Cedritos, Bogota',
@@ -95,7 +95,7 @@ export const mockProperties: Property[] = [
     propertyType: 'apartamento',
     operationType: 'arriendo',
     coordinates: { lat: 4.7247, lng: -74.0461 },
-    features: ['Cocina abierta', 'Gimnasio', 'Salon social', 'Vigilancia 24h'],
+    features: ['Cocina abierta', 'Gimnasio', 'Salón social', 'Vigilancia 24h'],
     yearBuilt: 2022,
     adminFee: 280_000,
     agent: {
@@ -109,7 +109,7 @@ export const mockProperties: Property[] = [
     id: '4',
     title: 'Local Comercial en la Zona T',
     description:
-      'Local comercial en excelente ubicacion sobre la Zona T. Alto flujo peatonal, ideal para restaurante, tienda o showroom. Dos niveles con bano y bodega.',
+      'Local comercial en excelente ubicación sobre la Zona T. Alto flujo peatonal, ideal para restaurante, tienda o showroom. Dos niveles con baño y bodega.',
     price: 12_000_000,
     priceType: 'arriendo',
     location: 'Zona T, Bogota',
@@ -140,7 +140,7 @@ export const mockProperties: Property[] = [
     id: '5',
     title: 'Apartamento en El Poblado',
     description:
-      'Lujoso apartamento en el exclusivo sector de El Poblado. Acabados de primera, vista panoramica a la ciudad, tres habitaciones con bano privado, sala de estar y balcon amplio.',
+      'Lujoso apartamento en el exclusivo sector de El Poblado. Acabados de primera, vista panorámica a la ciudad, tres habitaciones con baño privado, sala de estar y balcón amplio.',
     price: 720_000_000,
     priceType: 'venta',
     location: 'El Poblado, Medellin',
@@ -160,7 +160,7 @@ export const mockProperties: Property[] = [
     propertyType: 'apartamento',
     operationType: 'venta',
     coordinates: { lat: 6.2086, lng: -75.5675 },
-    features: ['Balcon', 'Vista panoramica', 'Piscina comunal', 'Gimnasio', 'Porteria 24h'],
+    features: ['Balcón', 'Vista panorámica', 'Piscina comunal', 'Gimnasio', 'Portería 24h'],
     yearBuilt: 2023,
     adminFee: 680_000,
     agent: {
@@ -174,7 +174,7 @@ export const mockProperties: Property[] = [
     id: '6',
     title: 'Casa en Cali — Barrio Granada',
     description:
-      'Casa completamente remodelada en el barrio Granada. Tres pisos, terraza con vista, cocina tipo americano, patio interior. Zona tranquila con acceso rapido a la Quinta.',
+      'Casa completamente remodelada en el barrio Granada. Tres pisos, terraza con vista, cocina tipo americano, patio interior. Zona tranquila con acceso rápido a la Quinta.',
     price: 520_000_000,
     priceType: 'venta',
     location: 'Granada, Cali',
@@ -235,14 +235,14 @@ export const mockProperties: Property[] = [
   },
   {
     id: '8',
-    title: 'Apartamento para Estrenar — Usaquen',
+    title: 'Apartamento para Estrenar — Usaquén',
     description:
-      'Proyecto para estrenar en Usaquen. Apartamento de dos habitaciones con bano privado en la principal, zona social amplia, balcon y parqueadero. Conjunto con zonas comunes completas.',
+      'Proyecto para estrenar en Usaquén. Apartamento de dos habitaciones con baño privado en la principal, zona social amplia, balcón y parqueadero. Conjunto con zonas comunes completas.',
     price: 380_000_000,
     priceType: 'venta',
-    location: 'Usaquen, Bogota',
-    city: 'Bogota',
-    neighborhood: 'Usaquen',
+    location: 'Usaquén, Bogotá',
+    city: 'Bogotá',
+    neighborhood: 'Usaquén',
     area: 68,
     bedrooms: 2,
     bathrooms: 2,
@@ -256,7 +256,7 @@ export const mockProperties: Property[] = [
     propertyType: 'apartamento',
     operationType: 'proyecto',
     coordinates: { lat: 4.7364, lng: -74.0319 },
-    features: ['Para estrenar', 'Zonas comunes', 'Salon comunal', 'Parque infantil'],
+    features: ['Para estrenar', 'Zonas comunes', 'Salón comunal', 'Parque infantil'],
     yearBuilt: 2025,
     adminFee: 350_000,
     agent: {
@@ -270,7 +270,7 @@ export const mockProperties: Property[] = [
     id: '9',
     title: 'Lote en Sopó',
     description:
-      'Lote de 500m² en zona rural de Sopó con vista a las montanas. Ideal para construccion de casa campestre. Acceso por via pavimentada, servicios publicos disponibles.',
+      'Lote de 500m² en zona rural de Sopó con vista a las montañas. Ideal para construcción de casa campestre. Acceso por vía pavimentada, servicios públicos disponibles.',
     price: 320_000_000,
     priceType: 'venta',
     location: 'Sopó, Cundinamarca',
@@ -290,7 +290,7 @@ export const mockProperties: Property[] = [
     propertyType: 'lote',
     operationType: 'venta',
     coordinates: { lat: 4.9065, lng: -73.9397 },
-    features: ['Vista a montanas', 'Via pavimentada', 'Servicios publicos', 'Escritura publica'],
+    features: ['Vista a montañas', 'Vía pavimentada', 'Servicios públicos', 'Escritura pública'],
     agent: {
       name: 'Andres Restrepo',
       phone: '+57 320 555 9012',

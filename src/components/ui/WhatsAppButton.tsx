@@ -6,7 +6,7 @@ export default function WhatsAppButton() {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent(
-    'Hola, me interesa obtener mas informacion sobre sus propiedades.'
+    'Hola, me interesa obtener más información sobre sus propiedades.'
   )}`;
 
   return (

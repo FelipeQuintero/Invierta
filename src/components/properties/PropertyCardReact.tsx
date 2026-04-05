@@ -191,7 +191,7 @@ export default function PropertyCardReact({
             </div>
 
             {bedrooms > 0 && (
-              <div className="flex items-center gap-1" title={`${bedrooms} habitacion(es)`}>
+              <div className="flex items-center gap-1" title={`${bedrooms} habitación(es)`}>
                 <BedDouble className="w-3.5 h-3.5 text-[var(--color-navy)]" />
                 <span>{bedrooms}</span>
               </div>

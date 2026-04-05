@@ -55,7 +55,7 @@ export default function ContactForm({ propertyTitle, agentName, agentPhone }: Co
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = 'El telefono es obligatorio';
+      newErrors.phone = 'El teléfono es obligatorio';
     }
 
     if (!formData.message.trim()) {
@@ -267,7 +267,7 @@ export default function ContactForm({ propertyTitle, agentName, agentPhone }: Co
         {/* Phone */}
         <div>
           <label htmlFor="contact-phone" className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-            Telefono
+            Teléfono
           </label>
           <div className="relative">
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]">

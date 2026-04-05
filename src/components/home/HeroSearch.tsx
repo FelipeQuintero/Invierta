@@ -90,7 +90,7 @@ export default function HeroSearch() {
       <div className="relative z-10 w-full container-custom py-20 md:py-28">
         <div className="max-w-3xl mx-auto text-center mb-10 md:mb-12">
           <h1 className="font-[family-name:var(--font-family-heading)] text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-tight mb-4">
-            Encuentra tu proximo hogar
+            Encuentra tu próximo hogar
           </h1>
           <p className="text-lg md:text-xl text-white/80 font-light max-w-xl mx-auto">
             Miles de propiedades en venta y arriendo en las mejores zonas de Colombia
@@ -114,7 +114,7 @@ export default function HeroSearch() {
                   className="w-4 h-4 accent-[var(--color-primary)]"
                 />
                 <span className={`text-sm font-medium ${searchMode === 'location' ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)]'}`}>
-                  Ubicacion
+                  Ubicación
                 </span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
@@ -126,7 +126,7 @@ export default function HeroSearch() {
                   className="w-4 h-4 accent-[var(--color-primary)]"
                 />
                 <span className={`text-sm font-medium ${searchMode === 'code' ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)]'}`}>
-                  Codigo
+                  Código
                 </span>
               </label>
             </div>
@@ -139,7 +139,7 @@ export default function HeroSearch() {
                     htmlFor="hero-operation"
                     className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide mb-1.5 pl-1"
                   >
-                    Tipo de operacion
+                    Tipo de operación
                   </label>
                   <select
                     id="hero-operation"
@@ -226,11 +226,11 @@ export default function HeroSearch() {
 
                 <LocationAutocomplete
                   id="hero-query"
-                  label="Ubicacion"
+                  label="Ubicación"
                   value={query}
                   onChange={handleLocationChange}
                   onSelect={handleLocationSelect}
-                  placeholder="Ej: Bogota, Chapinero..."
+                  placeholder="Ej: Bogotá, Chapinero..."
                   inputClassName={inputClass}
                   className="flex flex-col"
                 />
@@ -254,7 +254,7 @@ export default function HeroSearch() {
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Codigo del inmueble"
+                    placeholder="Código del inmueble"
                     className={`${inputClass} pr-10`}
                   />
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
@@ -272,7 +272,7 @@ export default function HeroSearch() {
           {/* Quick links below search */}
           <div className="flex flex-wrap justify-center gap-3 mt-5">
             <span className="text-white/60 text-sm">Populares:</span>
-            {['Apartamentos en Bogota', 'Casas en Medellin', 'Arriendos en Cali'].map(
+            {['Apartamentos en Bogotá', 'Casas en Medellín', 'Arriendos en Cali'].map(
               (term) => (
                 <a
                   key={term}

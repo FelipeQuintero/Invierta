@@ -22,7 +22,7 @@ export default function MobileMenu() {
   }, [isOpen]);
 
   const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent(
-    'Hola, me interesa obtener mas informacion sobre sus propiedades.'
+    'Hola, me interesa obtener más información sobre sus propiedades.'
   )}`;
 
   return (
@@ -31,7 +31,7 @@ export default function MobileMenu() {
       <button
         onClick={() => setIsOpen(true)}
         className="inline-flex items-center justify-center rounded-md p-2 text-text-secondary hover:text-primary hover:bg-surface transition-colors"
-        aria-label="Abrir menu de navegacion"
+        aria-label="Abrir menú de navegación"
         aria-expanded={isOpen}
       >
         <Menu size={24} />
@@ -53,7 +53,7 @@ export default function MobileMenu() {
         }`}
         role="dialog"
         aria-modal="true"
-        aria-label="Menu de navegacion"
+        aria-label="Menú de navegación"
       >
         {/* Panel Header */}
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
@@ -63,7 +63,7 @@ export default function MobileMenu() {
           <button
             onClick={() => setIsOpen(false)}
             className="inline-flex items-center justify-center rounded-md p-2 text-text-secondary hover:bg-surface hover:text-primary transition-colors"
-            aria-label="Cerrar menu de navegacion"
+            aria-label="Cerrar menú de navegación"
           >
             <X size={22} />
           </button>
@@ -135,7 +135,7 @@ export default function MobileMenu() {
 
         {/* Secondary Links */}
         <div className="mx-5 mt-5 border-t border-border" />
-        <nav className="flex flex-col px-3 py-3" aria-label="Enlaces rapidos">
+        <nav className="flex flex-col px-3 py-3" aria-label="Enlaces rápidos">
           {TOP_BAR_LINKS.map((link) => {
             const IconComponent = {
               User,

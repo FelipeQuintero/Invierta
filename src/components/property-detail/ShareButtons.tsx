@@ -22,6 +22,7 @@ const btnClass =
 
 export default function ShareButtons({ url, title }: ShareButtonsProps) {
   const [copyState, setCopyState] = useState<'idle' | 'success' | 'error'>('idle');
+  const [igCopyState, setIgCopyState] = useState<'idle' | 'success'>('idle');
 
   const encodedUrl = useMemo(() => encodeURIComponent(url), [url]);
   const encodedTitle = useMemo(() => encodeURIComponent(title), [title]);
@@ -31,6 +32,23 @@ export default function ShareButtons({ url, title }: ShareButtonsProps) {
   const emailUrl = `mailto:?subject=${encodedTitle}&body=${encodeURIComponent('Mira esta propiedad: ' + url)}`;
   const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
   const tiktokUrl = `https://www.tiktok.com/share?url=${encodedUrl}&title=${encodedTitle}`;
+
+  const handleInstagramShare = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        copyFallback(url);
+      }
+      setIgCopyState('success');
+      window.setTimeout(() => {
+        setIgCopyState('idle');
+      }, 3000);
+      window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+    } catch {
+      window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+    }
+  };
 
   const handleCopy = async () => {
     try {
@@ -101,6 +119,16 @@ export default function ShareButtons({ url, title }: ShareButtonsProps) {
         </svg>
         TikTok
       </a>
+
+      {/* Instagram */}
+      <button type="button" onClick={handleInstagramShare} className={btnClass}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+          <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+        </svg>
+        {igCopyState === 'success' ? '¡Link copiado! Abre Instagram' : 'Instagram'}
+      </button>
     </div>
   );
 }

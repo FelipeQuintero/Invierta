@@ -187,7 +187,7 @@ export default function PropertyListingClient({
           No se encontraron propiedades
         </h3>
         <p className="text-[var(--color-text-secondary)] text-sm max-w-md">
-          Intenta ajustar los filtros de busqueda o explorar otras categorias para encontrar lo que buscas.
+          Intenta ajustar los filtros de búsqueda o explorar otras categorías para encontrar lo que buscas.
         </p>
       </div>
     );
@@ -240,7 +240,7 @@ export default function PropertyListingClient({
                 <span>Cargando...</span>
               </>
             ) : (
-              <span>Cargar mas propiedades</span>
+              <span>Cargar más propiedades</span>
             )}
           </button>
         </div>

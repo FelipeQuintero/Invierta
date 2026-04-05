@@ -38,7 +38,7 @@ function buildPopupHTML(property: Property): string {
           ${price}<span style="font-size:12px;font-weight:400;color:#4a5568;">${priceLabel}</span>
         </div>
         <div style="display:flex;gap:10px;font-size:12px;color:#4a5568;margin-bottom:8px;">
-          <span title="Area">${property.area} m&sup2;</span>
+          <span title="Área">${property.area} m&sup2;</span>
           ${property.bedrooms > 0 ? `<span title="Habitaciones">${property.bedrooms} hab</span>` : ''}
           ${property.bathrooms > 0 ? `<span title="Baños">${property.bathrooms} baños</span>` : ''}
         </div>
@@ -228,7 +228,7 @@ export default function PropertiesMap({ properties }: PropertiesMapProps) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
         </svg>
-        <p className="text-text-secondary text-sm">No hay propiedades con ubicacion disponible</p>
+        <p className="text-text-secondary text-sm">No hay propiedades con ubicación disponible</p>
       </div>
     );
   }
