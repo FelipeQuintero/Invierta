@@ -593,9 +593,16 @@ function getPrewarmCities(): string[] {
 async function runPropertiesPrewarm(): Promise<void> {
   if (useMock) return;
 
+  const cities = getPrewarmCities();
+  const operations: Array<PropertyFilters['operation']> = ['venta', 'arriendo'];
+
   const prewarmFilters: PropertyFilters[] = [
-    {},
-    ...getPrewarmCities().map((city) => ({ city })),
+    {},                                                       // all
+    ...operations.map((operation) => ({ operation })),         // by operation
+    ...cities.map((city) => ({ city })),                       // by city
+    ...operations.flatMap((operation) =>                       // operation × city
+      cities.map((city) => ({ operation, city }))
+    ),
   ];
 
   console.log(`[SIMI] Starting prewarm for ${prewarmFilters.length} cache keys`);
