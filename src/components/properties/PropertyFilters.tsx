@@ -376,7 +376,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="Código SIMI (ej: INV-001)"
+              placeholder="Código del inmueble"
               className={`${inputClass} pl-9 pr-10`}
               aria-label="Buscar por código SIMI"
             />
