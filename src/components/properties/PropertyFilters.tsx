@@ -354,7 +354,7 @@ export default function PropertyFilters({ operation, onLoadingChange }: Props) {
             >
               Todos
             </button>
-            {OPERATION_TYPES.filter((o) => o.value !== 'proyecto').map((opt) => (
+            {OPERATION_TYPES.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
