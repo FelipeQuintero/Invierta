@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request }) => {
       firstName, lastName, email, phone, whatsapp,
       source, sourceLink, pipeline, propertyType,
       zone, budgetMin, budgetMax, bedrooms, notes,
-      idempotencyKey,
+      idempotencyKey, solicitud_type,
     } = body;
 
     // Validate required fields
@@ -100,6 +100,7 @@ export const POST: APIRoute = async ({ request }) => {
           phone: phone || '',
           message: notes || `Lead desde portal web - ${pipeline} - ${zone || 'sin zona'}`,
           source: source || 'web-portal',
+          solicitud_type: solicitud_type || '',
           pipeline,
           propertyType: propertyType || '',
           zone: zone || '',

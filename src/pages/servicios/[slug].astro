@@ -326,7 +326,7 @@ const iconMap: Record<string, string> = {
     <div class="mx-auto max-w-xl px-4">
       <h2 class="text-center font-heading text-2xl font-bold text-text-primary mb-2">¿Te interesa este servicio?</h2>
       <p class="text-center text-text-secondary mb-8">Déjanos tus datos y un asesor especializado te contactará</p>
-      <form id="servicio-form" data-service={service.title} class="space-y-4 bg-white rounded-xl border border-border p-6 shadow-sm">
+      <form id="servicio-form" data-service={service.title} data-slug={service.slug} class="space-y-4 bg-white rounded-xl border border-border p-6 shadow-sm">
         <div>
           <label for="srv-nombre" class="block text-sm font-medium text-text-secondary mb-1">Nombre completo</label>
           <input type="text" id="srv-nombre" name="firstName" required class="w-full rounded-lg border border-border px-4 py-3 text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Tu nombre">
@@ -384,6 +384,16 @@ const iconMap: Record<string, string> = {
       const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
       const msg = document.getElementById('srv-form-message')!;
       const serviceTitle = form.dataset.service || '';
+      const serviceSlug = form.dataset.slug || '';
+
+      const SLUG_TO_TYPE: Record<string, string> = {
+        'avaluos': 'Avalúo',
+        'creditos-exterior': 'Crédito Exterior',
+        'creditos-hipotecarios': 'Crédito Hipotecario',
+        'administracion-arrendamientos': 'Administración Arrendamientos',
+        'monetizacion-divisas': 'Monetización Divisas',
+        'reduccion-creditos': 'Reducción Crédito',
+      };
 
       btn.disabled = true;
       btn.textContent = 'Enviando...';
@@ -393,6 +403,7 @@ const iconMap: Record<string, string> = {
         phone: (form.elements.namedItem('phone') as HTMLInputElement).value,
         email: (form.elements.namedItem('email') as HTMLInputElement).value,
         source: 'Servicio: ' + serviceTitle,
+        solicitud_type: SLUG_TO_TYPE[serviceSlug] || ('Servicio: ' + serviceTitle),
       };
 
       try {

@@ -102,6 +102,8 @@ export default function ContactForm({ propertyTitle, agentName, agentPhone }: Co
           email: formData.email.trim(),
           phone: formData.phone.trim(),
           message: formData.message.trim(),
+          source: 'Contacto Propiedad',
+          solicitud_type: 'Buscar Propiedad',
         }),
       });
 
