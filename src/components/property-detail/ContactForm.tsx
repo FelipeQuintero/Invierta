@@ -103,7 +103,7 @@ export default function ContactForm({ propertyTitle, agentName, agentPhone }: Co
           phone: formData.phone.trim(),
           message: formData.message.trim(),
           source: 'Contacto Propiedad',
-          solicitud_type: 'Buscar Propiedad',
+          solicitud_type: 'Rentar o Comprar',
         }),
       });
 
