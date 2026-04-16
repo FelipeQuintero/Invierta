@@ -56,8 +56,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const tokenFromQuery = url.searchParams.get('token');
   if (tokenFromQuery && isValidAdminToken(tokenFromQuery)) {
     setAdminAuthCookie(cookies, tokenFromQuery);
-    const cleanUrl = new URL(url.pathname, url.origin);
-    return Response.redirect(cleanUrl.toString(), 302);
+    return new Response(null, { status: 302, headers: { Location: url.pathname } });
   }
 
   const { maxRequests, windowMs } = getAdminRateLimitConfig();
@@ -79,7 +78,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     return unauthorizedApiResponse();
   }
 
-  const loginUrl = new URL('/admin/login', url.origin);
-  loginUrl.searchParams.set('next', url.pathname);
-  return Response.redirect(loginUrl.toString(), 302);
+  const nextParam = encodeURIComponent(url.pathname);
+  return new Response(null, { status: 302, headers: { Location: `/admin/login?next=${nextParam}` } });
 };
