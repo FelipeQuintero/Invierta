@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, integer, timestamp, jsonb, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, integer, bigint, timestamp, jsonb, boolean, index } from 'drizzle-orm/pg-core';
 
 // ============================================
 // FASE 0A — Esquema canónico base
@@ -133,7 +133,7 @@ export const simiProperties = pgTable('simi_properties', {
   neighborhood: varchar('neighborhood', { length: 120 }),
   operationType: varchar('operation_type', { length: 20 }),
   propertyType: varchar('property_type', { length: 40 }),
-  price: integer('price').default(0).notNull(),
+  price: bigint('price', { mode: 'number' }).default(0).notNull(),
   area: integer('area').default(0).notNull(),
   bedrooms: integer('bedrooms').default(0).notNull(),
   bathrooms: integer('bathrooms').default(0).notNull(),
