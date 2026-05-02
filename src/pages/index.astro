@@ -8,6 +8,8 @@ import ProjectCard from '../components/projects/ProjectCard.tsx';
 import type { Project } from '../components/projects/types';
 import { getFeaturedProperties } from '../lib/simi';
 import { SITE_CONFIG } from '../lib/constants';
+import { and, desc, eq } from 'drizzle-orm';
+import { db, schema } from '../db';
 
 // Disable prerendering - fetch fresh data on each request
 export const prerender = false;
@@ -16,16 +18,16 @@ const featuredProperties = await getFeaturedProperties(8);
 
 let featuredProjects: Project[] = [];
 try {
-  const response = await fetch(new URL('/api/projects?featured=true', Astro.url));
-  if (response.ok) {
-    const data = await response.json();
-    featuredProjects = Array.isArray(data) ? data : data?.projects || [];
-  }
+  const rows = await db
+    .select()
+    .from(schema.projects)
+    .where(and(eq(schema.projects.isActive, true), eq(schema.projects.isFeatured, true)))
+    .orderBy(desc(schema.projects.createdAt))
+    .limit(4);
+  featuredProjects = rows as unknown as Project[];
 } catch (error) {
   console.error('Error cargando proyectos destacados:', error);
 }
-
-featuredProjects = featuredProjects.filter((project) => project?.isActive !== false).slice(0, 4);
 ---
 
 <Layout>

@@ -787,11 +787,13 @@ export async function getFeaturedProperties(cantidad: number = 10): Promise<Prop
     const endpoint = `/v21/inmueblesDestacados/limite/1/cantidad/${cantidad}`;
     const data = await simiRequest<SimiFilterResponse | SimiInmueble[]>(endpoint);
     
-    // Handle both possible response formats
+    // Handle both possible response formats.
+    // SIMI returns the JSON string "Sin resultados" when there are no featured
+    // properties, so we must guard for non-object values before using `in`.
     let inmuebles: SimiInmueble[];
     if (Array.isArray(data)) {
       inmuebles = data;
-    } else if (data && 'Inmuebles' in data) {
+    } else if (data && typeof data === 'object' && 'Inmuebles' in data) {
       inmuebles = data.Inmuebles;
     } else {
       console.warn('[SIMI] Unexpected featured response format:', data);
