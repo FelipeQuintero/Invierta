@@ -294,7 +294,8 @@ const iconPaths: Record<string, string> = {
       const interestType = String(formData.get('interestType') || '');
       const budgetDigits = String(formData.get('budget') || '').replace(/\D/g, '');
 
-      const pipeline = interestType === 'Arriendo' ? 'renta' : 'compra';
+      const pipeline = interestType === 'Arriendo' ? 'renta' : interestType === 'Inversión en proyecto' ? 'proyecto' : 'compra';
+      const intentionTag = interestType === 'Arriendo' ? 'RENTA' : interestType === 'Inversión en proyecto' ? 'PROYECTO' : 'VENTA';
 
       const referrerName = String(formData.get('referrerName') || '').trim();
       const referrerPhone = String(formData.get('referrerPhone') || '').trim();
@@ -311,13 +312,14 @@ const iconPaths: Record<string, string> = {
         email: String(formData.get('email') || '').trim(),
         phone: String(formData.get('phone') || '').trim(),
         source: 'referido',
-        solicitud_type: 'Rentar o Comprar',
-        sourceLink: '',
+        solicitud_type: interestType === 'Inversión en proyecto' ? 'Constructor o Inversionista' : 'Rentar o Comprar',
+        sourceLink: window.location.href,
         pipeline,
         propertyType: String(formData.get('propertyType') || '').trim(),
         zone: String(formData.get('cityInterest') || '').trim(),
         budgetMax: budgetDigits ? Number(budgetDigits) : undefined,
         notes,
+        tags: [intentionTag, 'WEBREFERIDO', 'REFERIDO', 'PENDIENTEPERFILAR'],
         idempotencyKey: `referral-${Date.now()}-${referralPhone || 'no-phone'}`,
       };
 

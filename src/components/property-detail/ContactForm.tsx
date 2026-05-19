@@ -6,6 +6,7 @@ interface ContactFormProps {
   propertyTitle: string;
   agentName?: string;
   agentPhone?: string;
+  operationType?: 'venta' | 'arriendo' | 'proyecto';
 }
 
 interface FormData {
@@ -24,7 +25,7 @@ interface FormErrors {
   message?: string;
 }
 
-export default function ContactForm({ propertyTitle, agentName, agentPhone }: ContactFormProps) {
+export default function ContactForm({ propertyTitle, propertyId, agentName, agentPhone, operationType }: ContactFormProps) {
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
@@ -85,25 +86,30 @@ export default function ContactForm({ propertyTitle, agentName, agentPhone }: Co
     setError(null);
 
     try {
-      const webhookUrl = import.meta.env.PUBLIC_GHL_WEBHOOK_URL;
+      // Derive pipeline + tags from operation type
+      const op = operationType || 'venta';
+      const pipeline = op === 'arriendo' ? 'renta' : op === 'proyecto' ? 'proyecto' : 'compra';
+      const intentionTag = op === 'arriendo' ? 'RENTA' : op === 'proyecto' ? 'PROYECTO' : 'VENTA';
+      const originTag = op === 'proyecto' ? 'WEBPROYECTO' : 'WEBPROPIEDAD';
+      const solicitudType = op === 'proyecto' ? 'Constructor o Inversionista' : 'Rentar o Comprar';
 
-      if (!webhookUrl) {
-        throw new Error('Webhook URL no configurada');
-      }
+      const sourceLink = typeof window !== 'undefined' ? window.location.href : '';
 
-      const response = await fetch(webhookUrl, {
+      const response = await fetch('/api/webhook/lead-intake', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           firstName: formData.firstName.trim(),
           lastName: formData.lastName.trim(),
           email: formData.email.trim(),
           phone: formData.phone.trim(),
-          message: formData.message.trim(),
+          notes: formData.message.trim(),
           source: 'Contacto Propiedad',
-          solicitud_type: 'Rentar o Comprar',
+          sourceLink,
+          solicitud_type: solicitudType,
+          pipeline,
+          tags: [intentionTag, originTag, 'PENDIENTEPERFILAR'],
+          idempotencyKey: `property-${propertyId || 'unknown'}-${Date.now()}-${formData.phone.replace(/\D/g, '') || 'no-phone'}`,
         }),
       });
 

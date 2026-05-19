@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request }) => {
       firstName, lastName, email, phone, whatsapp,
       source, sourceLink, pipeline, propertyType,
       zone, budgetMin, budgetMax, bedrooms, notes,
-      idempotencyKey, solicitud_type,
+      idempotencyKey, solicitud_type, tags,
     } = body;
 
     // Validate required fields
@@ -22,7 +22,17 @@ export const POST: APIRoute = async ({ request }) => {
     if (!phone && !email) return json({ error: 'At least phone or email is required' }, 400);
     if (!source) return json({ error: 'source is required' }, 400);
     if (!pipeline) return json({ error: 'pipeline is required' }, 400);
-    if (!['renta', 'compra'].includes(pipeline)) return json({ error: 'pipeline must be renta or compra' }, 400);
+
+    // Accept extended pipeline vocabulary for non-commercial leads (services, captación, etc.)
+    const VALID_PIPELINES = ['renta', 'compra', 'captacion_venta', 'captacion_renta', 'servicio', 'credito', 'proyecto'];
+    if (!VALID_PIPELINES.includes(pipeline)) {
+      return json({ error: `pipeline must be one of: ${VALID_PIPELINES.join(', ')}` }, 400);
+    }
+
+    // Normalize tags: must be array of uppercase single-word strings
+    const normalizedTags: string[] = Array.isArray(tags)
+      ? tags.filter((t: unknown): t is string => typeof t === 'string' && t.length > 0)
+      : [];
 
     // Idempotency check
     if (idempotencyKey) {
@@ -100,12 +110,15 @@ export const POST: APIRoute = async ({ request }) => {
           phone: phone || '',
           message: notes || `Lead desde portal web - ${pipeline} - ${zone || 'sin zona'}`,
           source: source || 'web-portal',
+          sourceLink: sourceLink || '',
           solicitud_type: solicitud_type || '',
           pipeline,
           propertyType: propertyType || '',
           zone: zone || '',
           budgetMin: budgetMin || '',
           budgetMax: budgetMax || '',
+          tags: normalizedTags,
+          tagsCsv: normalizedTags.join(','),
         }),
       });
     } catch (lucraErr) {

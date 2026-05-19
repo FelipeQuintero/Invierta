@@ -395,25 +395,42 @@ const iconMap: Record<string, string> = {
         'reduccion-creditos': 'Crédito Hipotecario',
       };
 
+      const SLUG_TO_TAGS: Record<string, { intention: string; pipeline: string }> = {
+        'avaluos':                    { intention: 'AVALUO',           pipeline: 'captacion_venta' },
+        'creditos-exterior':          { intention: 'EXTERIOR',         pipeline: 'credito' },
+        'creditos-hipotecarios':      { intention: 'HIPOTECARIO',      pipeline: 'credito' },
+        'administracion-arrendamientos': { intention: 'ADMINISTRACION', pipeline: 'servicio' },
+        'monetizacion-divisas':       { intention: 'MONETIZACION',     pipeline: 'servicio' },
+        'reduccion-creditos':         { intention: 'REDUCCIONCREDITO', pipeline: 'credito' },
+      };
 
       btn.disabled = true;
       btn.textContent = 'Enviando...';
 
+      const slugMapping = SLUG_TO_TAGS[serviceSlug] || { intention: 'SERVICIO', pipeline: 'servicio' };
+      const phoneValue = (form.elements.namedItem('phone') as HTMLInputElement).value;
+
       const data = {
         firstName: (form.elements.namedItem('firstName') as HTMLInputElement).value,
-        phone: (form.elements.namedItem('phone') as HTMLInputElement).value,
+        phone: phoneValue,
         email: (form.elements.namedItem('email') as HTMLInputElement).value,
         source: 'Servicio: ' + serviceTitle,
+        sourceLink: window.location.href,
         solicitud_type: SLUG_TO_TYPE[serviceSlug] || ('Servicio: ' + serviceTitle),
+        pipeline: slugMapping.pipeline,
+        tags: [slugMapping.intention, 'WEBSERVICIO', 'PENDIENTEPERFILAR'],
+        idempotencyKey: `servicio-${serviceSlug}-${Date.now()}-${phoneValue.replace(/\D/g, '') || 'no-phone'}`,
       };
 
       try {
-        const webhookUrl = 'https://services.leadconnectorhq.com/hooks/8kbdbM2PqR4rZqVDL126/webhook-trigger/a380a512-3b67-4cc6-b639-86d3aacfdccf';
-        await fetch(webhookUrl, {
+        const response = await fetch('/api/webhook/lead-intake', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
         });
+        if (!response.ok) {
+          throw new Error('Error al enviar');
+        }
         msg.textContent = '¡Gracias! Un asesor te contactará pronto.';
         msg.className = 'text-center text-sm text-green-600 mt-2';
         form.reset();

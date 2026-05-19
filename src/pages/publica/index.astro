@@ -159,6 +159,19 @@ const breadcrumbItems = [
             placeholder="tu@correo.com"
           />
         </div>
+        <div>
+          <label for="publicationType" class="block text-sm font-medium text-text-secondary mb-1">¿Qué quieres publicar?</label>
+          <select
+            id="publicationType"
+            name="publicationType"
+            required
+            class="w-full rounded-lg border border-border bg-white px-4 py-3 text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">Selecciona una opción</option>
+            <option value="venta">En venta</option>
+            <option value="arriendo">En arriendo</option>
+          </select>
+        </div>
         <button
           type="submit"
           class="w-full rounded-lg bg-accent py-3 text-white font-semibold hover:bg-accent/90 transition-colors shadow-md cursor-pointer"
@@ -184,20 +197,26 @@ const breadcrumbItems = [
       const firstName = (form.elements.namedItem('firstName') as HTMLInputElement).value.trim();
       const phone = (form.elements.namedItem('phone') as HTMLInputElement).value.trim();
       const email = (form.elements.namedItem('email') as HTMLInputElement).value.trim();
+      const publicationType = (form.elements.namedItem('publicationType') as HTMLSelectElement).value;
+
+      const isArriendo = publicationType === 'arriendo';
+      const pipeline = isArriendo ? 'captacion_renta' : 'captacion_venta';
+      const intentionTag = isArriendo ? 'CAPTACIONRENTA' : 'CAPTACIONVENTA';
 
       try {
-        const webhookUrl = (import.meta as any).env?.PUBLIC_GHL_WEBHOOK_URL
-          || 'https://services.leadconnectorhq.com/hooks/8kbdbM2PqR4rZqVDL126/webhook-trigger/a380a512-3b67-4cc6-b639-86d3aacfdccf';
-
-        const response = await fetch(webhookUrl, {
+        const response = await fetch('/api/webhook/lead-intake', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
             firstName,
             phone,
             email,
             source: 'Publica tu Inmueble',
+            sourceLink: window.location.href,
             solicitud_type: 'Consignar o Avaluar',
+            pipeline,
+            tags: [intentionTag, 'WEBPUBLICA', 'PROPIETARIO', 'PENDIENTEPERFILAR'],
+            idempotencyKey: `publica-${Date.now()}-${phone.replace(/\D/g, '') || 'no-phone'}`,
           }),
         });
 
