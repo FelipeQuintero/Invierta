@@ -95,39 +95,54 @@ export const POST: APIRoute = async ({ request }) => {
       leadCaseId: leadCase.id, type: 'first_contact', deadline,
     });
 
-    // Forward to Lucra (GHL) inbound webhook
-    const LUCRA_WEBHOOK_URL = import.meta.env.LUCRA_WEBHOOK_URL
-      || 'https://services.leadconnectorhq.com/hooks/8kbdbM2PqR4rZqVDL126/webhook-trigger/a380a512-3b67-4cc6-b639-86d3aacfdccf';
+    // Route to GHL webhook by solicitud_type — one workflow per type
+    const GHL_WEBHOOK_BY_TYPE: Record<string, string | undefined> = {
+      'Rentar o Comprar': import.meta.env.GHL_WEBHOOK_RENTAR_COMPRAR
+        || 'https://services.leadconnectorhq.com/hooks/8kbdbM2PqR4rZqVDL126/webhook-trigger/c8ce74f9-84ca-465f-82f5-7104f9532aaf',
+      // Pending: 'Constructor o Inversionista', 'Consignar o Avaluar',
+      // 'Crédito Exterior', 'Crédito Hipotecario', 'Propietario o Arrendatario'
+    };
 
-    try {
-      await fetch(LUCRA_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName,
-          lastName: lastName || '',
-          email: email || '',
-          phone: phone || '',
-          message: notes || `Lead desde portal web - ${pipeline} - ${zone || 'sin zona'}`,
-          source: source || 'web-portal',
-          sourceLink: sourceLink || '',
-          solicitud_type: solicitud_type || '',
-          pipeline,
-          propertyType: propertyType || '',
-          zone: zone || '',
-          budgetMin: budgetMin || '',
-          budgetMax: budgetMax || '',
-          tags: normalizedTags,
-          tagsCsv: normalizedTags.join(','),
-        }),
-      });
-    } catch (lucraErr) {
-      // Log but don't fail - lead is already saved in our DB
-      console.error('Lucra webhook forward failed:', lucraErr);
+    const webhookUrl = solicitud_type ? GHL_WEBHOOK_BY_TYPE[solicitud_type] : undefined;
+
+    if (webhookUrl) {
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firstName,
+            lastName: lastName || '',
+            email: email || '',
+            phone: phone || '',
+            message: notes || `Lead desde portal web - ${pipeline} - ${zone || 'sin zona'}`,
+            source: source || 'web-portal',
+            sourceLink: sourceLink || '',
+            solicitud_type: solicitud_type || '',
+            pipeline,
+            propertyType: propertyType || '',
+            zone: zone || '',
+            budgetMin: budgetMin || '',
+            budgetMax: budgetMax || '',
+            tags: normalizedTags,
+            tagsCsv: normalizedTags.join(','),
+          }),
+        });
+      } catch (ghlErr) {
+        // Log but don't fail - lead is already saved in our DB
+        console.error('GHL webhook forward failed:', ghlErr);
+        await db.insert(schema.auditEvents).values({
+          entityType: 'lead_case', entityId: leadCase.id,
+          action: 'ghl_forward_failed', actor: 'webhook',
+          metadata: { error: String(ghlErr), solicitud_type },
+        });
+      }
+    } else {
+      // No webhook configured for this solicitud_type — lead saved locally but NOT forwarded to GHL
       await db.insert(schema.auditEvents).values({
         entityType: 'lead_case', entityId: leadCase.id,
-        action: 'lucra_forward_failed', actor: 'webhook',
-        metadata: { error: String(lucraErr) },
+        action: 'ghl_forward_skipped', actor: 'webhook',
+        metadata: { reason: 'no_webhook_for_solicitud_type', solicitud_type: solicitud_type || null },
       });
     }
 
