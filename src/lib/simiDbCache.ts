@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, ilike, lte, notInArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ilike, lte, notInArray, or, sql } from 'drizzle-orm';
 import { db, schema } from '../db';
 import type { Property, PropertyFilters } from './types';
 
@@ -17,6 +17,16 @@ export async function getPropertiesFromDb(filters?: PropertyFilters): Promise<Pr
 
   const conditions = [eq(schema.simiProperties.isActive, true)];
 
+  if (filters?.code) {
+    const c = filters.code.trim();
+    // SIMI ids in DB are "{IdInmobiliaria}-{codInterno}" (e.g. 188-2470).
+    // Users typically type only the internal code (2470), so match both formats.
+    const codeCondition = or(
+      eq(schema.simiProperties.id, c),
+      ilike(schema.simiProperties.id, `%-${c}`)
+    );
+    if (codeCondition) conditions.push(codeCondition);
+  }
   if (filters?.operation) conditions.push(eq(schema.simiProperties.operationType, filters.operation));
   if (filters?.propertyType) conditions.push(eq(schema.simiProperties.propertyType, filters.propertyType));
   if (filters?.city) conditions.push(ilike(schema.simiProperties.city, `%${filters.city}%`));
