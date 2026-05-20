@@ -98,9 +98,17 @@ export const POST: APIRoute = async ({ request }) => {
     // Route to GHL webhook by solicitud_type — one workflow per type
     const GHL_WEBHOOK_BY_TYPE: Record<string, string | undefined> = {
       'Rentar o Comprar': import.meta.env.GHL_WEBHOOK_RENTAR_COMPRAR
-        || 'https://services.leadconnectorhq.com/hooks/8kbdbM2PqR4rZqVDL126/webhook-trigger/c8ce74f9-84ca-465f-82f5-7104f9532aaf',
-      // Pending: 'Constructor o Inversionista', 'Consignar o Avaluar',
-      // 'Crédito Exterior', 'Crédito Hipotecario', 'Propietario o Arrendatario'
+        || 'https://services.leadconnectorhq.com/hooks/8kbdbM2PqR4rZqVDL126/webhook-trigger/278b7b4a-c3be-4fc1-b4b8-5b6fa76f7b7f',
+      'Consignar o Avaluar': import.meta.env.GHL_WEBHOOK_CONSIGNAR_AVALUAR
+        || 'https://services.leadconnectorhq.com/hooks/8kbdbM2PqR4rZqVDL126/webhook-trigger/Mu73zkbgOPHUQF4xW9Uu',
+      'Constructor o Inversionista': import.meta.env.GHL_WEBHOOK_CONSTRUCTOR_INVERSIONISTA
+        || 'https://services.leadconnectorhq.com/hooks/8kbdbM2PqR4rZqVDL126/webhook-trigger/o6QQhqdt3PqSns8oOo48',
+      'Crédito Exterior': import.meta.env.GHL_WEBHOOK_CREDITO_EXTERIOR
+        || 'https://services.leadconnectorhq.com/hooks/8kbdbM2PqR4rZqVDL126/webhook-trigger/MhwT1puagaBJw2UjfpNy',
+      'Crédito Hipotecario': import.meta.env.GHL_WEBHOOK_CREDITO_HIPOTECARIO
+        || 'https://services.leadconnectorhq.com/hooks/8kbdbM2PqR4rZqVDL126/webhook-trigger/35o65Nju0B37wyEAD8sC',
+      'Propietario o Arrendatario': import.meta.env.GHL_WEBHOOK_PROPIETARIO_ARRENDATARIO
+        || 'https://services.leadconnectorhq.com/hooks/8kbdbM2PqR4rZqVDL126/webhook-trigger/lDQ7HirZo3G2dylWI4j2',
     };
 
     const webhookUrl = solicitud_type ? GHL_WEBHOOK_BY_TYPE[solicitud_type] : undefined;
