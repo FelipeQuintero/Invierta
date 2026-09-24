@@ -23,3 +23,11 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Herramientas y notas internas (no se versionan)
+.agents/
+.claude/
+.mcp.json
+CLAUDE.md
+AGENTS.md
+.playwright-mcp/
