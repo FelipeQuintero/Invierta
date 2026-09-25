@@ -114,9 +114,9 @@ export const NAV_LINKS = [
 ] as const;
 
 export const TOP_BAR_LINKS: TopBarLink[] = [
-  { href: 'https://invierta.portal.rent10.online/', label: 'Portal Propietarios', icon: 'User', external: true },
-  { href: 'https://invierta.portal.rent10.online/', label: 'Portal Arrendatarios', icon: 'UserCheck', external: true },
-  { href: 'https://pagos.rent10.online/-/view-payment', label: 'Pagos PSE', icon: 'CreditCard', external: true },
+  { href: 'https://invierta.portal.rentio.cloud/', label: 'Portal Propietarios', icon: 'User', external: true },
+  { href: 'https://invierta.portal.rentio.cloud/', label: 'Portal Arrendatarios', icon: 'UserCheck', external: true },
+  { href: 'https://pagos.rentio.cloud', label: 'Pagos PSE', icon: 'CreditCard', external: true },
   { href: '/referidos', label: 'Registrar referido', icon: 'Users', external: false },
   { href: '/publica', label: 'Publica tu Inmueble', icon: 'Home', external: false },
 ];
