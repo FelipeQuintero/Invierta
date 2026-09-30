@@ -7,9 +7,12 @@ import AnimateOnScroll from '../components/ui/AnimateOnScroll.tsx';
 import ProjectCard from '../components/projects/ProjectCard.tsx';
 import type { Project } from '../components/projects/types';
 import { getFeaturedProperties } from '../lib/simi';
-import { SITE_CONFIG } from '../lib/constants';
+import { SITE_CONFIG, CLIENT_ACCESS, PSE_PAYMENT } from '../lib/constants';
 import { and, desc, eq } from 'drizzle-orm';
 import { db, schema } from '../db';
+import { House, KeyRound, Wallet, ArrowUpRight, ShieldCheck, Landmark } from 'lucide-react';
+
+const CLIENT_ICONS = { owner: House, tenant: KeyRound, payment: Wallet } as const;
 
 // Disable prerendering - fetch fresh data on each request
 export const prerender = false;
@@ -33,35 +36,135 @@ try {
 <Layout>
   <HeroSearch client:load />
 
-  <!-- Accesos Rápidos -->
-  <section class="bg-white py-8 border-b border-border">
-    <div class="mx-auto max-w-6xl px-4">
-      <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
-        <a href="https://invierta.portal.rent10.online/" target="_blank" rel="noopener noreferrer" class="group flex flex-col items-center gap-3 rounded-xl p-4 transition-all hover:bg-surface hover:shadow-md">
-          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-          <span class="text-center text-sm font-medium text-text-secondary group-hover:text-primary">Portal Propietarios</span>
-        </a>
-        <a href="https://invierta.portal.rent10.online/" target="_blank" rel="noopener noreferrer" class="group flex flex-col items-center gap-3 rounded-xl p-4 transition-all hover:bg-surface hover:shadow-md">
-          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
-          </div>
-          <span class="text-center text-sm font-medium text-text-secondary group-hover:text-accent">Portal Inquilinos</span>
-        </a>
-        <a href="https://pagos.rent10.online/-/view-payment" target="_blank" rel="noopener noreferrer" class="group flex flex-col items-center gap-3 rounded-xl p-4 transition-all hover:bg-surface hover:shadow-md">
-          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10 text-green-600 transition-colors group-hover:bg-green-500 group-hover:text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
-          </div>
-          <span class="text-center text-sm font-medium text-text-secondary group-hover:text-green-600">Pagos PSE</span>
-        </a>
-        <a href="/referidos" class="group flex flex-col items-center gap-3 rounded-xl p-4 transition-all hover:bg-surface hover:shadow-md">
-          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-purple-500/10 text-purple-600 transition-colors group-hover:bg-purple-500 group-hover:text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
-          </div>
-          <span class="text-center text-sm font-medium text-text-secondary group-hover:text-purple-600">Registra un Referido</span>
-        </a>
+  <!-- Zona de clientes: portales y pagos -->
+  <section
+    id="zona-clientes"
+    class="scroll-mt-28 border-b border-border bg-surface py-12 md:py-16"
+    aria-labelledby="zona-clientes-title"
+  >
+    <div class="container-custom">
+      <div class="mb-8 flex flex-col gap-4 md:mb-10 md:flex-row md:items-end md:justify-between">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Zona de clientes</span>
+          <h2 id="zona-clientes-title" class="mt-2 font-heading text-2xl font-bold text-text-primary md:text-3xl">
+            Gestiona tu arriendo en línea
+          </h2>
+          <p class="mt-2 max-w-xl text-base text-text-secondary">
+            Ingresa a tu portal o realiza tus pagos sin desplazarte a la oficina.
+          </p>
+        </div>
+        <p class="inline-flex items-center gap-2 text-sm text-text-secondary">
+          <ShieldCheck className="h-4 w-4 shrink-0 text-secondary" aria-hidden="true" />
+          Plataformas seguras · se abren en una pestaña nueva
+        </p>
       </div>
+
+      <div class="grid gap-4 md:grid-cols-3 lg:gap-6">
+        {CLIENT_ACCESS.map((item) => {
+          const Icon = CLIENT_ICONS[item.icon];
+          return (
+            <a
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${item.label} (se abre en una pestaña nueva)`}
+              class:list={[
+                'group relative flex h-full flex-col rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 lg:p-7',
+                item.featured
+                  ? 'bg-primary text-white shadow-lg hover:shadow-2xl'
+                  : 'border border-border bg-white hover:border-navy/25 hover:shadow-xl',
+              ]}
+            >
+              {item.featured && (
+                <span class="absolute right-5 top-5 rounded-full bg-accent/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-accent-light">
+                  Pago en línea
+                </span>
+              )}
+              <span
+                class:list={[
+                  'flex h-12 w-12 items-center justify-center rounded-xl transition-colors duration-200',
+                  item.featured
+                    ? 'bg-accent text-white'
+                    : 'bg-navy/10 text-navy group-hover:bg-navy group-hover:text-white',
+                ]}
+              >
+                <Icon className="h-6 w-6" aria-hidden="true" />
+              </span>
+
+              <h3
+                class:list={[
+                  'mt-5 font-heading text-lg font-bold lg:text-xl',
+                  item.featured ? 'text-white' : 'text-text-primary',
+                ]}
+              >
+                {item.label}
+              </h3>
+              <p
+                class:list={[
+                  'mt-2 flex-1 text-sm leading-relaxed',
+                  item.featured ? 'text-white/75' : 'text-text-secondary',
+                ]}
+              >
+                {item.description}
+              </p>
+
+              {item.featured ? (
+                <span class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition-colors group-hover:bg-accent-dark">
+                  {item.cta}
+                  <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                </span>
+              ) : (
+                <span class="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-navy transition-colors group-hover:text-accent">
+                  {item.cta}
+                  <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+                </span>
+              )}
+            </a>
+          );
+        })}
+      </div>
+
+      <!-- Pagos PSE: estudios y otros pagos -->
+      <a
+        href={PSE_PAYMENT.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`${PSE_PAYMENT.label}: ${PSE_PAYMENT.description} (se abre en una pestaña nueva)`}
+        class="group mt-4 flex flex-col gap-5 rounded-2xl border border-border bg-white p-6 transition-all duration-200 hover:-translate-y-1 hover:border-navy/25 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 sm:flex-row sm:items-center lg:mt-6 lg:gap-7 lg:p-7"
+      >
+        <span class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-white p-2 shadow-sm">
+          <img
+            src={PSE_PAYMENT.logo}
+            alt="PSE"
+            width="64"
+            height="64"
+            loading="lazy"
+            class="h-full w-full object-contain"
+            onerror="this.hidden=true;this.nextElementSibling.hidden=false;"
+          />
+          <span hidden class="font-heading text-xl font-extrabold tracking-tight text-navy">PSE</span>
+        </span>
+
+        <span class="flex-1">
+          <span class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">Estudios y otros pagos</span>
+          <span class="mt-1 block font-heading text-lg font-bold text-text-primary lg:text-xl">{PSE_PAYMENT.label}</span>
+          <span class="mt-1.5 block text-sm leading-relaxed text-text-secondary">{PSE_PAYMENT.description}</span>
+          <span class="mt-2 inline-flex items-center gap-1.5 text-xs text-text-muted">
+            <Landmark className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            {PSE_PAYMENT.provider}
+          </span>
+        </span>
+
+        <span class="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-navy px-5 py-3 text-sm font-semibold text-white transition-colors group-hover:bg-navy-dark">
+          {PSE_PAYMENT.cta}
+          <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+        </span>
+      </a>
+
+      <p class="mt-8 text-center text-sm text-text-secondary">
+        ¿Conoces a alguien que quiera vender o arrendar su inmueble?
+        <a href="/referidos" class="font-semibold text-accent underline-offset-4 hover:underline">Registra un referido →</a>
+      </p>
     </div>
   </section>
 

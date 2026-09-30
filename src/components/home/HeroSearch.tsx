@@ -1,10 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Search } from 'lucide-react';
-import { OPERATION_TYPES, PROPERTY_TYPES } from '../../lib/constants';
+import { Search, House, KeyRound, Wallet } from 'lucide-react';
+import { OPERATION_TYPES, PROPERTY_TYPES, CLIENT_ACCESS, PSE_PAYMENT } from '../../lib/constants';
 import type { OperationType, PropertyType } from '../../lib/types';
 import PropertyTypeIcon from '../ui/PropertyTypeIcon';
 import LocationAutocomplete from '../ui/LocationAutocomplete';
 import type { LocationSuggestion } from '../../lib/locationSearch';
+
+const CLIENT_ICONS = { owner: House, tenant: KeyRound, payment: Wallet } as const;
 
 export default function HeroSearch() {
   const [operation, setOperation] = useState<OperationType>('venta');
@@ -14,6 +16,14 @@ export default function HeroSearch() {
   const [query, setQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<LocationSuggestion | null>(null);
   const [searchMode, setSearchMode] = useState<'location' | 'code'>('location');
+  const [pseLogoFailed, setPseLogoFailed] = useState(false);
+  const pseLogoRef = useRef<HTMLImageElement>(null);
+
+  // Si el logo de PSE falló antes de hidratar, onError no se dispara: se verifica al montar
+  useEffect(() => {
+    const img = pseLogoRef.current;
+    if (img && img.complete && img.naturalWidth === 0) setPseLogoFailed(true);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -87,8 +97,8 @@ export default function HeroSearch() {
       <div className="absolute inset-0 bg-gradient-to-br from-[#1a2332]/90 via-[#1a2332]/75 to-[#f97316]/60" />
 
       {/* Content */}
-      <div className="relative z-10 w-full container-custom py-20 md:py-28">
-        <div className="max-w-3xl mx-auto text-center mb-10 md:mb-12">
+      <div className="relative z-10 w-full container-custom py-14 md:py-20">
+        <div className="max-w-3xl mx-auto text-center mb-8 md:mb-10">
           <h1 className="font-[family-name:var(--font-family-heading)] text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-tight mb-4">
             Encuentra tu próximo hogar
           </h1>
@@ -269,21 +279,65 @@ export default function HeroSearch() {
             )}
           </form>
 
-          {/* Quick links below search */}
-          <div className="flex flex-wrap justify-center gap-3 mt-5">
-            <span className="text-white/60 text-sm">Populares:</span>
-            {['Apartamentos en Bogotá', 'Casas en Medellín', 'Arriendos en Cali'].map(
-              (term) => (
-                <a
-                  key={term}
-                  href={`/propiedades?city=${encodeURIComponent(term.split(' en ')[1] || '')}`}
-                  className="text-sm text-white/80 hover:text-white border border-white/20 hover:border-white/40 rounded-full px-3 py-1 transition-colors"
-                >
-                  {term}
-                </a>
-              )
-            )}
-          </div>
+          {/* Zona de clientes: accesos directos */}
+          <nav className="mt-6 md:mt-8" aria-labelledby="hero-clientes-title">
+            <p id="hero-clientes-title" className="text-center text-sm font-medium text-white/85 mb-3">
+              ¿Ya eres cliente de Invierta?
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3">
+              {CLIENT_ACCESS.map((item) => {
+                const Icon = CLIENT_ICONS[item.icon];
+                return (
+                  <a
+                    key={item.id}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${item.label} (se abre en una pestaña nueva)`}
+                    className={`group flex min-h-[48px] items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 py-3 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${
+                      item.featured
+                        ? 'bg-[var(--color-accent)] text-white shadow-lg shadow-black/25 hover:bg-[var(--color-accent-dark)] hover:-translate-y-0.5'
+                        : 'bg-white/10 text-white border border-white/30 backdrop-blur-sm hover:bg-white hover:text-[var(--color-primary)] hover:-translate-y-0.5'
+                    }`}
+                  >
+                    <Icon className="w-[18px] h-[18px] shrink-0" aria-hidden="true" />
+                    {item.featured ? (
+                      <span>{item.shortLabel}</span>
+                    ) : (
+                      <>
+                        <span className="lg:hidden">{item.shortLabel}</span>
+                        <span className="hidden lg:inline">{item.label}</span>
+                      </>
+                    )}
+                  </a>
+                );
+              })}
+              <a
+                href={PSE_PAYMENT.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${PSE_PAYMENT.label}: estudios y otros pagos (se abre en una pestaña nueva)`}
+                className="group flex min-h-[48px] items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-white px-3 py-2.5 text-sm font-semibold text-[var(--color-primary)] shadow-lg shadow-black/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              >
+                {pseLogoFailed ? (
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[var(--color-navy)] text-[10px] font-extrabold tracking-tight text-white">
+                    PSE
+                  </span>
+                ) : (
+                  <img
+                    ref={pseLogoRef}
+                    src={PSE_PAYMENT.logo}
+                    alt=""
+                    width={28}
+                    height={28}
+                    className="h-7 w-7 shrink-0 object-contain"
+                    onError={() => setPseLogoFailed(true)}
+                  />
+                )}
+                <span>{PSE_PAYMENT.label}</span>
+              </a>
+            </div>
+          </nav>
         </div>
       </div>
     </section>

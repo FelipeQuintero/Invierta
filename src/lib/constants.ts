@@ -113,10 +113,82 @@ export const NAV_LINKS = [
   { href: '/publica', label: 'Publica tu Inmueble' },
 ] as const;
 
-export const TOP_BAR_LINKS: TopBarLink[] = [
-  { href: 'https://invierta.portal.rentio.cloud/', label: 'Portal Propietarios', icon: 'User', external: true },
-  { href: 'https://invierta.portal.rentio.cloud/', label: 'Portal Arrendatarios', icon: 'UserCheck', external: true },
-  { href: 'https://pagos.rentio.cloud', label: 'Pagos PSE', icon: 'CreditCard', external: true },
+// ============================================================================
+// ZONA DE CLIENTES — portales y pagos
+// Para cambiar un enlace, edítalo SOLO en CLIENT_LINKS: se actualiza
+// automáticamente en la barra superior, el header móvil, el menú móvil,
+// el hero y la sección "Zona de clientes" del inicio.
+// ============================================================================
+
+export const CLIENT_LINKS = {
+  portalPropietarios: 'https://invierta.portal.rentio.cloud/',
+  portalArrendatarios: 'https://invierta.portal.rentio.cloud/',
+  pagosArrendamientos: 'https://pagos.rentio.cloud',
+  pagosPse: 'https://portalpagos.davivienda.com/#/comercio/7133/INVIERTA%20INMOBILIARIA%20S%20A%20S',
+} as const;
+
+export type ClientAccessIcon = 'owner' | 'tenant' | 'payment';
+
+export interface ClientAccess {
+  id: 'propietarios' | 'arrendatarios' | 'pagos';
+  href: string;
+  /** Nombre completo (tarjetas, barra superior, menú) */
+  label: string;
+  /** Nombre corto para espacios reducidos (móvil) */
+  shortLabel: string;
+  description: string;
+  cta: string;
+  icon: ClientAccessIcon;
+  /** Acción principal: se muestra resaltada */
+  featured: boolean;
+}
+
+export const CLIENT_ACCESS: ClientAccess[] = [
+  {
+    id: 'propietarios',
+    href: CLIENT_LINKS.portalPropietarios,
+    label: 'Portal Propietarios',
+    shortLabel: 'Propietarios',
+    description: 'Consulta la información y los movimientos de tu inmueble en administración.',
+    cta: 'Ingresar al portal',
+    icon: 'owner',
+    featured: false,
+  },
+  {
+    id: 'arrendatarios',
+    href: CLIENT_LINKS.portalArrendatarios,
+    label: 'Portal Arrendatarios',
+    shortLabel: 'Arrendatarios',
+    description: 'Consulta la información de tu contrato de arrendamiento.',
+    cta: 'Ingresar al portal',
+    icon: 'tenant',
+    featured: false,
+  },
+  {
+    id: 'pagos',
+    href: CLIENT_LINKS.pagosArrendamientos,
+    label: 'Pagos Arrendamientos',
+    shortLabel: 'Pagar arriendo',
+    description: 'Paga tu canon de arrendamiento en línea, de forma rápida y segura.',
+    cta: 'Pagar arriendo',
+    icon: 'payment',
+    featured: true,
+  },
+];
+
+export const PSE_PAYMENT = {
+  href: CLIENT_LINKS.pagosPse,
+  label: 'Pagos PSE',
+  description: 'Estudios de arrendamiento y otros pagos a Invierta Inmobiliaria, directo desde tu cuenta bancaria.',
+  cta: 'Pagar con PSE',
+  provider: 'Portal de pagos Davivienda · Invierta Inmobiliaria S.A.S.',
+  // Logo oficial de PSE: guardar el archivo en public/images/pse-logo.png
+  // Mientras no exista, se muestra el texto "PSE" como respaldo.
+  logo: '/images/pse-logo.png',
+} as const;
+
+// Enlaces secundarios de la barra superior y el menú móvil
+export const QUICK_LINKS: TopBarLink[] = [
   { href: '/referidos', label: 'Registrar referido', icon: 'Users', external: false },
   { href: '/publica', label: 'Publica tu Inmueble', icon: 'Home', external: false },
 ];

@@ -1,8 +1,12 @@
 ---
-import { SITE_CONFIG, NAV_LINKS } from '../../lib/constants';
+import { SITE_CONFIG, NAV_LINKS, CLIENT_ACCESS } from '../../lib/constants';
 import Navbar from './Navbar.astro';
 import TopBar from './TopBar.astro';
 import MobileMenu from './MobileMenu.tsx';
+import { Wallet } from 'lucide-react';
+
+// Acceso de pago siempre visible en móvil (la barra superior se oculta en pantallas pequeñas)
+const rentPayment = CLIENT_ACCESS.find((item) => item.featured);
 ---
 
 <TopBar />
@@ -28,21 +32,30 @@ import MobileMenu from './MobileMenu.tsx';
       <!-- Desktop Navigation -->
       <Navbar navLinks={NAV_LINKS} />
 
-      <!-- Desktop CTA + Menu Icon -->
-      <div class="hidden md:flex items-center gap-4">
+      <!-- Desktop CTA -->
+      <div class="hidden lg:flex items-center gap-4">
         <a href="/servicios" class="btn-secondary text-sm">
           Contactar
         </a>
-        <!-- Hamburger Menu Icon (decorative on desktop) -->
-        <button class="hidden lg:flex items-center justify-center w-10 h-10 text-text-secondary hover:text-text-primary transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
       </div>
 
-      <!-- Mobile Menu -->
-      <MobileMenu client:load />
+      <!-- Móvil y tablet: pago rápido + menú -->
+      <div class="flex items-center gap-2 lg:hidden">
+        {rentPayment && (
+          <a
+            href={rentPayment.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${rentPayment.label} (se abre en una pestaña nueva)`}
+            class="inline-flex min-h-[40px] items-center gap-1.5 whitespace-nowrap rounded-full bg-accent px-3 text-[13px] font-semibold text-white shadow-sm md:hidden transition-colors hover:bg-accent-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          >
+            <Wallet className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span class="min-[400px]:hidden">Pagar</span>
+            <span class="hidden min-[400px]:inline">{rentPayment.shortLabel}</span>
+          </a>
+        )}
+        <MobileMenu client:load />
+      </div>
     </div>
   </div>
 </header>
