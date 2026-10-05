@@ -561,7 +561,8 @@ async function fetchPropertiesFromSimi(
     return { properties, cacheable: true };
   } catch (error) {
     console.error('[SIMI] Error fetching properties:', error);
-    return { properties: getMockProperties(filters), cacheable: false };
+    // Nunca mostrar datos de prueba en producción: si SIMI falla, se devuelve vacío
+    return { properties: [], cacheable: false };
   }
 }
 
@@ -796,8 +797,10 @@ export async function getFeaturedProperties(cantidad: number = 10): Promise<Prop
     } else if (data && typeof data === 'object' && 'Inmuebles' in data) {
       inmuebles = data.Inmuebles;
     } else {
-      console.warn('[SIMI] Unexpected featured response format:', data);
-      return getMockProperties({ featured: true, limit: cantidad });
+      // SIMI responde "Sin resultados" cuando no hay inmuebles marcados como destacados:
+      // se muestran los más recientes del inventario real en lugar de datos de prueba
+      console.warn('[SIMI] No featured properties, using recent properties instead:', data);
+      return getProperties({ limit: cantidad });
     }
     
     console.log(`[SIMI] Found ${inmuebles.length} featured properties`);
@@ -920,7 +923,7 @@ export async function getPropertyById(id: string): Promise<Property | undefined>
   }
 
   console.warn('[SIMI] Property not found after all attempts:', id);
-  return getMockPropertyById(id);
+  return undefined;
 }
 
 // ============================================================================
