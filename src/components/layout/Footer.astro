@@ -1,5 +1,5 @@
 ---
-import { SITE_CONFIG, NAV_LINKS, SERVICES } from '../../lib/constants';
+import { SITE_CONFIG, NAV_LINKS, SERVICES, LEGAL_LINKS } from '../../lib/constants';
 
 const currentYear = new Date().getFullYear();
 ---
@@ -191,6 +191,16 @@ const currentYear = new Date().getFullYear();
       <p class="text-xs text-white/50">
         &copy; {currentYear} {SITE_CONFIG.name}. Todos los derechos reservados.
       </p>
+      <nav aria-label="Legal" class="flex flex-col items-center gap-1 sm:flex-row sm:gap-5">
+        {LEGAL_LINKS.map((link) => (
+          <a
+            href={link.href}
+            class="text-xs text-white/70 underline-offset-4 transition-colors duration-200 hover:text-secondary-light hover:underline"
+          >
+            {link.label}
+          </a>
+        ))}
+      </nav>
       <p class="text-xs text-white/40">
         Powered by <span class="text-secondary-light font-medium">Invierta</span>
       </p>

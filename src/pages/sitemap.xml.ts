@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import { db, schema } from '../db';
-import { SERVICES } from '../lib/constants';
+import { SERVICES, LEGAL_LINKS } from '../lib/constants';
 
 // Sitemap dinámico: se genera en cada solicitud con las propiedades activas
 // (sincronizadas desde SIMI) y los proyectos activos de la base de datos.
@@ -21,6 +21,7 @@ const STATIC_PATHS = [
   '/publica/venta',
   '/publica/arriendo',
   '/referidos',
+  ...LEGAL_LINKS.map((link) => link.href),
 ];
 
 interface SitemapEntry {

@@ -113,6 +113,13 @@ export const NAV_LINKS = [
   { href: '/publica', label: 'Publica tu Inmueble' },
 ] as const;
 
+// Páginas legales: se enlazan en el pie de página y se incluyen en el sitemap.
+// Son las URL que se registran en la pantalla de consentimiento de Google.
+export const LEGAL_LINKS = [
+  { href: '/terminos-y-condiciones', label: 'Términos y Condiciones' },
+  { href: '/politica-de-privacidad', label: 'Política de Privacidad' },
+] as const;
+
 // ============================================================================
 // ZONA DE CLIENTES — portales y pagos
 // Para cambiar un enlace, edítalo SOLO en CLIENT_LINKS: se actualiza
