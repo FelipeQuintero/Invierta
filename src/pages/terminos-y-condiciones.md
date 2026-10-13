@@ -18,7 +18,7 @@ El sitio está dirigido a personas mayores de 18 años con capacidad legal para 
 - **Razón social:** Invierta Inmobiliaria S.A.S.
 - **Domicilio:** Calle 14 No. 16-47, Pinares, Pereira, Risaralda, Colombia.
 - **Correo electrónico:** [comercial@invierta.com.co](mailto:comercial@invierta.com.co)
-- **Teléfono:** +57 312 248 2337
+- **Teléfono:** +57 311 555 6333
 
 ## Qué ofrece el sitio
 
@@ -120,4 +120,4 @@ Si tienes preguntas sobre estos términos:
 - **Invierta Inmobiliaria S.A.S.**
 - Calle 14 No. 16-47, Pinares, Pereira, Risaralda, Colombia.
 - [comercial@invierta.com.co](mailto:comercial@invierta.com.co)
-- +57 312 248 2337
+- +57 311 555 6333
