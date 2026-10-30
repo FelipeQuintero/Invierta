@@ -8,7 +8,7 @@ export const SITE_CONFIG: SiteConfig = {
   logo: '/logo.webp',
   headerLogo: '/logo-dark.webp',
   phone: '+57 312 248 2337',
-  whatsapp: import.meta.env.WHATSAPP_NUMBER || '573122482327',
+  whatsapp: import.meta.env.WHATSAPP_NUMBER || '573115556333',
   email: 'comercial@invierta.com.co',
   address: 'Calle 14 No 16-47 Pinares, Pereira',
   socialMedia: {
