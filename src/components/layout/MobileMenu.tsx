@@ -37,7 +37,7 @@ export default function MobileMenu() {
   }, [isOpen]);
 
   const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent(
-    'Hola, me interesa obtener más información sobre sus propiedades.'
+    'Hola, quisiera contactarme con ustedes para hacer una solicitud.'
   )}`;
 
   return (

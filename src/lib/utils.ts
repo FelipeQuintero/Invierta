@@ -23,7 +23,7 @@ export function slugify(text: string): string {
 
 export function getWhatsAppUrl(number: string, message?: string): string {
   const encodedMessage = encodeURIComponent(
-    message || 'Hola, me interesa información sobre sus propiedades'
+    message || 'Hola, quisiera contactarme con ustedes para hacer una solicitud.'
   );
   return `https://wa.me/${number}?text=${encodedMessage}`;
 }
