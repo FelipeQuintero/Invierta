@@ -18,8 +18,6 @@ const STATIC_PATHS = [
   '/servicios',
   ...SERVICES.map((service) => `/servicios/${service.slug}`),
   '/publica',
-  '/publica/venta',
-  '/publica/arriendo',
   '/referidos',
   ...LEGAL_LINKS.map((link) => link.href),
 ];

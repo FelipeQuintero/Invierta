@@ -10,13 +10,13 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.6",
-    "@astrojs/node": "^9.5.2",
-    "@astrojs/react": "^4.4.2",
+    "@astrojs/check": "^0.9.12",
+    "@astrojs/node": "^11.1.14",
+    "@astrojs/react": "^7.1.9",
     "@tailwindcss/vite": "^4.1.18",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
-    "astro": "^5.16.16",
+    "astro": "^7.4.13",
     "drizzle-orm": "^0.45.2",
     "fuse.js": "^7.1.0",
     "ioredis": "^5.10.0",

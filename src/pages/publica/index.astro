@@ -1,11 +1,62 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/ui/Breadcrumb.astro';
+import CaptacionForm from '../../components/publica/CaptacionForm';
 import { SITE_CONFIG } from '../../lib/constants';
 
 const breadcrumbItems = [
   { label: 'Inicio', href: '/' },
   { label: 'Publica tu Inmueble' },
+];
+
+const waLink = (msg: string) => `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
+
+// Detalle de venta y arriendo, desplegable desde cada tarjeta (antes eran /publica/venta y /publica/arriendo,
+// que ahora redirigen aquí: ver `redirects` en astro.config.mjs).
+// Las clases van completas (no interpoladas) para que Tailwind las detecte.
+const publicaciones = [
+  {
+    id: 'venta',
+    title: 'Publicar en Venta',
+    summary: 'Vende tu propiedad con el respaldo de nuestro equipo de expertos. Avalúos, asesoría legal y promoción incluida.',
+    intro: 'Conecta tu inmueble con compradores calificados. Te acompañamos desde la valoración hasta el cierre.',
+    benefits: [
+      { title: 'Valoración comercial', text: 'Te orientamos para definir un precio competitivo según mercado.' },
+      { title: 'Difusión estratégica', text: 'Publicamos y promovemos tu inmueble para acelerar oportunidades reales.' },
+      { title: 'Acompañamiento legal', text: 'Soporte documental y comercial durante todo el proceso de venta.' },
+    ],
+    whatsapp: waLink('Hola, me interesa publicar mi inmueble en venta.'),
+    cls: {
+      card: 'order-1 hover:border-primary/30 aria-expanded:border-primary aria-expanded:shadow-lg',
+      icon: 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white group-aria-expanded:bg-primary group-aria-expanded:text-white',
+      title: 'group-hover:text-primary group-aria-expanded:text-primary',
+      link: 'text-primary',
+      panel: 'order-2 sm:order-3',
+      box: 'border-primary/20',
+      check: 'bg-primary/10 text-primary',
+    },
+  },
+  {
+    id: 'arriendo',
+    title: 'Publicar en Arriendo',
+    summary: 'Arrienda tu inmueble de forma segura. Nos encargamos de encontrar al inquilino ideal y gestionar todo el proceso.',
+    intro: `En ${SITE_CONFIG.name} nos encargamos de todo el proceso para que arriendes tu propiedad de forma segura y sin complicaciones.`,
+    benefits: [
+      { title: 'Inquilinos verificados', text: 'Verificamos referencias y capacidad de pago de cada candidato.' },
+      { title: 'Gestión segura', text: 'Contratos legales, seguros y acompañamiento jurídico permanente.' },
+      { title: 'Pagos puntuales', text: 'Recibe tus pagos de arriendo de forma oportuna cada mes.' },
+    ],
+    whatsapp: waLink('Hola, me interesa publicar mi inmueble en arriendo.'),
+    cls: {
+      card: 'order-3 sm:order-2 hover:border-secondary/30 aria-expanded:border-secondary aria-expanded:shadow-lg',
+      icon: 'bg-secondary/10 text-secondary group-hover:bg-secondary group-hover:text-white group-aria-expanded:bg-secondary group-aria-expanded:text-white',
+      title: 'group-hover:text-secondary group-aria-expanded:text-secondary',
+      link: 'text-secondary',
+      panel: 'order-4',
+      box: 'border-secondary/20',
+      check: 'bg-secondary/10 text-secondary',
+    },
+  },
 ];
 ---
 
@@ -38,18 +89,6 @@ const breadcrumbItems = [
     </div>
   </div>
 
-  <!-- Video Placeholder -->
-  <div class="mx-auto max-w-4xl px-4 -mt-8 mb-8 relative z-10">
-    <div class="rounded-2xl bg-slate-100 h-48 md:h-64 flex items-center justify-center shadow-lg border border-border">
-      <div class="text-center text-slate-400">
-        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="5 3 19 12 5 21 5 3"/>
-        </svg>
-        <p class="text-sm mt-2">Video de presentación (YouTube)</p>
-      </div>
-    </div>
-  </div>
-
   <!-- Venta / Arriendo Cards -->
   <section class="py-12 lg:py-16">
     <div class="container-custom">
@@ -62,126 +101,134 @@ const breadcrumbItems = [
         </p>
       </div>
 
-      <div class="mx-auto max-w-4xl grid gap-6 sm:grid-cols-2">
-        <!-- Publicar en Venta -->
-        <a
-          href="/publica/venta"
-          class="group relative flex flex-col items-center overflow-hidden rounded-2xl border border-border bg-white p-8 lg:p-10 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/30"
-        >
-          <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-          </div>
-          <h3 class="font-heading text-xl font-bold text-text-primary group-hover:text-primary transition-colors">
-            Publicar en Venta
-          </h3>
-          <p class="mt-3 text-center text-text-secondary text-sm leading-relaxed">
-            Vende tu propiedad con el respaldo de nuestro equipo de expertos. Avalúos, asesoría legal y promoción incluida.
-          </p>
-          <span class="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-            Comenzar
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m9 18 6-6-6-6"/>
-            </svg>
-          </span>
-        </a>
+      <!--
+        Tarjetas y paneles comparten la grilla: en móvil cada panel queda justo debajo de su tarjeta
+        (order 1-2-3-4); desde sm las dos tarjetas van en la misma fila y el panel abierto debajo, a todo el ancho.
+      -->
+      <div class="mx-auto max-w-4xl grid gap-x-6 sm:grid-cols-2">
+        {publicaciones.map((p) => (
+          <button
+            type="button"
+            id={`pub-btn-${p.id}`}
+            aria-expanded="false"
+            aria-controls={`pub-panel-${p.id}`}
+            aria-labelledby={`pub-title-${p.id} pub-cta-${p.id}`}
+            data-pub-toggle
+            class:list={[
+              'group relative mb-6 flex w-full cursor-pointer flex-col items-center overflow-hidden rounded-2xl border border-border bg-white p-8 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl lg:p-10',
+              p.cls.card,
+            ]}
+          >
+            <span class:list={['mb-6 flex h-20 w-20 items-center justify-center rounded-2xl transition-colors', p.cls.icon]}>
+              {p.id === 'venta' ? (
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                </svg>
+              )}
+            </span>
+            <span id={`pub-title-${p.id}`} class:list={['font-heading text-xl font-bold text-text-primary transition-colors', p.cls.title]}>
+              {p.title}
+            </span>
+            <span class="mt-3 text-sm leading-relaxed text-text-secondary">{p.summary}</span>
+            <span class:list={['mt-6 inline-flex items-center gap-1.5 text-sm font-semibold', p.cls.link]}>
+              <span id={`pub-cta-${p.id}`}>
+                <span class="group-aria-expanded:hidden">Ver detalles</span>
+                <span class="hidden group-aria-expanded:inline">Ocultar detalles</span>
+              </span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300 group-aria-expanded:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </span>
+          </button>
 
-        <!-- Publicar en Arriendo -->
-        <a
-          href="/publica/arriendo"
-          class="group relative flex flex-col items-center overflow-hidden rounded-2xl border border-border bg-white p-8 lg:p-10 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-secondary/30"
-        >
-          <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-secondary/10 text-secondary transition-colors group-hover:bg-secondary group-hover:text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-            </svg>
+          <div
+            id={`pub-panel-${p.id}`}
+            role="region"
+            aria-labelledby={`pub-title-${p.id}`}
+            data-pub-panel
+            data-open="false"
+            inert
+            class:list={[
+              'grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none data-[open=true]:grid-rows-[1fr] sm:col-span-2',
+              p.cls.panel,
+            ]}
+          >
+            <div class="min-h-0 overflow-hidden">
+              <div class:list={['mb-6 rounded-2xl border bg-surface p-6 md:p-8', p.cls.box]}>
+                <p class="text-text-secondary">{p.intro}</p>
+
+                <ul class="mt-6 grid gap-5 sm:grid-cols-3">
+                  {p.benefits.map((b) => (
+                    <li class="flex gap-3">
+                      <span class:list={['mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full', p.cls.check]}>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </span>
+                      <div>
+                        <h3 class="font-semibold text-text-primary">{b.title}</h3>
+                        <p class="mt-1 text-sm text-text-secondary">{b.text}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                  <a
+                    href="#captacion"
+                    data-operacion={p.id}
+                    class="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 font-semibold text-white shadow-md transition-colors hover:bg-accent/90"
+                  >
+                    Registrar mi inmueble
+                  </a>
+                  <a
+                    href={p.whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-6 py-3 font-semibold text-white transition-colors hover:bg-[#20bd5a]"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
+                    </svg>
+                    Escribir por WhatsApp
+                  </a>
+                  <a
+                    href={`tel:${SITE_CONFIG.phone}`}
+                    class="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-primary px-6 py-3 font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                    </svg>
+                    Llamar ahora
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
-          <h3 class="font-heading text-xl font-bold text-text-primary group-hover:text-secondary transition-colors">
-            Publicar en Arriendo
-          </h3>
-          <p class="mt-3 text-center text-text-secondary text-sm leading-relaxed">
-            Arrienda tu inmueble de forma segura. Nos encargamos de encontrar al inquilino ideal y gestionar todo el proceso.
-          </p>
-          <span class="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-secondary">
-            Comenzar
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m9 18 6-6-6-6"/>
-            </svg>
-          </span>
-        </a>
+        ))}
       </div>
     </div>
   </section>
 
-  <!-- Contact Form Section -->
-  <section class="py-12 bg-surface">
-    <div class="mx-auto max-w-xl px-4">
-      <h2 class="text-center font-heading text-2xl font-bold text-text-primary mb-2">
-        ¿Quieres publicar tu inmueble?
+  <!-- Captación Form Section -->
+  <section id="captacion" class="py-12 lg:py-16 bg-surface scroll-mt-20">
+    <div class="mx-auto max-w-3xl px-4">
+      <h2 class="text-center font-heading text-2xl font-bold text-text-primary mb-2 lg:text-3xl">
+        Cuéntanos sobre tu inmueble
       </h2>
       <p class="text-center text-text-secondary mb-8">
-        Déjanos tus datos y un asesor se comunicará contigo
+        Completa los datos y un asesor te contactará para iniciar la gestión.
       </p>
-      <form id="publica-form" class="space-y-4 bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-border">
-        <div>
-          <label for="nombre" class="block text-sm font-medium text-text-secondary mb-1">Nombre completo</label>
-          <input
-            type="text"
-            id="nombre"
-            name="firstName"
-            required
-            class="w-full rounded-lg border border-border px-4 py-3 text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="Tu nombre"
-          />
-        </div>
-        <div>
-          <label for="celular" class="block text-sm font-medium text-text-secondary mb-1">Celular</label>
-          <input
-            type="tel"
-            id="celular"
-            name="phone"
-            required
-            class="w-full rounded-lg border border-border px-4 py-3 text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="Ej: 311 555 6333"
-          />
-        </div>
-        <div>
-          <label for="correo" class="block text-sm font-medium text-text-secondary mb-1">Correo electrónico</label>
-          <input
-            type="email"
-            id="correo"
-            name="email"
-            required
-            class="w-full rounded-lg border border-border px-4 py-3 text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="tu@correo.com"
-          />
-        </div>
-        <div>
-          <label for="publicationType" class="block text-sm font-medium text-text-secondary mb-1">¿Qué quieres publicar?</label>
-          <select
-            id="publicationType"
-            name="publicationType"
-            required
-            class="w-full rounded-lg border border-border bg-white px-4 py-3 text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-          >
-            <option value="">Selecciona una opción</option>
-            <option value="venta">En venta</option>
-            <option value="arriendo">En arriendo</option>
-          </select>
-        </div>
-        <button
-          type="submit"
-          class="w-full rounded-lg bg-accent py-3 text-white font-semibold hover:bg-accent/90 transition-colors shadow-md cursor-pointer"
-        >
-          Quiero publicar mi inmueble
-        </button>
-        <p id="form-message" class="text-center text-sm hidden"></p>
-      </form>
+      <CaptacionForm client:load />
     </div>
   </section>
+
 
   <script>
     document.getElementById('publica-form')?.addEventListener('submit', async (e) => {
@@ -234,6 +281,48 @@ const breadcrumbItems = [
         btn.disabled = false;
         btn.textContent = 'Quiero publicar mi inmueble';
       }
+    });
+  </script>
+
+  <script>
+    // Tarjetas Venta / Arriendo: despliegan su detalle (solo uno abierto a la vez).
+    const toggles = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-pub-toggle]'));
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const panelOf = (btn: HTMLButtonElement) => document.getElementById(btn.getAttribute('aria-controls') ?? '');
+
+    const setOpen = (btn: HTMLButtonElement, open: boolean) => {
+      btn.setAttribute('aria-expanded', String(open));
+      const panel = panelOf(btn);
+      if (!panel) return;
+      panel.dataset.open = String(open);
+      panel.inert = !open;
+    };
+
+    toggles.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const open = btn.getAttribute('aria-expanded') !== 'true';
+        toggles.forEach((b) => setOpen(b, b === btn && open));
+        if (!open) return;
+
+        // Si el detalle queda por debajo de la pantalla, desplaza lo justo para verlo sin perder la tarjeta.
+        window.setTimeout(() => {
+          const panel = panelOf(btn);
+          if (!panel) return;
+          const overflow = panel.getBoundingClientRect().bottom - window.innerHeight;
+          const room = btn.getBoundingClientRect().top - 96; // alto aproximado del header fijo
+          if (overflow > 0 && room > 0) {
+            window.scrollBy({ top: Math.min(overflow + 16, room), behavior: reduceMotion ? 'auto' : 'smooth' });
+          }
+        }, reduceMotion ? 0 : 320);
+      });
+    });
+
+    // "Registrar mi inmueble" lleva al formulario con la operación ya elegida.
+    document.querySelectorAll<HTMLAnchorElement>('a[data-operacion]').forEach((a) => {
+      a.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('captacion:operacion', { detail: a.dataset.operacion }));
+      });
     });
   </script>
 </Layout>
